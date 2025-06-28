@@ -1,156 +1,56 @@
-import { useState, useEffect } from 'react';
-import { DecisionDetailModal } from '@/components/DecisionDetailModal';
-import { QuickAddModal } from '@/components/QuickAddModal';
+
 import { IndexHeader } from '@/components/IndexHeader';
 import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
 import { IndexErrorScreen } from '@/components/IndexErrorScreen';
 import { IndexMainContent } from '@/components/IndexMainContent';
+import { IndexModals } from '@/components/IndexModals';
 import { StatusBar } from '@/components/StatusBar';
-import { Decision, DecisionStage } from '@/types/Decision';
 import { useAuth } from '@/hooks/useAuth';
 import { useDecisions } from '@/hooks/useDecisions';
-import { soundSystem } from '@/utils/soundSystem';
-import { useToast } from '@/hooks/use-toast';
-import { JournalModal } from '@/components/JournalModal';
+import { useIndexState } from '@/hooks/useIndexState';
+import { useIndexActions } from '@/hooks/useIndexActions';
+import { useIndexMigration } from '@/hooks/useIndexMigration';
 
 const Index = () => {
-  const { profile, signOut } = useAuth();
-  const { toast } = useToast();
+  const { profile } = useAuth();
   const {
     decisions,
     loading,
     error,
-    createDecision,
-    updateDecision,
-    migrateFromLocalStorage,
-    refreshDecisions,
     retryCount
   } = useDecisions();
 
-  const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
-  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
-  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
-  const [showArchived, setShowArchived] = useState(false);
-  const [hasMigrated, setHasMigrated] = useState(false);
-  
-  const [isJournalOpen, setIsJournalOpen] = useState(false);
-  const [journalData, setJournalData] = useState<{ title: string; notes: string } | null>(null);
-  const [quickAddStage, setQuickAddStage] = useState<DecisionStage | undefined>(undefined);
+  const {
+    selectedDecision,
+    isDetailModalOpen,
+    isQuickAddOpen,
+    showArchived,
+    hasMigrated,
+    isJournalOpen,
+    journalData,
+    quickAddStage,
+    setHasMigrated,
+    handleCloseDetailModal,
+    handleCloseQuickAdd,
+    handleCloseJournal,
+    handleDecisionClick,
+    handleToggleArchived,
+    handleQuickAddClick,
+    handleJournalClick,
+    handleJournalComplete,
+    handleStageQuickAdd
+  } = useIndexState();
+
+  const {
+    handleDecisionUpdate,
+    handleQuickAdd,
+    handleArchive,
+    handleLogout,
+    handleRetry
+  } = useIndexActions();
 
   // Check for localStorage data and offer migration on first load
-  useEffect(() => {
-    const checkForMigration = async () => {
-      if (hasMigrated) return;
-      
-      const savedDecisions = localStorage.getItem('tactical-decisions');
-      if (savedDecisions) {
-        try {
-          const localDecisions = JSON.parse(savedDecisions);
-          if (localDecisions.length > 0) {
-            const migratedCount = await migrateFromLocalStorage();
-            if (migratedCount > 0) {
-              setHasMigrated(true);
-            }
-          }
-        } catch (error) {
-          console.error('Error checking for migration:', error);
-        }
-      }
-    };
-
-    checkForMigration();
-  }, [migrateFromLocalStorage, hasMigrated]);
-
-  const handleDecisionUpdate = async (updatedDecision: Decision) => {
-    try {
-      await updateDecision(updatedDecision);
-      soundSystem.playCardDrop();
-    } catch (error) {
-      // Error is already handled in the hook
-    }
-  };
-
-  const handleDecisionClick = (decision: Decision) => {
-    setSelectedDecision(decision);
-    setIsDetailModalOpen(true);
-  };
-
-  const handleQuickAdd = async (decision: Decision) => {
-    try {
-      await createDecision(decision);
-      soundSystem.playCardDrop();
-    } catch (error) {
-      // Error is already handled in the hook
-    }
-  };
-
-  const handleArchive = async (decision: Decision) => {
-    try {
-      const updatedDecision: Decision = {
-        ...decision,
-        archived: !decision.archived,
-        updatedAt: new Date()
-      };
-      await updateDecision(updatedDecision);
-      soundSystem.playArchive();
-    } catch (error) {
-      // Error is already handled in the hook
-    }
-  };
-
-  const handleLogout = () => {
-    signOut();
-    toast({
-      title: "SESSION TERMINATED",
-      description: "You have been logged out",
-    });
-  };
-
-  const handleRetry = () => {
-    console.log('Manual retry requested');
-    refreshDecisions();
-  };
-
-  const handleToggleArchived = () => {
-    setShowArchived(!showArchived);
-  };
-
-  const handleQuickAddClick = () => {
-    setQuickAddStage(undefined);
-    setJournalData(null);
-    setIsQuickAddOpen(true);
-  };
-
-  const handleJournalClick = () => {
-    setIsJournalOpen(true);
-  };
-
-  const handleJournalComplete = (data: { title: string; notes: string }) => {
-    setJournalData(data);
-    setIsJournalOpen(false);
-    setIsQuickAddOpen(true);
-  };
-
-  const handleStageQuickAdd = (stage: DecisionStage) => {
-    setQuickAddStage(stage);
-    setJournalData(null);
-    setIsQuickAddOpen(true);
-  };
-
-  const handleCloseDetailModal = () => {
-    setIsDetailModalOpen(false);
-    setSelectedDecision(null);
-  };
-
-  const handleCloseQuickAdd = () => {
-    setIsQuickAddOpen(false);
-    setJournalData(null);
-    setQuickAddStage(undefined);
-  };
-
-  const handleCloseJournal = () => {
-    setIsJournalOpen(false);
-  };
+  useIndexMigration(hasMigrated, setHasMigrated);
 
   if (loading) {
     return <IndexLoadingScreen retryCount={retryCount} />;
@@ -192,29 +92,19 @@ const Index = () => {
         onQuickAdd={handleStageQuickAdd}
       />
 
-      {/* Modals */}
-      <DecisionDetailModal
-        decision={selectedDecision}
-        isOpen={isDetailModalOpen}
-        onClose={handleCloseDetailModal}
-        onUpdate={handleDecisionUpdate}
-      />
-
-      <QuickAddModal
-        isOpen={isQuickAddOpen}
-        onClose={handleCloseQuickAdd}
-        onAdd={handleQuickAdd}
-        preFilledData={{
-          title: journalData?.title,
-          notes: journalData?.notes,
-          stage: quickAddStage
-        }}
-      />
-
-      <JournalModal
-        isOpen={isJournalOpen}
-        onClose={handleCloseJournal}
-        onComplete={handleJournalComplete}
+      <IndexModals
+        selectedDecision={selectedDecision}
+        isDetailModalOpen={isDetailModalOpen}
+        isQuickAddOpen={isQuickAddOpen}
+        isJournalOpen={isJournalOpen}
+        journalData={journalData}
+        quickAddStage={quickAddStage}
+        onCloseDetailModal={handleCloseDetailModal}
+        onCloseQuickAdd={handleCloseQuickAdd}
+        onCloseJournal={handleCloseJournal}
+        onDecisionUpdate={handleDecisionUpdate}
+        onQuickAdd={handleQuickAdd}
+        onJournalComplete={handleJournalComplete}
       />
     </div>
   );
