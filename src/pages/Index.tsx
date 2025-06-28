@@ -3,11 +3,13 @@ import { useState, useEffect } from 'react';
 import { DecisionPipeline } from '@/components/DecisionPipeline';
 import { StatusBar } from '@/components/StatusBar';
 import { QuickAddModal } from '@/components/QuickAddModal';
+import { DecisionDetailModal } from '@/components/DecisionDetailModal';
 import { Decision } from '@/types/Decision';
 
 const Index = () => {
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
 
   // Sample data for demo
   useEffect(() => {
@@ -22,7 +24,7 @@ const Index = () => {
         confidence: 4,
         owner: 'CEO',
         createdAt: new Date('2024-06-20'),
-        notes: 'Need to scale engineering team for Q3 product launch'
+        notes: 'Need to scale engineering team for Q3 product launch. Looking for someone with experience in scaling from 10 to 50+ engineers.'
       },
       {
         id: '2',
@@ -34,7 +36,7 @@ const Index = () => {
         confidence: 3,
         owner: 'CEO',
         createdAt: new Date('2024-06-25'),
-        notes: '18-month runway target, $50M round'
+        notes: '18-month runway target, $50M round. Need to prepare pitch deck and financial projections.'
       },
       {
         id: '3',
@@ -46,7 +48,7 @@ const Index = () => {
         confidence: 5,
         owner: 'CEO',
         createdAt: new Date('2024-06-15'),
-        notes: 'UK first, then Germany and France'
+        notes: 'UK first, then Germany and France. Market research completed, regulatory approval needed.'
       }
     ];
     setDecisions(sampleDecisions);
@@ -63,6 +65,7 @@ const Index = () => {
       }
       if (e.key === 'Escape') {
         setShowQuickAdd(false);
+        setSelectedDecision(null);
       }
     };
 
@@ -84,6 +87,15 @@ const Index = () => {
     };
     setDecisions(prev => [...prev, decision]);
     setShowQuickAdd(false);
+  };
+
+  const handleDecisionClick = (decision: Decision) => {
+    setSelectedDecision(decision);
+  };
+
+  const handleDecisionDetailUpdate = (updatedDecision: Decision) => {
+    handleDecisionUpdate(updatedDecision);
+    setSelectedDecision(updatedDecision);
   };
 
   return (
@@ -120,6 +132,7 @@ const Index = () => {
         <DecisionPipeline 
           decisions={decisions} 
           onDecisionUpdate={handleDecisionUpdate}
+          onDecisionClick={handleDecisionClick}
         />
       </main>
 
@@ -128,6 +141,15 @@ const Index = () => {
         <QuickAddModal
           onClose={() => setShowQuickAdd(false)}
           onSubmit={handleDecisionAdd}
+        />
+      )}
+
+      {/* Decision Detail Modal */}
+      {selectedDecision && (
+        <DecisionDetailModal
+          decision={selectedDecision}
+          onClose={() => setSelectedDecision(null)}
+          onUpdate={handleDecisionDetailUpdate}
         />
       )}
 

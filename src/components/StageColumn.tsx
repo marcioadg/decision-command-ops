@@ -9,6 +9,7 @@ interface StageColumnProps {
   onDragStart: (decision: Decision) => void;
   onDragEnd: () => void;
   onDrop: (stage: DecisionStage) => void;
+  onDecisionClick: (decision: Decision) => void;
   isDragActive: boolean;
 }
 
@@ -18,6 +19,7 @@ export const StageColumn = ({
   onDragStart, 
   onDragEnd, 
   onDrop,
+  onDecisionClick,
   isDragActive 
 }: StageColumnProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
@@ -83,6 +85,7 @@ export const StageColumn = ({
               decision={decision}
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
+              onClick={onDecisionClick}
             />
           ))
         )}

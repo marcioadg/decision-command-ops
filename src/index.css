@@ -48,6 +48,26 @@ All colors MUST be HSL.
     --sidebar-accent-foreground: 210 40% 95%;
     --sidebar-border: 220 30% 18%;
     --sidebar-ring: 151 100% 50%;
+
+    /* Tactical Colors */
+    --tactical-bg: 220 30% 6%;
+    --tactical-text: 210 40% 95%;
+    --tactical-surface: 220 30% 8%;
+    --tactical-border: 220 30% 18%;
+    --tactical-accent: 151 100% 50%;
+    
+    /* Impact Colors */
+    --impact-high: 0 100% 67%;
+    --impact-medium: 39 100% 67%;
+    --impact-low: 151 100% 50%;
+    
+    /* Urgency Colors */
+    --urgency-high: 0 100% 67%;
+    --urgency-medium: 39 100% 67%;
+    --urgency-low: 151 100% 50%;
+    
+    /* Info Color */
+    --info: 200 100% 67%;
   }
 }
 
@@ -57,7 +77,8 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-tactical-bg text-tactical-text font-tactical;
+    @apply bg-tactical-bg text-tactical-text;
+    font-family: 'Rajdhani', sans-serif;
     background-image: 
       radial-gradient(circle at 25% 25%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 75% 75%, rgba(0, 170, 255, 0.05) 0%, transparent 50%);
@@ -73,11 +94,12 @@ All colors MUST be HSL.
   }
   
   ::-webkit-scrollbar-thumb {
-    @apply bg-tactical-accent/30 rounded;
+    background-color: hsl(var(--tactical-accent) / 0.3);
+    @apply rounded;
   }
   
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-tactical-accent/50;
+    background-color: hsl(var(--tactical-accent) / 0.5);
   }
 }
 
@@ -90,20 +112,69 @@ All colors MUST be HSL.
   }
   
   .tactical-card {
-    @apply bg-tactical-surface border border-tactical-border rounded-lg p-4 transition-all duration-200;
+    background-color: hsl(var(--tactical-surface));
+    border: 1px solid hsl(var(--tactical-border));
+    @apply rounded-lg p-4 transition-all duration-200;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
   }
   
   .tactical-card:hover {
-    @apply border-tactical-accent/50;
+    border-color: hsl(var(--tactical-accent) / 0.5);
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 255, 136, 0.1);
   }
   
   .stage-header {
-    @apply font-mono text-xs uppercase tracking-wider text-tactical-accent border-b border-tactical-border pb-2 mb-4;
+    @apply font-mono text-xs uppercase tracking-wider border-b pb-2 mb-4;
+    color: hsl(var(--tactical-accent));
+    border-color: hsl(var(--tactical-border));
   }
   
   .hud-metric {
-    @apply font-mono text-xs text-tactical-text/80 bg-tactical-surface/50 px-2 py-1 rounded border border-tactical-border;
+    @apply font-mono text-xs px-2 py-1 rounded border;
+    color: hsl(var(--tactical-text) / 0.8);
+    background-color: hsl(var(--tactical-surface) / 0.5);
+    border-color: hsl(var(--tactical-border));
+  }
+
+  /* Custom color utilities */
+  .text-tactical-text { color: hsl(var(--tactical-text)); }
+  .text-tactical-accent { color: hsl(var(--tactical-accent)); }
+  .bg-tactical-bg { background-color: hsl(var(--tactical-bg)); }
+  .bg-tactical-surface { background-color: hsl(var(--tactical-surface)); }
+  .bg-tactical-accent { background-color: hsl(var(--tactical-accent)); }
+  .border-tactical-border { border-color: hsl(var(--tactical-border)); }
+  .border-tactical-accent { border-color: hsl(var(--tactical-accent)); }
+  
+  /* Impact colors */
+  .text-impact-high { color: hsl(var(--impact-high)); }
+  .text-impact-medium { color: hsl(var(--impact-medium)); }
+  .text-impact-low { color: hsl(var(--impact-low)); }
+  .border-l-impact-high { border-left-color: hsl(var(--impact-high)); }
+  .border-l-impact-medium { border-left-color: hsl(var(--impact-medium)); }
+  .border-l-impact-low { border-left-color: hsl(var(--impact-low)); }
+  
+  /* Urgency colors */
+  .text-urgency-high { color: hsl(var(--urgency-high)); }
+  .text-urgency-medium { color: hsl(var(--urgency-medium)); }
+  .text-urgency-low { color: hsl(var(--urgency-low)); }
+  
+  /* Info color */
+  .text-info { color: hsl(var(--info)); }
+  .border-t-info { border-top-color: hsl(var(--info)); }
+
+  /* Animations */
+  .animate-slide-in {
+    animation: slideIn 0.3s ease-out;
+  }
+
+  @keyframes slideIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 }

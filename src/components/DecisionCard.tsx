@@ -6,9 +6,10 @@ interface DecisionCardProps {
   decision: Decision;
   onDragStart: (decision: Decision) => void;
   onDragEnd: () => void;
+  onClick: (decision: Decision) => void;
 }
 
-export const DecisionCard = ({ decision, onDragStart, onDragEnd }: DecisionCardProps) => {
+export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick }: DecisionCardProps) => {
   const getImpactColor = () => {
     switch (decision.impact) {
       case 'high': return 'border-l-impact-high';
@@ -48,12 +49,29 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd }: DecisionCardP
     ));
   };
 
+  const handleClick = (e: React.MouseEvent) => {
+    // Don't trigger click if we're starting a drag
+    if (e.detail === 1) {
+      setTimeout(() => {
+        if (!e.defaultPrevented) {
+          onClick(decision);
+        }
+      }, 200);
+    }
+  };
+
+  const handleDragStart = (e: React.DragEvent) => {
+    e.preventDefault = () => {}; // Prevent click from firing
+    onDragStart(decision);
+  };
+
   return (
     <div
       draggable
-      onDragStart={() => onDragStart(decision)}
+      onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
-      className={`tactical-card border-l-4 ${getImpactColor()} cursor-move hover:scale-[1.02] animate-slide-in`}
+      onClick={handleClick}
+      className={`tactical-card border-l-4 ${getImpactColor()} cursor-pointer hover:scale-[1.02] animate-slide-in transition-all duration-200`}
     >
       {/* Title and Category */}
       <div className="flex items-start justify-between mb-3">

@@ -7,6 +7,7 @@ import { StageColumn } from './StageColumn';
 interface DecisionPipelineProps {
   decisions: Decision[];
   onDecisionUpdate: (decision: Decision) => void;
+  onDecisionClick: (decision: Decision) => void;
 }
 
 const stages: { key: DecisionStage; label: string; description: string }[] = [
@@ -17,7 +18,7 @@ const stages: { key: DecisionStage; label: string; description: string }[] = [
   { key: 'lessons', label: 'LESSONS', description: 'Reflections and learnings captured' }
 ];
 
-export const DecisionPipeline = ({ decisions, onDecisionUpdate }: DecisionPipelineProps) => {
+export const DecisionPipeline = ({ decisions, onDecisionUpdate, onDecisionClick }: DecisionPipelineProps) => {
   const [draggedDecision, setDraggedDecision] = useState<Decision | null>(null);
 
   const handleDragStart = (decision: Decision) => {
@@ -53,6 +54,7 @@ export const DecisionPipeline = ({ decisions, onDecisionUpdate }: DecisionPipeli
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
           onDrop={handleDrop}
+          onDecisionClick={onDecisionClick}
           isDragActive={draggedDecision !== null}
         />
       ))}
