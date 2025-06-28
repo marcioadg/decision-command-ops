@@ -101,6 +101,58 @@ class SoundSystem {
     noise.stop(context.currentTime + 0.15);
   }
 
+  async playMilitaryCelebration() {
+    const context = await this.ensureAudioContext();
+    if (!context) return;
+
+    // Military fanfare - triumphant ascending sequence
+    const notes = [
+      { freq: 523, time: 0.0 },    // C
+      { freq: 659, time: 0.15 },   // E
+      { freq: 784, time: 0.3 },    // G
+      { freq: 1047, time: 0.45 },  // C (octave)
+    ];
+
+    notes.forEach(({ freq, time }, index) => {
+      const oscillator = this.createOscillator(freq, 'sawtooth');
+      const gain = this.createGain(0.2);
+      
+      if (!oscillator || !gain) return;
+
+      oscillator.connect(gain);
+      gain.connect(context.destination);
+
+      const startTime = context.currentTime + time;
+      const duration = index === notes.length - 1 ? 0.6 : 0.2;
+      
+      // Victory fanfare envelope
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.01, startTime + duration);
+
+      oscillator.start(startTime);
+      oscillator.stop(startTime + duration);
+    });
+
+    // Add a harmonic layer for richness
+    setTimeout(() => {
+      const harmonic = this.createOscillator(1047 * 1.5, 'triangle'); // Perfect fifth
+      const harmonicGain = this.createGain(0.1);
+      
+      if (!harmonic || !harmonicGain) return;
+
+      harmonic.connect(harmonicGain);
+      harmonicGain.connect(context.destination);
+
+      harmonicGain.gain.setValueAtTime(0, context.currentTime);
+      harmonicGain.gain.linearRampToValueAtTime(0.1, context.currentTime + 0.02);
+      harmonicGain.gain.exponentialRampToValueAtTime(0.01, context.currentTime + 0.4);
+
+      harmonic.start(context.currentTime);
+      harmonic.stop(context.currentTime + 0.4);
+    }, 450);
+  }
+
   async playArchive() {
     const context = await this.ensureAudioContext();
     if (!context) return;

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
@@ -47,7 +46,13 @@ export const DecisionPipeline = ({
       };
       onDecisionUpdate(updatedDecision);
       soundSystem.playCardDrop();
-      soundSystem.playStageTransition();
+      
+      // Play military celebration sound when moving to "decided" stage
+      if (stage === 'decided') {
+        soundSystem.playMilitaryCelebration();
+      } else {
+        soundSystem.playStageTransition();
+      }
     }
   };
 

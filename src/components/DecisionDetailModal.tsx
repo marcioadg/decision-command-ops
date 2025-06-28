@@ -33,7 +33,13 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
 
   const handleSave = () => {
     if (formData) {
-      onUpdate({ ...formData, updatedAt: new Date() });
+      console.log('Saving decision with all data:', formData);
+      // Ensure we save the complete formData including all sections
+      const updatedDecision: Decision = {
+        ...formData,
+        updatedAt: new Date()
+      };
+      onUpdate(updatedDecision);
       setEditMode(false);
     }
   };
@@ -53,7 +59,13 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
   };
 
   const handleFormUpdate = (updates: Partial<Decision>) => {
-    setFormData(prev => prev ? ({ ...prev, ...updates }) : null);
+    console.log('Updating form data with:', updates);
+    setFormData(prev => {
+      if (!prev) return null;
+      const updated = { ...prev, ...updates };
+      console.log('Updated form data:', updated);
+      return updated;
+    });
   };
 
   return (
