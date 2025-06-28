@@ -23,22 +23,23 @@ export const DecisionDetailModal = ({
   onUpdate, 
   pauseRealtimeForDecision 
 }: DecisionDetailModalProps) => {
+  // FIXED: Move all hooks to the top before any conditional returns
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Don't render if not open or no decision
-  if (!isOpen || !decision) {
-    return null;
-  }
-
   // Pause real-time updates for the entire modal session
   useEffect(() => {
-    if (decision && pauseRealtimeForDecision) {
+    if (isOpen && decision && pauseRealtimeForDecision) {
       console.log('DecisionDetailModal: Pausing real-time updates for editing session');
       pauseRealtimeForDecision(decision.id, 10000); // 10 second pause for editing
     }
-  }, [decision?.id, pauseRealtimeForDecision]);
+  }, [decision?.id, pauseRealtimeForDecision, isOpen]);
+
+  // Don't render if not open or no decision - MOVED AFTER HOOKS
+  if (!isOpen || !decision) {
+    return null;
+  }
 
   const handleUpdate = async (updates: Partial<Decision>) => {
     if (!decision) return;
