@@ -1,6 +1,7 @@
+
 import { useState } from 'react';
 import { Decision, DecisionCategory, DecisionImpact, DecisionUrgency } from '@/types/Decision';
-import { X, Star, Clock } from 'lucide-react';
+import { X, Star, Clock, Calendar, MessageSquare, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface DecisionDetailModalProps {
   decision: Decision | null;
@@ -12,6 +13,7 @@ interface DecisionDetailModalProps {
 export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: DecisionDetailModalProps) => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(decision);
+  const [showReflection, setShowReflection] = useState(false);
 
   // Don't render if not open or no decision
   if (!isOpen || !decision) {
@@ -52,6 +54,10 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
     ));
   };
 
+  const hasReflection = decision.reflection?.reminderDate || decision.reflection?.questions?.length;
+  const isReflectionComplete = decision.reflection?.answers?.length;
+  const shouldShowReflectionPrompt = decision.stage === 'decided' && !hasReflection;
+
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-tactical-surface border border-tactical-border rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
@@ -64,6 +70,15 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
             <span className={`px-2 py-1 text-xs font-mono rounded border ${getCategoryBadgeColor()}`}>
               {decision.category}
             </span>
+            {hasReflection && (
+              <span className={`px-2 py-1 text-xs font-mono rounded border ${
+                isReflectionComplete 
+                  ? 'bg-green-500/20 text-green-400 border-green-500/30' 
+                  : 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30'
+              }`}>
+                {isReflectionComplete ? 'REFLECTED' : 'REFLECTION SET'}
+              </span>
+            )}
           </div>
           <div className="flex items-center space-x-2">
             <button
@@ -83,6 +98,19 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
 
         {/* Content */}
         <div className="p-6 space-y-6">
+          {/* Reflection Prompt for Decided Stage */}
+          {shouldShowReflectionPrompt && (
+            <div className="bg-tactical-accent/10 border border-tactical-accent/30 rounded p-4">
+              <div className="flex items-center space-x-2 mb-2">
+                <Calendar className="w-4 h-4 text-tactical-accent" />
+                <span className="text-sm font-mono text-tactical-accent">REFLECTION RECOMMENDED</span>
+              </div>
+              <p className="text-xs text-tactical-text/80">
+                This decision has been executed. Consider setting a reflection date to review its outcomes.
+              </p>
+            </div>
+          )}
+
           {/* Title */}
           <div>
             <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Title</label>
@@ -194,6 +222,114 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
               <p className="text-tactical-text/80 whitespace-pre-wrap">
                 {decision.notes || 'No notes added yet.'}
               </p>
+            )}
+          </div>
+
+          {/* Reflection Section */}
+          <div className="border-t border-tactical-border pt-6">
+            <button
+              onClick={() => setShowReflection(!showReflection)}
+              className="flex items-center space-x-2 text-tactical-accent hover:text-tactical-accent/80 transition-colors mb-4"
+            >
+              {showReflection ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
+              <MessageSquare className="w-4 h-4" />
+              <span className="font-mono text-sm uppercase">Reflection</span>
+              {hasReflection && !showReflection && (
+                <span className="text-xs text-tactical-text/60">({isReflectionComplete ? 'Complete' : 'Scheduled'})</span>
+              )}
+            </button>
+
+            {showReflection && (
+              <div className="space-y-4 pl-6">
+                {/* Reflection Date */}
+                <div>
+                  <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Reflection Date</label>
+                  {editMode ? (
+                    <input
+                      type="date"
+                      value={formData?.reflection?.reminderDate ? formData.reflection.reminderDate.toISOString().split('T')[0] : ''}
+                      onChange={(e) => setFormData(prev => prev ? ({
+                        ...prev,
+                        reflection: {
+                          ...prev.reflection,
+                          reminderDate: new Date(e.target.value),
+                          questions: prev.reflection?.questions || [],
+                          answers: prev.reflection?.answers || []
+                        }
+                      }) : null)}
+                      className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
+                    />
+                  ) : (
+                    <p className="text-tactical-text/80">
+                      {decision.reflection?.reminderDate 
+                        ? decision.reflection.reminderDate.toLocaleDateString()
+                        : 'Not set'
+                      }
+                    </p>
+                  )}
+                </div>
+
+                {/* Key Questions */}
+                <div>
+                  <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Key Questions to Ask</label>
+                  {editMode ? (
+                    <textarea
+                      value={formData?.reflection?.questions?.join('\n') || ''}
+                      onChange={(e) => setFormData(prev => prev ? ({
+                        ...prev,
+                        reflection: {
+                          ...prev.reflection,
+                          reminderDate: prev.reflection?.reminderDate || new Date(),
+                          questions: e.target.value.split('\n').filter(q => q.trim()),
+                          answers: prev.reflection?.answers || []
+                        }
+                      }) : null)}
+                      className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none h-24 resize-none"
+                      placeholder="What went well?&#10;What could be improved?&#10;What would I do differently?"
+                    />
+                  ) : (
+                    <div className="text-tactical-text/80">
+                      {decision.reflection?.questions?.length ? (
+                        <ul className="list-disc list-inside space-y-1">
+                          {decision.reflection.questions.map((question, index) => (
+                            <li key={index} className="text-sm">{question}</li>
+                          ))}
+                        </ul>
+                      ) : (
+                        'No questions set'
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Reflection Notes/Answers */}
+                <div>
+                  <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Reflection Notes</label>
+                  {editMode ? (
+                    <textarea
+                      value={formData?.reflection?.answers?.join('\n\n') || ''}
+                      onChange={(e) => setFormData(prev => prev ? ({
+                        ...prev,
+                        reflection: {
+                          ...prev.reflection,
+                          reminderDate: prev.reflection?.reminderDate || new Date(),
+                          questions: prev.reflection?.questions || [],
+                          answers: e.target.value.split('\n\n').filter(a => a.trim())
+                        }
+                      }) : null)}
+                      className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none h-32 resize-none"
+                      placeholder="Your insights and learnings from this decision..."
+                    />
+                  ) : (
+                    <div className="text-tactical-text/80 whitespace-pre-wrap">
+                      {decision.reflection?.answers?.length 
+                        ? decision.reflection.answers.join('\n\n')
+                        : 'No reflection notes yet'
+                      }
+                    </div>
+                  )}
+                </div>
+              </div>
             )}
           </div>
 

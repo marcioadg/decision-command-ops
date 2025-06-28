@@ -1,6 +1,6 @@
 
 import { Decision } from '@/types/Decision';
-import { Clock, Star, Archive } from 'lucide-react';
+import { Clock, Star, Archive, Calendar, MessageSquare } from 'lucide-react';
 
 interface DecisionCardProps {
   decision: Decision;
@@ -50,6 +50,23 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
     ));
   };
 
+  const getReflectionStatus = () => {
+    if (!decision.reflection?.reminderDate) return null;
+    
+    const hasAnswers = decision.reflection.answers?.length > 0;
+    const isPast = new Date(decision.reflection.reminderDate) < new Date();
+    
+    if (hasAnswers) {
+      return { type: 'complete', color: 'text-green-400' };
+    } else if (isPast) {
+      return { type: 'overdue', color: 'text-red-400' };
+    } else {
+      return { type: 'scheduled', color: 'text-yellow-400' };
+    }
+  };
+
+  const reflectionStatus = getReflectionStatus();
+
   const handleClick = (e: React.MouseEvent) => {
     // Don't trigger click if we're starting a drag
     if (e.detail === 1) {
@@ -81,7 +98,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
       onClick={handleClick}
       className={`tactical-card border-l-4 ${getImpactColor()} cursor-pointer hover:scale-[1.02] animate-slide-in transition-all duration-200 relative group`}
     >
-      {/* Archive Button - Moved to top-left */}
+      {/* Archive Button - Top-left */}
       {onArchive && (
         <button
           onClick={handleArchive}
@@ -90,6 +107,20 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
         >
           <Archive className="w-3 h-3" />
         </button>
+      )}
+
+      {/* Reflection Indicator - Top-right */}
+      {reflectionStatus && (
+        <div 
+          className={`absolute top-2 right-2 ${reflectionStatus.color}`}
+          title={`Reflection ${reflectionStatus.type}`}
+        >
+          {reflectionStatus.type === 'complete' ? (
+            <MessageSquare className="w-4 h-4 fill-current" />
+          ) : (
+            <Calendar className="w-4 h-4" />
+          )}
+        </div>
       )}
 
       {/* Title and Category */}
@@ -136,6 +167,24 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
           <p className="text-xs text-tactical-text/60 line-clamp-2">
             {decision.notes}
           </p>
+        </div>
+      )}
+
+      {/* Reflection Preview */}
+      {reflectionStatus && (
+        <div className="mt-2 pt-2 border-t border-tactical-border">
+          <div className={`flex items-center space-x-1 text-xs ${reflectionStatus.color}`}>
+            {reflectionStatus.type === 'complete' ? (
+              <MessageSquare className="w-3 h-3" />
+            ) : (
+              <Calendar className="w-3 h-3" />
+            )}
+            <span className="font-mono">
+              {reflectionStatus.type === 'complete' ? 'REFLECTED' : 
+               reflectionStatus.type === 'overdue' ? 'REFLECTION OVERDUE' : 
+               'REFLECTION SCHEDULED'}
+            </span>
+          </div>
         </div>
       )}
 
