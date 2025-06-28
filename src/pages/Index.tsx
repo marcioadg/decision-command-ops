@@ -1,4 +1,3 @@
-
 import { IndexHeader } from '@/components/IndexHeader';
 import { MobileHeader } from '@/components/MobileHeader';
 import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
@@ -28,15 +27,43 @@ const Index = () => {
     isRealTimeConnected
   } = decisionsHook;
 
-  // Create local state setter for immediate updates
+  // Create local state for immediate updates - this will be the source of truth for UI
   const [localDecisions, setLocalDecisions] = useState(decisions);
-  
-  // Sync local decisions with hook decisions
-  useEffect(() => {
-    setLocalDecisions(decisions);
-  }, [decisions]);
 
-  // Set up immediate decision sync
+  // FIXED: Remove the conflicting useEffect that was overwriting localDecisions
+  // Instead, only sync when decisions array changes meaningfully (length changes or initial load)
+  useEffect(() => {
+    // Only sync if this looks like an initial load or major change (different length)
+    if (localDecisions.length === 0 || localDecisions.length !== decisions.length) {
+      console.log('Index: Syncing with hook decisions - initial load or length change:', {
+        localCount: localDecisions.length,
+        hookCount: decisions.length
+      });
+      setLocalDecisions(decisions);
+    } else {
+      // For same-length updates, merge intelligently to preserve local changes
+      console.log('Index: Smart merging decisions to preserve local changes');
+      setLocalDecisions(prevLocal => {
+        return prevLocal.map(localDecision => {
+          const hookDecision = decisions.find(d => d.id === localDecision.id);
+          if (!hookDecision) return localDecision;
+          
+          // If hook decision has a newer timestamp, use it; otherwise keep local
+          const hookTime = new Date(hookDecision.updatedAt || hookDecision.createdAt).getTime();
+          const localTime = new Date(localDecision.updatedAt || localDecision.createdAt).getTime();
+          
+          if (hookTime > localTime) {
+            console.log('Index: Using newer hook decision for:', localDecision.id);
+            return hookDecision;
+          }
+          
+          return localDecision;
+        });
+      });
+    }
+  }, [decisions.length]); // Only depend on length to avoid constant re-syncing
+
+  // Set up immediate decision sync for instant UI updates
   const { applyImmediateUpdate } = useImmediateDecisionSync({ 
     setDecisions: setLocalDecisions 
   });

@@ -11,9 +11,23 @@ export const useImmediateDecisionSync = ({ setDecisions }: UseImmediateDecisionS
     console.log('useImmediateDecisionSync: Applying immediate update for decision:', updatedDecision.id);
     
     setDecisions(prev => {
-      const updated = prev.map(decision => 
-        decision.id === updatedDecision.id ? updatedDecision : decision
-      );
+      const updated = prev.map(decision => {
+        if (decision.id === updatedDecision.id) {
+          // Ensure we're using the most recent timestamp for this immediate update
+          const immediateUpdate = {
+            ...updatedDecision,
+            updatedAt: new Date() // Force current timestamp for immediate updates
+          };
+          
+          console.log('useImmediateDecisionSync: Updated decision with timestamp:', {
+            id: immediateUpdate.id,
+            updatedAt: immediateUpdate.updatedAt
+          });
+          
+          return immediateUpdate;
+        }
+        return decision;
+      });
       
       console.log('useImmediateDecisionSync: Decision list updated with immediate change');
       return updated;
