@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Decision } from '@/types/Decision';
 import { DecisionModalHeader } from './DecisionModalHeader';
 import { DecisionForm } from './DecisionForm';
+import { DecisionPreAnalysisSection } from './DecisionPreAnalysisSection';
 import { DecisionReflectionSection } from './DecisionReflectionSection';
 import { DecisionTimestamps } from './DecisionTimestamps';
 
@@ -69,6 +70,13 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
         <div className="p-6 space-y-6">
           {/* Decision Form */}
           <DecisionForm
+            decision={formData}
+            editMode={editMode}
+            onUpdate={handleFormUpdate}
+          />
+
+          {/* Pre-Decision Analysis Section */}
+          <DecisionPreAnalysisSection
             decision={formData}
             editMode={editMode}
             onUpdate={handleFormUpdate}

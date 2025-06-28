@@ -10,6 +10,12 @@ export interface ReflectionInterval {
   answers?: string[];
 }
 
+export interface PreAnalysis {
+  upside?: string;
+  downside?: string;
+  alignment?: string;
+}
+
 export interface Decision {
   id: string;
   title: string;
@@ -24,6 +30,7 @@ export interface Decision {
   notes?: string;
   biasCheck?: string;
   archived?: boolean;
+  preAnalysis?: PreAnalysis;
   reflection?: {
     sevenDay?: ReflectionInterval;
     thirtyDay?: ReflectionInterval;

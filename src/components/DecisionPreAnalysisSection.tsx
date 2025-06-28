@@ -1,0 +1,92 @@
+
+import { Decision, PreAnalysis } from '@/types/Decision';
+import { Textarea } from '@/components/ui/textarea';
+
+interface DecisionPreAnalysisSectionProps {
+  decision: Decision;
+  editMode: boolean;
+  onUpdate: (updates: Partial<Decision>) => void;
+}
+
+export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: DecisionPreAnalysisSectionProps) => {
+  // Only show for active stages (not decided or lessons)
+  const shouldShow = decision.stage !== 'decided' && decision.stage !== 'lessons';
+  
+  if (!shouldShow) {
+    return null;
+  }
+
+  const handlePreAnalysisUpdate = (field: keyof PreAnalysis, value: string) => {
+    const updatedPreAnalysis = {
+      ...decision.preAnalysis,
+      [field]: value
+    };
+    onUpdate({ preAnalysis: updatedPreAnalysis });
+  };
+
+  const questions = [
+    {
+      key: 'upside' as keyof PreAnalysis,
+      label: "What's the upside of this decision?",
+      placeholder: "Consider the potential benefits, opportunities, and positive outcomes..."
+    },
+    {
+      key: 'downside' as keyof PreAnalysis,
+      label: "What's the downside of this decision?",
+      placeholder: "Think about risks, costs, and potential negative consequences..."
+    },
+    {
+      key: 'alignment' as keyof PreAnalysis,
+      label: "Does it align with my long-term goals?",
+      placeholder: "Evaluate how this decision supports or conflicts with your strategic objectives..."
+    }
+  ];
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-mono text-tactical-accent uppercase tracking-wider">
+          PRE-DECISION ANALYSIS
+        </h3>
+        <div className="hud-metric text-xs">
+          STAGE: {decision.stage.toUpperCase()}
+        </div>
+      </div>
+      
+      <div className="space-y-4">
+        {questions.map((question, index) => (
+          <div key={question.key} className="space-y-2">
+            <label className="block text-sm font-mono text-tactical-text">
+              {index + 1}. {question.label}
+            </label>
+            {editMode ? (
+              <Textarea
+                value={decision.preAnalysis?.[question.key] || ''}
+                onChange={(e) => handlePreAnalysisUpdate(question.key, e.target.value)}
+                placeholder={question.placeholder}
+                className="min-h-[80px] bg-tactical-surface border-tactical-border text-tactical-text font-mono text-sm resize-none focus:border-tactical-accent"
+                rows={3}
+              />
+            ) : (
+              <div className="min-h-[80px] p-3 bg-tactical-surface border border-tactical-border rounded text-tactical-text font-mono text-sm">
+                {decision.preAnalysis?.[question.key] || (
+                  <span className="text-tactical-text/50 italic">
+                    No analysis provided yet...
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+      
+      {!editMode && (!decision.preAnalysis?.upside && !decision.preAnalysis?.downside && !decision.preAnalysis?.alignment) && (
+        <div className="p-3 border border-tactical-border/50 rounded bg-tactical-surface/30">
+          <p className="text-xs font-mono text-tactical-text/70 text-center">
+            Complete the pre-decision analysis to help guide your decision-making process
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
