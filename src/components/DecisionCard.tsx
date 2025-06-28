@@ -42,9 +42,6 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
       {/* Archive Button - Top-left */}
       <DecisionCardActions decision={decision} onArchive={onArchive} />
 
-      {/* Reflection Indicator and Preview */}
-      <DecisionCardReflectionStatus decision={decision} />
-
       {/* Title */}
       <DecisionCardHeader title={decision.title} category={decision.category} />
 
@@ -68,6 +65,9 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
       <div className="mt-2 text-xs font-mono text-tactical-text/40">
         {getDaysAgo(decision.createdAt)}
       </div>
+
+      {/* Reflection Status - Moved to end */}
+      <DecisionCardReflectionStatus decision={decision} />
     </div>
   );
 };

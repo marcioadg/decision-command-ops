@@ -6,7 +6,7 @@ import { DecisionForm } from './DecisionForm';
 import { DecisionPreAnalysisSection } from './DecisionPreAnalysisSection';
 import { DecisionReflectionSection } from './DecisionReflectionSection';
 import { DecisionTimestamps } from './DecisionTimestamps';
-import { DecisionModalFooter } from './DecisionModalFooter';
+import { useAutoSave } from '@/hooks/useAutoSave';
 
 interface DecisionDetailModalProps {
   decision: Decision | null;
@@ -16,51 +16,35 @@ interface DecisionDetailModalProps {
 }
 
 export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: DecisionDetailModalProps) => {
-  const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Decision | null>(null);
 
-  // Only sync formData when explicitly entering edit mode
+  // Initialize formData when decision changes
   useEffect(() => {
-    if (editMode && decision) {
+    if (decision) {
       setFormData({ ...decision });
     }
-  }, [editMode, decision]);
+  }, [decision]);
 
   // Don't render if not open or no decision
-  if (!isOpen || !decision) {
+  if (!isOpen || !decision || !formData) {
     return null;
   }
 
-  const handleSave = () => {
-    if (formData) {
-      console.log('Saving decision with all data:', formData);
-      // Ensure we save the complete formData including all sections
-      const updatedDecision: Decision = {
-        ...formData,
-        updatedAt: new Date()
-      };
-      onUpdate(updatedDecision);
-      setEditMode(false);
-      setFormData(null);
-    }
+  const handleAutoSave = (data: Decision) => {
+    console.log('Auto-saving decision:', data);
+    const updatedDecision: Decision = {
+      ...data,
+      updatedAt: new Date()
+    };
+    onUpdate(updatedDecision);
   };
 
-  const handleCancel = () => {
-    // Reset form data and exit edit mode
-    setFormData(null);
-    setEditMode(false);
-  };
-
-  const handleEditMode = () => {
-    if (!editMode) {
-      // Entering edit mode - populate form with current decision
-      setFormData({ ...decision });
-    } else {
-      // Exiting edit mode - clear form data
-      setFormData(null);
-    }
-    setEditMode(!editMode);
-  };
+  // Set up auto-save with 1 second delay
+  useAutoSave({
+    data: formData,
+    onSave: handleAutoSave,
+    delay: 1000
+  });
 
   const handleFormUpdate = (updates: Partial<Decision>) => {
     console.log('Updating form data with:', updates);
@@ -72,53 +56,48 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
     });
   };
 
-  // Use formData in edit mode, otherwise use original decision for display
-  const displayData = editMode && formData ? formData : decision;
-
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-tactical-surface border border-tactical-border rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Header */}
-        <DecisionModalHeader
-          decision={decision}
-          editMode={editMode}
-          onEditToggle={handleEditMode}
-          onClose={onClose}
-        />
+        {/* Header - simplified without edit toggle */}
+        <div className="flex items-center justify-between p-6 border-b border-tactical-border">
+          <h2 className="text-xl font-bold text-tactical-accent font-tactical">
+            DECISION DETAILS
+          </h2>
+          <button
+            onClick={onClose}
+            className="text-tactical-text/60 hover:text-tactical-text text-2xl font-bold"
+          >
+            ×
+          </button>
+        </div>
 
         {/* Content */}
         <div className="p-6 space-y-6">
-          {/* Decision Form */}
+          {/* Decision Form - always in edit mode */}
           <DecisionForm
-            decision={displayData}
-            editMode={editMode}
+            decision={formData}
+            editMode={true}
             onUpdate={handleFormUpdate}
           />
 
           {/* Pre-Decision Analysis Section */}
           <DecisionPreAnalysisSection
-            decision={displayData}
-            editMode={editMode}
+            decision={formData}
+            editMode={true}
             onUpdate={handleFormUpdate}
           />
 
           {/* Reflection Section */}
           <DecisionReflectionSection
-            decision={displayData}
-            editMode={editMode}
+            decision={formData}
+            editMode={true}
             onUpdate={handleFormUpdate}
           />
 
           {/* Timestamps */}
           <DecisionTimestamps decision={decision} />
         </div>
-
-        {/* Footer */}
-        <DecisionModalFooter
-          editMode={editMode}
-          onSave={handleSave}
-          onCancel={handleCancel}
-        />
       </div>
     </div>
   );

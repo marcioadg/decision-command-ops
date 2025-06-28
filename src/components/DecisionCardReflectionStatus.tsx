@@ -14,9 +14,9 @@ export const DecisionCardReflectionStatus = ({ decision }: DecisionCardReflectio
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     const intervals = [
-      { data: decision.reflection.sevenDay, name: '7-day' },
-      { data: decision.reflection.thirtyDay, name: '30-day' },
-      { data: decision.reflection.ninetyDay, name: '90-day' }
+      { data: decision.reflection.sevenDay, name: '7D' },
+      { data: decision.reflection.thirtyDay, name: '30D' },
+      { data: decision.reflection.ninetyDay, name: '90D' }
     ].filter(interval => interval.data);
 
     if (intervals.length === 0) return null;
@@ -56,19 +56,19 @@ export const DecisionCardReflectionStatus = ({ decision }: DecisionCardReflectio
       'overdue': {
         type: 'overdue',
         color: 'text-red-400',
-        text: `${mostUrgent.interval?.toUpperCase()} OVERDUE`,
+        text: `REFLECTION ${mostUrgent.interval} OVERDUE`,
         icon: AlertTriangle
       },
       'due-today': {
         type: 'due-today',
         color: 'text-yellow-400',
-        text: `${mostUrgent.interval?.toUpperCase()} DUE TODAY`,
+        text: `REFLECTION ${mostUrgent.interval} DUE TODAY`,
         icon: Clock
       },
       'due-soon': {
         type: 'due-soon',
         color: 'text-blue-400',
-        text: `${mostUrgent.interval?.toUpperCase()} IN ${mostUrgent.daysUntil}D`,
+        text: `REFLECTION ${mostUrgent.interval} IN ${mostUrgent.daysUntil}D`,
         icon: Calendar
       }
     };
@@ -81,24 +81,13 @@ export const DecisionCardReflectionStatus = ({ decision }: DecisionCardReflectio
   if (!reflectionStatus) return null;
 
   return (
-    <>
-      {/* Reflection Indicator - Top-right */}
-      <div 
-        className={`absolute top-2 right-2 ${reflectionStatus.color}`}
-        title={`Reflection ${reflectionStatus.type}`}
-      >
-        <reflectionStatus.icon className="w-4 h-4" />
+    <div className="mt-2 pt-2 border-t border-tactical-border">
+      <div className={`flex items-center space-x-1 text-xs ${reflectionStatus.color}`}>
+        <reflectionStatus.icon className="w-3 h-3" />
+        <span className="font-mono">
+          {reflectionStatus.text}
+        </span>
       </div>
-
-      {/* Reflection Preview */}
-      <div className="mt-2 pt-2 border-t border-tactical-border">
-        <div className={`flex items-center space-x-1 text-xs ${reflectionStatus.color}`}>
-          <reflectionStatus.icon className="w-3 h-3" />
-          <span className="font-mono">
-            {reflectionStatus.text}
-          </span>
-        </div>
-      </div>
-    </>
+    </div>
   );
 };

@@ -20,91 +20,66 @@ export const DecisionForm = ({ decision, editMode, onUpdate }: DecisionFormProps
       {/* Title */}
       <div>
         <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Title</label>
-        {editMode ? (
-          <input
-            type="text"
-            value={decision.title || ''}
-            onChange={(e) => onUpdate({ title: e.target.value })}
-            className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
-          />
-        ) : (
-          <p className="text-tactical-text font-semibold">{decision.title}</p>
-        )}
+        <input
+          type="text"
+          value={decision.title || ''}
+          onChange={(e) => onUpdate({ title: e.target.value })}
+          className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none text-lg font-semibold"
+          placeholder="Enter decision title..."
+        />
       </div>
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 gap-6">
         <div>
           <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Category</label>
-          {editMode ? (
-            <select
-              value={decision.category || ''}
-              onChange={(e) => onUpdate({ category: e.target.value as DecisionCategory })}
-              className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
-            >
-              {categories.map(cat => (
-                <option key={cat} value={cat}>{cat}</option>
-              ))}
-            </select>
-          ) : (
-            <p className="text-tactical-text">{decision.category}</p>
-          )}
+          <select
+            value={decision.category || ''}
+            onChange={(e) => onUpdate({ category: e.target.value as DecisionCategory })}
+            className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none"
+          >
+            {categories.map(cat => (
+              <option key={cat} value={cat}>{cat}</option>
+            ))}
+          </select>
         </div>
 
         <div>
           <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Priority</label>
-          {editMode ? (
-            <select
-              value={decision.priority || ''}
-              onChange={(e) => onUpdate({ priority: e.target.value as DecisionPriority })}
-              className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
-            >
-              {priorities.map(priority => (
-                <option key={priority} value={priority}>{priority.toUpperCase()}</option>
-              ))}
-            </select>
-          ) : (
-            <p className="text-tactical-text">{decision.priority.toUpperCase()}</p>
-          )}
+          <select
+            value={decision.priority || ''}
+            onChange={(e) => onUpdate({ priority: e.target.value as DecisionPriority })}
+            className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none"
+          >
+            {priorities.map(priority => (
+              <option key={priority} value={priority}>{priority.toUpperCase()}</option>
+            ))}
+          </select>
         </div>
 
         <div>
           <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Confidence</label>
-          {editMode ? (
-            <select
-              value={decision.confidence || 50}
-              onChange={(e) => onUpdate({ confidence: parseInt(e.target.value) })}
-              className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
-            >
-              {confidenceOptions.map(percentage => (
-                <option key={percentage} value={percentage}>{percentage}%</option>
-              ))}
-            </select>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <div className="bg-tactical-accent/20 text-tactical-accent px-2 py-1 rounded text-sm font-mono">
-                {decision.confidence}%
-              </div>
-            </div>
-          )}
+          <select
+            value={decision.confidence || 50}
+            onChange={(e) => onUpdate({ confidence: parseInt(e.target.value) })}
+            className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none"
+          >
+            {confidenceOptions.map(percentage => (
+              <option key={percentage} value={percentage}>{percentage}%</option>
+            ))}
+          </select>
         </div>
       </div>
 
       {/* Notes */}
       <div>
         <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Notes</label>
-        {editMode ? (
-          <textarea
-            value={decision.notes || ''}
-            onChange={(e) => onUpdate({ notes: e.target.value })}
-            className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none h-32 resize-none"
-            placeholder="Additional context and details..."
-          />
-        ) : (
-          <p className="text-tactical-text/80 whitespace-pre-wrap">
-            {decision.notes || 'No notes added yet.'}
-          </p>
-        )}
+        <textarea
+          value={decision.notes || ''}
+          onChange={(e) => onUpdate({ notes: e.target.value })}
+          className="w-full bg-transparent border border-tactical-border/50 focus:border-tactical-accent rounded px-3 py-2 text-tactical-text focus:outline-none h-32 resize-none"
+          placeholder="Additional context and details..."
+        />
       </div>
     </div>
   );
