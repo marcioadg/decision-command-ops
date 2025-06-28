@@ -45,7 +45,7 @@ export const DecisionPipeline = ({ decisions, onDecisionUpdate, onDecisionClick 
   };
 
   return (
-    <div className="flex gap-6 overflow-x-auto pb-6">
+    <div className="flex gap-3 h-full w-full">
       {stages.map(stage => (
         <StageColumn
           key={stage.key}

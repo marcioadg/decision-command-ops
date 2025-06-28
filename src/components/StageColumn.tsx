@@ -52,7 +52,7 @@ export const StageColumn = ({
 
   return (
     <div
-      className={`flex-shrink-0 w-80 bg-tactical-surface/30 rounded-lg border border-tactical-border border-t-2 ${getStageColor()} transition-all duration-200 ${
+      className={`flex-1 min-w-0 max-w-sm bg-tactical-surface/30 rounded-lg border border-tactical-border border-t-2 ${getStageColor()} transition-all duration-200 ${
         isDragOver ? 'bg-tactical-accent/10 border-tactical-accent' : ''
       }`}
       onDragOver={handleDragOver}
@@ -60,20 +60,20 @@ export const StageColumn = ({
       onDrop={handleDrop}
     >
       {/* Stage Header */}
-      <div className="p-4 border-b border-tactical-border">
+      <div className="p-3 border-b border-tactical-border">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="stage-header text-base">{stage.label}</h3>
-          <div className="hud-metric">
+          <h3 className="stage-header text-sm">{stage.label}</h3>
+          <div className="hud-metric text-xs">
             {decisions.length}
           </div>
         </div>
-        <p className="text-xs text-tactical-text/60 font-mono">
+        <p className="text-xs text-tactical-text/60 font-mono line-clamp-2">
           {stage.description}
         </p>
       </div>
 
       {/* Decision Cards */}
-      <div className="p-4 space-y-3 min-h-[200px]">
+      <div className="p-3 space-y-2 min-h-[200px] overflow-y-auto max-h-[calc(100vh-300px)]">
         {decisions.length === 0 ? (
           <div className="text-center py-8 text-tactical-text/40 font-mono text-sm">
             No decisions in {stage.label.toLowerCase()}

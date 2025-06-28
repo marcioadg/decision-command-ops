@@ -99,9 +99,9 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-tactical-bg tactical-grid">
+    <div className="min-h-screen bg-tactical-bg tactical-grid flex flex-col">
       {/* Header */}
-      <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm">
+      <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm flex-shrink-0">
         <div className="container mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-4">
@@ -128,7 +128,7 @@ const Index = () => {
       <StatusBar decisions={decisions} />
 
       {/* Main Pipeline */}
-      <main className="container mx-auto px-6 py-6">
+      <main className="container mx-auto px-6 py-6 flex-1 min-h-0">
         <DecisionPipeline 
           decisions={decisions} 
           onDecisionUpdate={handleDecisionUpdate}
