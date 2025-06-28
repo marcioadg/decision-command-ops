@@ -12,19 +12,25 @@ export const useIndexActions = () => {
   const { updateDecision, createDecision, refreshDecisions } = useDecisions();
 
   const handleDecisionUpdate = useCallback(async (updatedDecision: Decision) => {
+    console.log('useIndexActions: handleDecisionUpdate called with:', updatedDecision);
     try {
+      console.log('useIndexActions: Calling updateDecision service');
       await updateDecision(updatedDecision);
+      console.log('useIndexActions: updateDecision completed successfully');
       soundSystem.playCardDrop();
     } catch (error) {
+      console.error('useIndexActions: Error in handleDecisionUpdate:', error);
       // Error is already handled in the hook
     }
   }, [updateDecision]);
 
-  const handleQuickAdd = useCallback(async (decision: Decision) => {
+  const handleQuickAdd = useCallback(async (decision: Omit<Decision, 'id' | 'createdAt'>) => {
+    console.log('useIndexActions: handleQuickAdd called with:', decision);
     try {
       await createDecision(decision);
       soundSystem.playCardDrop();
     } catch (error) {
+      console.error('useIndexActions: Error in handleQuickAdd:', error);
       // Error is already handled in the hook
     }
   }, [createDecision]);

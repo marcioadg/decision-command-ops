@@ -14,8 +14,8 @@ interface IndexModalsProps {
   onCloseDetailModal: () => void;
   onCloseQuickAdd: () => void;
   onCloseJournal: () => void;
-  onDecisionUpdate: (decision: Decision) => void;
-  onQuickAdd: (decision: Decision) => void;
+  onDecisionUpdate: (decision: Decision) => Promise<void>;
+  onQuickAdd: (decision: Omit<Decision, 'id' | 'createdAt'>) => Promise<void>;
   onJournalComplete: (data: { title: string; notes: string }) => void;
 }
 

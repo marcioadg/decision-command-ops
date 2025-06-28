@@ -17,11 +17,15 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
   }
 
   const handlePreAnalysisUpdate = (field: keyof PreAnalysis, value: string) => {
+    console.log('DecisionPreAnalysisSection: Updating field:', field, 'with value:', value);
     const updatedPreAnalysis = {
       ...decision.preAnalysis,
       [field]: value
     };
-    onUpdate({ preAnalysis: updatedPreAnalysis });
+    console.log('DecisionPreAnalysisSection: Updated preAnalysis object:', updatedPreAnalysis);
+    const updates = { preAnalysis: updatedPreAnalysis };
+    console.log('DecisionPreAnalysisSection: Calling onUpdate with:', updates);
+    onUpdate(updates);
   };
 
   const questions = [
@@ -62,7 +66,10 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
             {editMode ? (
               <Textarea
                 value={decision.preAnalysis?.[question.key] || ''}
-                onChange={(e) => handlePreAnalysisUpdate(question.key, e.target.value)}
+                onChange={(e) => {
+                  console.log('DecisionPreAnalysisSection: Textarea onChange triggered for:', question.key);
+                  handlePreAnalysisUpdate(question.key, e.target.value);
+                }}
                 placeholder={question.placeholder}
                 className="min-h-[80px] bg-tactical-surface border-tactical-border text-tactical-text font-mono text-sm resize-none focus:border-tactical-accent"
                 rows={3}

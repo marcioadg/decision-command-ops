@@ -12,7 +12,7 @@ interface DecisionDetailModalProps {
   decision: Decision | null;
   isOpen: boolean;
   onClose: () => void;
-  onUpdate: (decision: Decision) => void;
+  onUpdate: (decision: Decision) => Promise<void>;
 }
 
 export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: DecisionDetailModalProps) => {
@@ -21,17 +21,20 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
   // Initialize formData when decision changes
   useEffect(() => {
     if (decision) {
+      console.log('DecisionDetailModal: Initializing form data with decision:', decision);
       setFormData({ ...decision });
     }
   }, [decision]);
 
-  const handleAutoSave = (data: Decision) => {
-    console.log('Auto-saving decision:', data);
+  const handleAutoSave = async (data: Decision) => {
+    console.log('DecisionDetailModal: Auto-saving decision:', data);
     const updatedDecision: Decision = {
       ...data,
       updatedAt: new Date()
     };
-    onUpdate(updatedDecision);
+    console.log('DecisionDetailModal: Calling onUpdate with:', updatedDecision);
+    await onUpdate(updatedDecision);
+    console.log('DecisionDetailModal: Auto-save completed');
   };
 
   // Set up auto-save with 1 second delay - ALWAYS call this hook
@@ -47,11 +50,11 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
   }
 
   const handleFormUpdate = (updates: Partial<Decision>) => {
-    console.log('Updating form data with:', updates);
+    console.log('DecisionDetailModal: Form update received:', updates);
     setFormData(prev => {
       if (!prev) return null;
       const updated = { ...prev, ...updates };
-      console.log('Updated form data:', updated);
+      console.log('DecisionDetailModal: Updated form data:', updated);
       return updated;
     });
   };
