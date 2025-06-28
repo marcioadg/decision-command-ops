@@ -20,7 +20,7 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
   // Active count excludes decided stage (no lessons column anymore)
   const activeWorkCount = stageStats.backlog + stageStats.considering + stageStats.committed;
   
-  const highImpactDecisions = activeDecisions.filter(d => d.impact === 'high').length;
+  const highPriorityDecisions = activeDecisions.filter(d => d.priority === 'high').length;
   const avgConfidence = activeDecisions.length > 0 
     ? Math.round(activeDecisions.reduce((sum, d) => sum + d.confidence, 0) / activeDecisions.length)
     : 0;
@@ -57,7 +57,7 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
           {/* Right Side - Performance Metrics */}
           <div className="flex items-center space-x-6">
             <div className="hud-metric">
-              HIGH IMPACT: {highImpactDecisions}
+              HIGH PRIORITY: {highPriorityDecisions}
             </div>
             
             <div className="hud-metric">
