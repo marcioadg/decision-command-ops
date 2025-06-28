@@ -128,6 +128,23 @@ All colors MUST be HSL.
     color: hsl(var(--tactical-accent));
     border-color: hsl(var(--tactical-border));
   }
+
+  /* Stage Header Colors */
+  .stage-header-backlog {
+    color: hsl(var(--info));
+  }
+  
+  .stage-header-considering {
+    color: hsl(var(--impact-medium));
+  }
+  
+  .stage-header-committed {
+    color: hsl(var(--tactical-accent));
+  }
+  
+  .stage-header-decided {
+    color: hsl(var(--impact-high));
+  }
   
   .hud-metric {
     @apply font-mono text-xs px-2 py-1 rounded border;

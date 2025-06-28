@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
@@ -65,6 +66,16 @@ export const StageColumn = ({
     }
   };
 
+  const getStageHeaderColor = () => {
+    switch (stage.key) {
+      case 'backlog': return 'stage-header-backlog';
+      case 'considering': return 'stage-header-considering';
+      case 'committed': return 'stage-header-committed';
+      case 'decided': return 'stage-header-decided';
+      default: return 'stage-header';
+    }
+  };
+
   return (
     <div
       className={`flex-1 min-w-0 max-w-sm bg-tactical-surface/30 rounded-lg border border-tactical-border border-t-2 ${getStageColor()} transition-all duration-200 ${
@@ -77,7 +88,7 @@ export const StageColumn = ({
       {/* Stage Header */}
       <div className="p-3 border-b border-tactical-border">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="stage-header text-sm">{stage.label}</h3>
+          <h3 className={`stage-header ${getStageHeaderColor()} text-sm`}>{stage.label}</h3>
           <div className="hud-metric text-xs">
             {decisions.length}
             {showArchived && <span className="ml-1 text-tactical-accent">ARCHIVED</span>}
