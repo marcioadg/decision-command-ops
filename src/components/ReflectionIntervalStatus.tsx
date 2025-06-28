@@ -1,4 +1,3 @@
-
 import { ReflectionInterval as ReflectionIntervalType } from '@/types/Decision';
 import { Calendar, AlertTriangle, CheckCircle, Clock } from 'lucide-react';
 
@@ -15,17 +14,17 @@ export const ReflectionIntervalStatus = ({ data }: ReflectionIntervalStatusProps
     const dueDate = new Date(interval.date.getFullYear(), interval.date.getMonth(), interval.date.getDate());
     
     if (interval.completed) {
-      return { status: 'completed', color: 'text-green-400', icon: CheckCircle };
+      return { status: 'completed', color: 'text-gray-400', icon: CheckCircle };
     }
     
     const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
     
     if (daysUntil < 0) {
-      return { status: 'overdue', color: 'text-red-400', icon: AlertTriangle };
+      return { status: 'overdue', color: 'text-gray-500', icon: AlertTriangle };
     } else if (daysUntil === 0) {
-      return { status: 'due-today', color: 'text-yellow-400', icon: Clock };
+      return { status: 'due-today', color: 'text-gray-600', icon: Clock };
     } else {
-      return { status: 'scheduled', color: 'text-blue-400', icon: Calendar };
+      return { status: 'scheduled', color: 'text-gray-400', icon: Calendar };
     }
   };
 

@@ -46,7 +46,7 @@ export const DecisionCardReflectionStatus = ({ decision }: DecisionCardReflectio
       const completedCount = intervals.filter(({ data }) => data?.completed).length;
       return {
         type: 'complete',
-        color: 'text-green-400',
+        color: 'text-gray-400',
         text: `${completedCount}/${intervals.length} COMPLETE`,
         icon: MessageSquare
       };
@@ -55,19 +55,19 @@ export const DecisionCardReflectionStatus = ({ decision }: DecisionCardReflectio
     const statusConfig = {
       'overdue': {
         type: 'overdue',
-        color: 'text-red-400',
+        color: 'text-gray-500',
         text: `REFLECTION ${mostUrgent.interval} OVERDUE`,
         icon: AlertTriangle
       },
       'due-today': {
         type: 'due-today',
-        color: 'text-yellow-400',
+        color: 'text-gray-600',
         text: `REFLECTION ${mostUrgent.interval} DUE TODAY`,
         icon: Clock
       },
       'due-soon': {
         type: 'due-soon',
-        color: 'text-blue-400',
+        color: 'text-gray-400',
         text: `REFLECTION ${mostUrgent.interval} IN ${mostUrgent.daysUntil}D`,
         icon: Calendar
       }

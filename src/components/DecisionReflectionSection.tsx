@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Decision, ReflectionInterval } from '@/types/Decision';
 import { MessageSquare, ChevronDown, ChevronRight } from 'lucide-react';
@@ -72,21 +71,21 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
   const reflectionIntervals = [
     {
       key: '7-day' as const,
-      label: 'Reflection in 7D',
+      label: 'Reflections in 7D',
       description: 'Initial quick review',
       data: decision.reflection?.sevenDay,
       defaultDays: 7
     },
     {
       key: '30-day' as const,
-      label: 'Reflection in 30D',
+      label: 'Reflections in 30D',
       description: 'Medium-term impact assessment',
       data: decision.reflection?.thirtyDay,
       defaultDays: 30
     },
     {
       key: '90-day' as const,
-      label: 'Reflection in 90D',
+      label: 'Reflections in 90D',
       description: 'Long-term outcome evaluation',
       data: decision.reflection?.ninetyDay,
       defaultDays: 90
