@@ -2,34 +2,14 @@
 import { supabase } from '@/integrations/supabase/client';
 import { Decision, DecisionCategory, DecisionImpact, DecisionUrgency, DecisionStage } from '@/types/Decision';
 
-export interface DatabaseDecision {
-  id: string;
-  user_id: string;
-  title: string;
-  category: DecisionCategory;
-  impact: DecisionImpact;
-  urgency: DecisionUrgency;
-  stage: DecisionStage;
-  confidence: number;
-  owner: string;
-  notes?: string;
-  bias_check?: string;
-  archived: boolean;
-  reflection_reminder_date?: string;
-  reflection_questions?: string[];
-  reflection_answers?: string[];
-  created_at: string;
-  updated_at?: string;
-}
-
 // Convert database decision to frontend Decision type
-const convertToDecision = (dbDecision: DatabaseDecision): Decision => ({
+const convertToDecision = (dbDecision: any): Decision => ({
   id: dbDecision.id,
   title: dbDecision.title,
-  category: dbDecision.category,
-  impact: dbDecision.impact,
-  urgency: dbDecision.urgency,
-  stage: dbDecision.stage,
+  category: dbDecision.category as DecisionCategory,
+  impact: dbDecision.impact as DecisionImpact,
+  urgency: dbDecision.urgency as DecisionUrgency,
+  stage: dbDecision.stage as DecisionStage,
   confidence: dbDecision.confidence,
   owner: dbDecision.owner,
   notes: dbDecision.notes,
@@ -45,7 +25,7 @@ const convertToDecision = (dbDecision: DatabaseDecision): Decision => ({
 });
 
 // Convert frontend Decision to database format
-const convertToDbDecision = (decision: Decision): Partial<DatabaseDecision> => ({
+const convertToDbDecision = (decision: Decision): any => ({
   title: decision.title,
   category: decision.category,
   impact: decision.impact,
