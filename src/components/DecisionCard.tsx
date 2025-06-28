@@ -1,3 +1,4 @@
+
 import { Decision } from '@/types/Decision';
 import { Clock, Star, Archive } from 'lucide-react';
 
@@ -80,11 +81,11 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
       onClick={handleClick}
       className={`tactical-card border-l-4 ${getImpactColor()} cursor-pointer hover:scale-[1.02] animate-slide-in transition-all duration-200 relative group`}
     >
-      {/* Archive Button */}
+      {/* Archive Button - Moved to top-left */}
       {onArchive && (
         <button
           onClick={handleArchive}
-          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-tactical-surface border border-tactical-border rounded p-1 hover:bg-tactical-accent hover:text-tactical-bg"
+          className="absolute top-2 left-2 opacity-0 group-hover:opacity-100 transition-opacity bg-tactical-surface border border-tactical-border rounded p-1 hover:bg-tactical-accent hover:text-tactical-bg z-10"
           title="Archive decision"
         >
           <Archive className="w-3 h-3" />
@@ -93,7 +94,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
 
       {/* Title and Category */}
       <div className="flex items-start justify-between mb-3">
-        <h4 className="font-semibold text-sm text-tactical-text leading-tight flex-1 mr-2">
+        <h4 className="font-semibold text-sm text-tactical-text leading-tight flex-1 mr-2 ml-6">
           {decision.title}
         </h4>
         <span className={`px-2 py-1 text-xs font-mono rounded border ${getCategoryBadgeColor()}`}>
