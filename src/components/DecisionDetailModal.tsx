@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Decision } from '@/types/Decision';
 import { DecisionForm } from './DecisionForm';
@@ -174,6 +173,20 @@ export const DecisionDetailModal = ({
     }
   };
 
+  // Handle click outside to close
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    // Only close if the click was on the backdrop itself, not on child elements
+    if (e.target === e.currentTarget) {
+      console.log('DecisionDetailModal: Backdrop clicked, attempting to close');
+      handleClose();
+    }
+  };
+
+  // Prevent modal content clicks from bubbling to backdrop
+  const handleModalContentClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.stopPropagation();
+  };
+
   const handleSaveAndClose = async () => {
     await handleSave();
     setShowUnsavedDialog(false);
@@ -222,8 +235,14 @@ export const DecisionDetailModal = ({
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-        <div className="bg-tactical-surface border border-tactical-border rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+      <div 
+        className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50"
+        onClick={handleBackdropClick}
+      >
+        <div 
+          className="bg-tactical-surface border border-tactical-border rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto"
+          onClick={handleModalContentClick}
+        >
           {/* Header with save button and status */}
           <div className="flex items-center justify-between p-6 border-b border-tactical-border">
             <h2 className="text-xl font-bold text-tactical-accent font-tactical">
