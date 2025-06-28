@@ -2,14 +2,13 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 
 interface User {
-  id: string;
-  email: string;
   name: string;
+  username: string;
 }
 
 interface AuthContextType {
   user: User | null;
-  login: (email: string, password: string) => Promise<boolean>;
+  login: (user: User) => void;
   logout: () => void;
   isLoading: boolean;
 }
@@ -29,27 +28,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setIsLoading(false);
   }, []);
 
-  const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Mock authentication - in real app, this would call an API
-    await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-    
-    if (email && password.length >= 6) {
-      const mockUser: User = {
-        id: '1',
-        email,
-        name: email.split('@')[0].toUpperCase()
-      };
-      
-      setUser(mockUser);
-      localStorage.setItem('tactical_auth_user', JSON.stringify(mockUser));
-      setIsLoading(false);
-      return true;
-    }
-    
-    setIsLoading(false);
-    return false;
+  const login = (user: User) => {
+    setUser(user);
+    localStorage.setItem('tactical_auth_user', JSON.stringify(user));
   };
 
   const logout = () => {
