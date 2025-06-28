@@ -6,22 +6,27 @@ interface StatusBarProps {
 }
 
 export const StatusBar = ({ decisions }: StatusBarProps) => {
-  const totalDecisions = decisions.length;
+  // Filter out archived decisions for all counts
+  const activeDecisions = decisions.filter(d => !d.archived);
+  const totalDecisions = activeDecisions.length;
   
   const stageStats = {
-    backlog: decisions.filter(d => d.stage === 'backlog').length,
-    considering: decisions.filter(d => d.stage === 'considering').length,
-    committed: decisions.filter(d => d.stage === 'committed').length,
-    decided: decisions.filter(d => d.stage === 'decided').length,
-    lessons: decisions.filter(d => d.stage === 'lessons').length,
+    backlog: activeDecisions.filter(d => d.stage === 'backlog').length,
+    considering: activeDecisions.filter(d => d.stage === 'considering').length,
+    committed: activeDecisions.filter(d => d.stage === 'committed').length,
+    decided: activeDecisions.filter(d => d.stage === 'decided').length,
+    lessons: activeDecisions.filter(d => d.stage === 'lessons').length,
   };
 
-  const highImpactDecisions = decisions.filter(d => d.impact === 'high').length;
-  const avgConfidence = decisions.length > 0 
-    ? Math.round(decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length)
+  // Active count excludes decided and lessons stages
+  const activeWorkCount = stageStats.backlog + stageStats.considering + stageStats.committed;
+  
+  const highImpactDecisions = activeDecisions.filter(d => d.impact === 'high').length;
+  const avgConfidence = activeDecisions.length > 0 
+    ? Math.round(activeDecisions.reduce((sum, d) => sum + d.confidence, 0) / activeDecisions.length)
     : 0;
 
-  const clarityScore = decisions.length > 0 
+  const clarityScore = activeDecisions.length > 0 
     ? Math.round(((stageStats.decided + stageStats.lessons) / totalDecisions) * 100)
     : 0;
 
@@ -32,7 +37,7 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
           {/* Left Side - Pipeline Stats */}
           <div className="flex items-center space-x-6">
             <div className="hud-metric bg-tactical-accent/20 text-tactical-accent">
-              ACTIVE: {totalDecisions}
+              ACTIVE: {activeWorkCount}
             </div>
             
             <div className="flex items-center space-x-4 text-xs font-mono">

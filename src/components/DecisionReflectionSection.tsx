@@ -15,9 +15,22 @@ interface DecisionReflectionSectionProps {
 export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: DecisionReflectionSectionProps) => {
   const [showReflection, setShowReflection] = useState(false);
 
+  const hasReflectionContent = () => {
+    const reflection = decision.reflection;
+    if (!reflection) return false;
+    
+    // Check if there's meaningful content in any reflection interval
+    const hasSevenDayContent = reflection.sevenDay?.answers?.some(answer => answer.trim().length > 0);
+    const hasThirtyDayContent = reflection.thirtyDay?.answers?.some(answer => answer.trim().length > 0);
+    const hasNinetyDayContent = reflection.ninetyDay?.answers?.some(answer => answer.trim().length > 0);
+    const hasQuestions = reflection.questions?.some(question => question.trim().length > 0);
+    
+    return hasSevenDayContent || hasThirtyDayContent || hasNinetyDayContent || hasQuestions;
+  };
+
   const hasAnyReflection = decision.reflection?.sevenDay || decision.reflection?.thirtyDay || decision.reflection?.ninetyDay || decision.reflection?.questions?.length;
   const shouldShowReflectionPrompt = decision.stage === 'decided' && !hasAnyReflection;
-  const canShowReflection = decision.stage === 'decided' || decision.stage === 'lessons';
+  const canShowReflection = decision.stage === 'decided' || decision.stage === 'lessons' || hasReflectionContent();
 
   if (!canShowReflection) {
     return null;
@@ -56,21 +69,21 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
   const reflectionIntervals = [
     {
       key: '7-day' as const,
-      label: '7-Day Reflection',
+      label: 'Reflection in 7D',
       description: 'Initial quick review',
       data: decision.reflection?.sevenDay,
       defaultDays: 7
     },
     {
       key: '30-day' as const,
-      label: '30-Day Reflection',
+      label: 'Reflection in 30D',
       description: 'Medium-term impact assessment',
       data: decision.reflection?.thirtyDay,
       defaultDays: 30
     },
     {
       key: '90-day' as const,
-      label: '90-Day Reflection',
+      label: 'Reflection in 90D',
       description: 'Long-term outcome evaluation',
       data: decision.reflection?.ninetyDay,
       defaultDays: 90
