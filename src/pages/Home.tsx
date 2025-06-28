@@ -1,20 +1,86 @@
-
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Play, CheckCircle, Users, Clock, Target, Shield, ArrowRight, Star } from 'lucide-react';
+import { Play, CheckCircle, Users, Clock, Target, Shield, ArrowRight, Star, LogIn, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/hooks/useAuth';
+import { LoginModal } from '@/components/LoginModal';
 
 const Home = () => {
   const navigate = useNavigate();
+  const { user, profile, isLoading } = useAuth();
   const [showDemo, setShowDemo] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+
+  // Redirect authenticated users to dashboard
+  useEffect(() => {
+    if (user && profile) {
+      if (profile.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
+    }
+  }, [user, profile, navigate]);
 
   const handleStartTrial = () => {
-    navigate('/login');
+    if (user) {
+      navigate(profile?.role === 'admin' ? '/admin' : '/dashboard');
+    } else {
+      setIsLoginModalOpen(true);
+    }
   };
+
+  const handleSignIn = () => {
+    setIsLoginModalOpen(true);
+  };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-8 h-8 border-2 border-tactical-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+          <p className="text-tactical-accent font-mono text-sm uppercase tracking-wider">
+            INITIALIZING SYSTEM...
+          </p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-tactical-bg">
+      {/* Header with Login */}
+      <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm sticky top-0 z-50">
+        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
+          <div className="text-xl font-bold text-tactical-accent font-mono tracking-wider">
+            TACTICAL DECISIONS
+          </div>
+          
+          {!user && (
+            <div className="flex items-center space-x-4">
+              <Button
+                onClick={handleSignIn}
+                variant="outline"
+                className="border-tactical-accent/50 text-tactical-accent hover:bg-tactical-accent/10 font-mono text-xs"
+                size="sm"
+              >
+                <LogIn className="w-4 h-4 mr-2" />
+                SIGN IN
+              </Button>
+              <Button
+                onClick={() => setIsLoginModalOpen(true)}
+                className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-mono text-xs"
+                size="sm"
+              >
+                <User className="w-4 h-4 mr-2" />
+                SIGN UP
+              </Button>
+            </div>
+          )}
+        </div>
+      </header>
+
       {/* Hero Section */}
       <section className="relative min-h-screen flex items-center justify-center tactical-grid">
         <div className="absolute inset-0 bg-gradient-to-br from-tactical-accent/5 via-transparent to-info/5" />
@@ -42,7 +108,7 @@ const Home = () => {
               size="lg" 
               className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-bold px-8 py-4 text-lg"
             >
-              START FREE TRIAL
+              {user ? 'GO TO DASHBOARD' : 'START FREE TRIAL'}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
             
@@ -56,6 +122,18 @@ const Home = () => {
               WATCH 2-MIN DEMO
             </Button>
           </div>
+
+          {!user && (
+            <div className="text-tactical-text/70 text-sm mb-8">
+              Already have an account?{' '}
+              <button 
+                onClick={handleSignIn}
+                className="text-tactical-accent hover:text-tactical-accent/80 underline font-bold"
+              >
+                Sign in here
+              </button>
+            </div>
+          )}
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <Card className="bg-tactical-surface/50 border-tactical-border backdrop-blur-sm">
@@ -218,7 +296,7 @@ const Home = () => {
               size="lg" 
               className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-bold px-8 py-4 text-lg"
             >
-              START FREE TRIAL - NO CREDIT CARD
+              {user ? 'GO TO DASHBOARD' : 'START FREE TRIAL - NO CREDIT CARD'}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </div>
@@ -239,6 +317,12 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Login Modal */}
+      <LoginModal 
+        isOpen={isLoginModalOpen} 
+        onClose={() => setIsLoginModalOpen(false)} 
+      />
     </div>
   );
 };
