@@ -16,19 +16,20 @@ interface DecisionCardProps {
 }
 
 export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArchive, className = "" }: DecisionCardProps) => {
+  // FIXED: Simplified click handler - removed setTimeout delay that was preventing modal from opening
   const handleClick = (e: React.MouseEvent) => {
-    // Don't trigger click if we're starting a drag
-    if (e.detail === 1) {
-      setTimeout(() => {
-        if (!e.defaultPrevented) {
-          onClick(decision);
-        }
-      }, 200);
-    }
+    // Prevent click if we're dragging
+    if (e.defaultPrevented) return;
+    
+    console.log('DecisionCard: Click handler called for decision:', decision.id);
+    onClick(decision);
   };
 
   const handleDragStart = (e: React.DragEvent) => {
-    e.preventDefault = () => {}; // Prevent click from firing
+    // Mark event as handled to prevent click
+    e.preventDefault = () => {
+      e.defaultPrevented = true;
+    };
     onDragStart(decision);
   };
 

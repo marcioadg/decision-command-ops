@@ -16,12 +16,15 @@ import { useIsMobile } from '@/hooks/use-mobile';
 const Index = () => {
   const { profile } = useAuth();
   const isMobile = useIsMobile();
+  
+  // FIXED: Only call useDecisions once and get all needed functions
   const {
     decisions,
     loading,
     error,
     retryCount,
-    isRealTimeConnected
+    isRealTimeConnected,
+    pauseRealtimeForDecision
   } = useDecisions();
 
   const {
@@ -53,11 +56,15 @@ const Index = () => {
     handleRetry
   } = useIndexActions();
 
-  // Get the pauseRealtimeForDecision function from useDecisions
-  const { pauseRealtimeForDecision } = useDecisions();
-
   // Check for localStorage data and offer migration on first load
   useIndexMigration(hasMigrated, setHasMigrated);
+
+  // Add debug logging for modal state
+  console.log('Index: Modal state debug', {
+    selectedDecision: selectedDecision?.id,
+    isDetailModalOpen,
+    decisionsCount: decisions.length
+  });
 
   if (loading) {
     return <IndexLoadingScreen retryCount={retryCount} />;

@@ -13,6 +13,7 @@ export const useIndexState = () => {
   const [quickAddStage, setQuickAddStage] = useState<DecisionStage | undefined>(undefined);
 
   const handleCloseDetailModal = () => {
+    console.log('useIndexState: Closing detail modal');
     setIsDetailModalOpen(false);
     setSelectedDecision(null);
   };
@@ -28,8 +29,10 @@ export const useIndexState = () => {
   };
 
   const handleDecisionClick = (decision: Decision) => {
+    console.log('useIndexState: handleDecisionClick called with decision:', decision.id);
     setSelectedDecision(decision);
     setIsDetailModalOpen(true);
+    console.log('useIndexState: Modal state updated - isDetailModalOpen should be true');
   };
 
   const handleToggleArchived = () => {
