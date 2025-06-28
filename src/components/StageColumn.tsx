@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
-import { Plus } from 'lucide-react';
+import { Plus, Loader2 } from 'lucide-react';
 
 interface StageColumnProps {
   stage: { key: DecisionStage; label: string; description: string };
@@ -15,6 +15,8 @@ interface StageColumnProps {
   onQuickAdd?: (stage: DecisionStage) => void;
   isDragActive: boolean;
   showArchived?: boolean;
+  updatingDecisions?: Set<string>;
+  hasOptimisticUpdate?: (decisionId: string) => boolean;
 }
 
 export const StageColumn = ({ 
@@ -27,7 +29,9 @@ export const StageColumn = ({
   onArchive,
   onQuickAdd,
   isDragActive,
-  showArchived = false
+  showArchived = false,
+  updatingDecisions = new Set(),
+  hasOptimisticUpdate = () => false
 }: StageColumnProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -92,16 +96,32 @@ export const StageColumn = ({
             No {showArchived ? 'archived ' : ''}decisions in {stage.label.toLowerCase()}
           </div>
         ) : (
-          decisions.map(decision => (
-            <DecisionCard
-              key={decision.id}
-              decision={decision}
-              onDragStart={onDragStart}
-              onDragEnd={onDragEnd}
-              onClick={onDecisionClick}
-              onArchive={onArchive}
-            />
-          ))
+          decisions.map(decision => {
+            const isUpdating = updatingDecisions.has(decision.id);
+            const isOptimistic = hasOptimisticUpdate(decision.id);
+            
+            return (
+              <div key={decision.id} className="relative">
+                <DecisionCard
+                  decision={decision}
+                  onDragStart={onDragStart}
+                  onDragEnd={onDragEnd}
+                  onClick={onDecisionClick}
+                  onArchive={onArchive}
+                  className={`
+                    ${isOptimistic ? 'ring-2 ring-tactical-accent/50 bg-tactical-accent/5' : ''}
+                    ${isUpdating ? 'opacity-75' : ''}
+                    transition-all duration-200
+                  `}
+                />
+                {isUpdating && (
+                  <div className="absolute top-2 right-2 z-10">
+                    <Loader2 className="w-4 h-4 animate-spin text-tactical-accent" />
+                  </div>
+                )}
+              </div>
+            );
+          })
         )}
         
         {/* Drop Zone Indicator */}
