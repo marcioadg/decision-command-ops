@@ -1,12 +1,11 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Decision } from '@/types/Decision';
 import { DecisionModalHeader } from './DecisionModalHeader';
 import { DecisionForm } from './DecisionForm';
 import { DecisionPreAnalysisSection } from './DecisionPreAnalysisSection';
 import { DecisionReflectionSection } from './DecisionReflectionSection';
 import { DecisionTimestamps } from './DecisionTimestamps';
-import { useAutoSave } from '@/hooks/useAutoSave';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface DecisionDetailModalProps {
@@ -14,47 +13,65 @@ interface DecisionDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (decision: Decision) => Promise<void>;
+  pauseRealtimeForDecision?: (decisionId: string, duration?: number) => void;
 }
 
-export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: DecisionDetailModalProps) => {
-  const [pendingUpdates, setPendingUpdates] = useState<Partial<Decision>>({});
+export const DecisionDetailModal = ({ 
+  decision, 
+  isOpen, 
+  onClose, 
+  onUpdate, 
+  pauseRealtimeForDecision 
+}: DecisionDetailModalProps) => {
   const [isSaving, setIsSaving] = useState(false);
+  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
 
   // Don't render if not open or no decision
   if (!isOpen || !decision) {
     return null;
   }
 
+  // Pause real-time updates for the entire modal session
+  useEffect(() => {
+    if (decision && pauseRealtimeForDecision) {
+      console.log('DecisionDetailModal: Pausing real-time updates for editing session');
+      pauseRealtimeForDecision(decision.id, 10000); // 10 second pause for editing
+    }
+  }, [decision?.id, pauseRealtimeForDecision]);
+
   const handleUpdate = async (updates: Partial<Decision>) => {
+    if (!decision) return;
+    
     console.log('DecisionDetailModal: Handling update:', updates);
-    
-    // Store pending updates
-    setPendingUpdates(prev => ({ ...prev, ...updates }));
-    
-    // Apply updates to decision and save immediately
-    const updatedDecision: Decision = {
-      ...decision,
-      ...updates,
-      updatedAt: new Date()
-    };
     
     try {
       setIsSaving(true);
+      setSaveError(null);
+      
+      // Pause real-time updates during save
+      if (pauseRealtimeForDecision) {
+        pauseRealtimeForDecision(decision.id, 5000);
+      }
+      
+      const updatedDecision: Decision = {
+        ...decision,
+        ...updates,
+        updatedAt: new Date()
+      };
+      
       console.log('DecisionDetailModal: Saving updated decision:', updatedDecision);
       await onUpdate(updatedDecision);
       console.log('DecisionDetailModal: Save completed successfully');
       
-      // Clear pending updates after successful save
-      setPendingUpdates({});
+      setLastSaveTime(new Date());
     } catch (error) {
       console.error('DecisionDetailModal: Save failed:', error);
+      setSaveError(error instanceof Error ? error.message : 'Save failed');
     } finally {
       setIsSaving(false);
     }
   };
-
-  // Merge decision with pending updates for display
-  const displayDecision = { ...decision, ...pendingUpdates };
 
   const SaveStatusIndicator = () => {
     if (isSaving) {
@@ -66,11 +83,22 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
       );
     }
     
-    if (Object.keys(pendingUpdates).length === 0) {
+    if (saveError) {
+      return (
+        <div className="flex items-center space-x-2 text-red-400">
+          <AlertCircle className="w-4 h-4" />
+          <span className="text-sm font-mono">Error: {saveError}</span>
+        </div>
+      );
+    }
+    
+    if (lastSaveTime) {
       return (
         <div className="flex items-center space-x-2 text-green-400">
           <CheckCircle className="w-4 h-4" />
-          <span className="text-sm font-mono">Saved</span>
+          <span className="text-sm font-mono">
+            Saved {lastSaveTime.toLocaleTimeString()}
+          </span>
         </div>
       );
     }
@@ -101,21 +129,21 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
         <div className="p-6 space-y-6">
           {/* Decision Form - always in edit mode */}
           <DecisionForm
-            decision={displayDecision}
+            decision={decision}
             editMode={true}
             onUpdate={handleUpdate}
           />
 
           {/* Pre-Decision Analysis Section */}
           <DecisionPreAnalysisSection
-            decision={displayDecision}
+            decision={decision}
             editMode={true}
             onUpdate={handleUpdate}
           />
 
           {/* Reflection Section */}
           <DecisionReflectionSection
-            decision={displayDecision}
+            decision={decision}
             editMode={true}
             onUpdate={handleUpdate}
           />

@@ -1,7 +1,8 @@
 
 import { Decision, PreAnalysis } from '@/types/Decision';
 import { Textarea } from '@/components/ui/textarea';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useDebounced } from '@/hooks/useDebounced';
 
 interface DecisionPreAnalysisSectionProps {
   decision: Decision;
@@ -17,33 +18,77 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
     return null;
   }
 
-  const handlePreAnalysisUpdate = (field: keyof PreAnalysis, value: string) => {
-    console.log('DecisionPreAnalysisSection: Updating field:', field, 'with value:', value);
-    const updatedPreAnalysis = {
-      ...decision.preAnalysis,
-      [field]: value
-    };
-    console.log('DecisionPreAnalysisSection: Updated preAnalysis object:', updatedPreAnalysis);
-    const updates = { preAnalysis: updatedPreAnalysis };
-    console.log('DecisionPreAnalysisSection: Calling onUpdate with:', updates);
-    onUpdate(updates);
+  // Local state for input values to prevent conflicts
+  const [localValues, setLocalValues] = useState({
+    upside: decision.preAnalysis?.upside || '',
+    downside: decision.preAnalysis?.downside || '',
+    alignment: decision.preAnalysis?.alignment || ''
+  });
+
+  // Debounced values to prevent excessive saves
+  const debouncedUpside = useDebounced(localValues.upside, 500);
+  const debouncedDownside = useDebounced(localValues.downside, 500);
+  const debouncedAlignment = useDebounced(localValues.alignment, 500);
+
+  // Update local state when decision changes (from external sources)
+  useEffect(() => {
+    console.log('DecisionPreAnalysisSection: Decision preAnalysis changed, updating local state');
+    setLocalValues({
+      upside: decision.preAnalysis?.upside || '',
+      downside: decision.preAnalysis?.downside || '',
+      alignment: decision.preAnalysis?.alignment || ''
+    });
+  }, [decision.preAnalysis]);
+
+  // Save debounced changes to the backend
+  useEffect(() => {
+    const currentPreAnalysis = decision.preAnalysis || {};
+    const hasChanges = 
+      debouncedUpside !== (currentPreAnalysis.upside || '') ||
+      debouncedDownside !== (currentPreAnalysis.downside || '') ||
+      debouncedAlignment !== (currentPreAnalysis.alignment || '');
+
+    if (hasChanges && editMode) {
+      console.log('DecisionPreAnalysisSection: Saving debounced changes:', {
+        upside: debouncedUpside,
+        downside: debouncedDownside,
+        alignment: debouncedAlignment
+      });
+      
+      const updatedPreAnalysis = {
+        ...currentPreAnalysis,
+        upside: debouncedUpside,
+        downside: debouncedDownside,
+        alignment: debouncedAlignment
+      };
+      
+      onUpdate({ preAnalysis: updatedPreAnalysis });
+    }
+  }, [debouncedUpside, debouncedDownside, debouncedAlignment, decision.preAnalysis, editMode, onUpdate]);
+
+  const handleInputChange = (field: keyof PreAnalysis, value: string) => {
+    console.log('DecisionPreAnalysisSection: Input change for field:', field, 'value length:', value.length);
+    setLocalValues(prev => ({ ...prev, [field]: value }));
   };
 
   const questions = [
     {
       key: 'upside' as keyof PreAnalysis,
       label: "What's the upside of this decision?",
-      placeholder: "Consider the potential benefits, opportunities, and positive outcomes..."
+      placeholder: "Consider the potential benefits, opportunities, and positive outcomes...",
+      value: localValues.upside
     },
     {
       key: 'downside' as keyof PreAnalysis,
       label: "What's the downside of this decision?",
-      placeholder: "Think about risks, costs, and potential negative consequences..."
+      placeholder: "Think about risks, costs, and potential negative consequences...",
+      value: localValues.downside
     },
     {
       key: 'alignment' as keyof PreAnalysis,
       label: "Does it align with my long-term goals?",
-      placeholder: "Evaluate how this decision supports or conflicts with your strategic objectives..."
+      placeholder: "Evaluate how this decision supports or conflicts with your strategic objectives...",
+      value: localValues.alignment
     }
   ];
 
@@ -66,10 +111,10 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
             </label>
             {editMode ? (
               <Textarea
-                value={decision.preAnalysis?.[question.key] || ''}
+                value={question.value}
                 onChange={(e) => {
                   console.log('DecisionPreAnalysisSection: Textarea onChange triggered for:', question.key);
-                  handlePreAnalysisUpdate(question.key, e.target.value);
+                  handleInputChange(question.key, e.target.value);
                 }}
                 placeholder={question.placeholder}
                 className="min-h-[80px] bg-tactical-surface border-tactical-border text-tactical-text font-mono text-sm resize-none focus:border-tactical-accent"
@@ -77,7 +122,7 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
               />
             ) : (
               <div className="min-h-[80px] p-3 bg-tactical-surface border border-tactical-border rounded text-tactical-text font-mono text-sm">
-                {decision.preAnalysis?.[question.key] || (
+                {question.value || (
                   <span className="text-tactical-text/50 italic">
                     No analysis provided yet...
                   </span>

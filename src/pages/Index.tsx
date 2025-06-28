@@ -53,6 +53,9 @@ const Index = () => {
     handleRetry
   } = useIndexActions();
 
+  // Get the pauseRealtimeForDecision function from useDecisions
+  const { pauseRealtimeForDecision } = useDecisions();
+
   // Check for localStorage data and offer migration on first load
   useIndexMigration(hasMigrated, setHasMigrated);
 
@@ -124,6 +127,7 @@ const Index = () => {
         onDecisionUpdate={handleDecisionUpdate}
         onQuickAdd={handleQuickAdd}
         onJournalComplete={handleJournalComplete}
+        pauseRealtimeForDecision={pauseRealtimeForDecision}
       />
     </div>
   );
