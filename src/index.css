@@ -1,4 +1,3 @@
-
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Rajdhani:wght@400;500;600;700&display=swap');
 @tailwind base;
 @tailwind components;
@@ -169,6 +168,8 @@ All colors MUST be HSL.
   .border-l-impact-high { border-left-color: hsl(var(--impact-high)); }
   .border-l-impact-medium { border-left-color: hsl(var(--impact-medium)); }
   .border-l-impact-low { border-left-color: hsl(var(--impact-low)); }
+  .border-t-impact-high { border-top-color: hsl(var(--impact-high)); }
+  .border-t-impact-medium { border-top-color: hsl(var(--impact-medium)); }
   
   /* Urgency colors */
   .text-urgency-high { color: hsl(var(--urgency-high)); }

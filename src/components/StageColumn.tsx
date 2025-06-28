@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
@@ -58,8 +57,8 @@ export const StageColumn = ({
 
   const getStageColor = () => {
     switch (stage.key) {
-      case 'backlog': return 'border-t-tactical-text/50';
-      case 'considering': return 'border-t-gray-500';
+      case 'backlog': return 'border-t-info';
+      case 'considering': return 'border-t-impact-medium';
       case 'committed': return 'border-t-tactical-accent';
       case 'decided': return 'border-t-impact-high';
       default: return 'border-t-tactical-border';
