@@ -1,4 +1,6 @@
+
 import { IndexHeader } from '@/components/IndexHeader';
+import { MobileHeader } from '@/components/MobileHeader';
 import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
 import { IndexErrorScreen } from '@/components/IndexErrorScreen';
 import { IndexMainContent } from '@/components/IndexMainContent';
@@ -9,9 +11,11 @@ import { useDecisions } from '@/hooks/useDecisions';
 import { useIndexState } from '@/hooks/useIndexState';
 import { useIndexActions } from '@/hooks/useIndexActions';
 import { useIndexMigration } from '@/hooks/useIndexMigration';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const Index = () => {
   const { profile } = useAuth();
+  const isMobile = useIsMobile();
   const {
     decisions,
     loading,
@@ -69,19 +73,33 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-tactical-bg tactical-grid">
-      <IndexHeader
-        profileName={profile?.name}
-        decisions={decisions}
-        showArchived={showArchived}
-        error={error}
-        onDecisionClick={handleDecisionClick}
-        onQuickAddClick={handleQuickAddClick}
-        onJournalClick={handleJournalClick}
-        onToggleArchived={handleToggleArchived}
-        onLogout={handleLogout}
-      />
+      {isMobile ? (
+        <MobileHeader
+          profileName={profile?.name}
+          decisions={decisions}
+          showArchived={showArchived}
+          error={error}
+          onDecisionClick={handleDecisionClick}
+          onQuickAddClick={handleQuickAddClick}
+          onJournalClick={handleJournalClick}
+          onToggleArchived={handleToggleArchived}
+          onLogout={handleLogout}
+        />
+      ) : (
+        <IndexHeader
+          profileName={profile?.name}
+          decisions={decisions}
+          showArchived={showArchived}
+          error={error}
+          onDecisionClick={handleDecisionClick}
+          onQuickAddClick={handleQuickAddClick}
+          onJournalClick={handleJournalClick}
+          onToggleArchived={handleToggleArchived}
+          onLogout={handleLogout}
+        />
+      )}
 
-      <StatusBar decisions={decisions} />
+      {!isMobile && <StatusBar decisions={decisions} />}
 
       <IndexMainContent
         decisions={decisions}
