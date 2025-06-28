@@ -1,21 +1,23 @@
-
 import { DecisionCategory, DecisionImpact, DecisionUrgency } from '@/types/Decision';
 
+interface FormData {
+  title: string;
+  category: DecisionCategory;
+  impact: DecisionImpact;
+  urgency: DecisionUrgency;
+  confidence: number;
+  owner: string;
+  notes: string;
+}
+
 interface QuickAddFormFieldsProps {
-  formData: {
-    title: string;
-    category: DecisionCategory;
-    impact: DecisionImpact;
-    urgency: DecisionUrgency;
-    confidence: number;
-    owner: string;
-    notes: string;
-  };
-  onUpdate: (updates: Partial<typeof formData>) => void;
+  formData: FormData;
+  onUpdate: (updates: Partial<FormData>) => void;
   isSubmitting: boolean;
 }
 
 export const QuickAddFormFields = ({ formData, onUpdate, isSubmitting }: QuickAddFormFieldsProps) => {
+  
   const categories: DecisionCategory[] = ['People', 'Capital', 'Strategy', 'Product', 'Timing', 'Personal'];
   const impacts: DecisionImpact[] = ['high', 'medium', 'low'];
   const urgencies: DecisionUrgency[] = ['high', 'medium', 'low'];
