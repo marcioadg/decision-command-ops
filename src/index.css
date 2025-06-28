@@ -130,19 +130,19 @@ All colors MUST be HSL.
 
   /* Stage Header Colors */
   .stage-header-backlog {
-    color: hsl(var(--info));
+    color: hsl(var(--info)) !important;
   }
   
   .stage-header-considering {
-    color: hsl(var(--impact-medium));
+    color: hsl(var(--impact-medium)) !important;
   }
   
   .stage-header-committed {
-    color: hsl(var(--tactical-accent));
+    color: hsl(var(--tactical-accent)) !important;
   }
   
   .stage-header-decided {
-    color: hsl(var(--impact-high));
+    color: hsl(var(--impact-high)) !important;
   }
   
   .hud-metric {
