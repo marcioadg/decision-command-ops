@@ -39,6 +39,9 @@ export const MobileDecisionCard = ({
     }
   };
 
+  // Safely handle the createdAt date - it might be a string from Supabase
+  const safeCreatedAt = decision.createdAt;
+
   return (
     <div
       onClick={handleClick}
@@ -78,7 +81,7 @@ export const MobileDecisionCard = ({
       {/* Action Bar */}
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-tactical-border">
         <div className="text-xs font-mono text-tactical-text/40">
-          {getDaysAgo(decision.createdAt)}
+          {getDaysAgo(safeCreatedAt)}
         </div>
 
         <div className="flex items-center space-x-2">

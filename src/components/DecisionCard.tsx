@@ -33,6 +33,9 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
     onDragStart(decision);
   };
 
+  // Safely handle the createdAt date - it might be a string from Supabase
+  const safeCreatedAt = decision.createdAt;
+
   return (
     <div
       draggable
@@ -56,7 +59,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
 
       {/* Timestamp */}
       <div className="mt-2 text-xs font-mono text-tactical-text/40">
-        {getDaysAgo(decision.createdAt)}
+        {getDaysAgo(safeCreatedAt)}
       </div>
 
       {/* Reflection Status - Moved to end */}
