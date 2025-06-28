@@ -1,6 +1,8 @@
 
 import { Decision, PreAnalysis } from '@/types/Decision';
 import { Textarea } from '@/components/ui/textarea';
+import { CheckCircle } from 'lucide-react';
+import { useState, useEffect } from 'react';
 
 interface DecisionPreAnalysisSectionProps {
   decision: Decision;
@@ -9,6 +11,8 @@ interface DecisionPreAnalysisSectionProps {
 }
 
 export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: DecisionPreAnalysisSectionProps) => {
+  const [recentlyUpdated, setRecentlyUpdated] = useState<Record<string, boolean>>({});
+  
   // Only show for active stages (not decided)
   const shouldShow = decision.stage !== 'decided';
   
@@ -26,6 +30,12 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
     const updates = { preAnalysis: updatedPreAnalysis };
     console.log('DecisionPreAnalysisSection: Calling onUpdate with:', updates);
     onUpdate(updates);
+
+    // Show field-specific save indicator
+    setRecentlyUpdated(prev => ({ ...prev, [field]: true }));
+    setTimeout(() => {
+      setRecentlyUpdated(prev => ({ ...prev, [field]: false }));
+    }, 2000);
   };
 
   const questions = [
@@ -60,9 +70,17 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
       <div className="space-y-4">
         {questions.map((question, index) => (
           <div key={question.key} className="space-y-2">
-            <label className="block text-sm font-mono text-tactical-text">
-              {index + 1}. {question.label}
-            </label>
+            <div className="flex items-center justify-between">
+              <label className="block text-sm font-mono text-tactical-text">
+                {index + 1}. {question.label}
+              </label>
+              {recentlyUpdated[question.key] && (
+                <div className="flex items-center space-x-1 text-green-400">
+                  <CheckCircle className="w-3 h-3" />
+                  <span className="text-xs font-mono">Saved</span>
+                </div>
+              )}
+            </div>
             {editMode ? (
               <Textarea
                 value={decision.preAnalysis?.[question.key] || ''}

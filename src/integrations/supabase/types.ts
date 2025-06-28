@@ -103,6 +103,7 @@ export type Database = {
           id: string
           notes: string | null
           owner: string
+          pre_analysis: Json | null
           priority: string
           reflection_30_day_answers: string[] | null
           reflection_30_day_completed: boolean | null
@@ -130,6 +131,7 @@ export type Database = {
           id?: string
           notes?: string | null
           owner: string
+          pre_analysis?: Json | null
           priority: string
           reflection_30_day_answers?: string[] | null
           reflection_30_day_completed?: boolean | null
@@ -157,6 +159,7 @@ export type Database = {
           id?: string
           notes?: string | null
           owner?: string
+          pre_analysis?: Json | null
           priority?: string
           reflection_30_day_answers?: string[] | null
           reflection_30_day_completed?: boolean | null

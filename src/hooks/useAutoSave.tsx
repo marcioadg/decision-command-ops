@@ -1,5 +1,5 @@
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 interface UseAutoSaveOptions<T> {
   data: T;
@@ -7,9 +7,16 @@ interface UseAutoSaveOptions<T> {
   delay?: number;
 }
 
+export interface AutoSaveStatus {
+  status: 'idle' | 'saving' | 'saved' | 'error';
+  lastSaved?: Date;
+  error?: string;
+}
+
 export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptions<T>) => {
   const timeoutRef = useRef<NodeJS.Timeout>();
   const previousDataRef = useRef<T>(data);
+  const [saveStatus, setSaveStatus] = useState<AutoSaveStatus>({ status: 'idle' });
 
   useEffect(() => {
     console.log('useAutoSave: Effect triggered with data:', data);
@@ -31,11 +38,30 @@ export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptio
       
       if (currentDataString !== previousDataString) {
         console.log('useAutoSave: Data changed, setting timeout for auto-save');
+        setSaveStatus({ status: 'saving' });
+        
         timeoutRef.current = setTimeout(async () => {
-          console.log('useAutoSave: Executing auto-save with data:', data);
-          await onSave(data);
-          previousDataRef.current = data;
-          console.log('useAutoSave: Auto-save completed, updated previousDataRef');
+          try {
+            console.log('useAutoSave: Executing auto-save with data:', data);
+            await onSave(data);
+            previousDataRef.current = data;
+            setSaveStatus({ 
+              status: 'saved', 
+              lastSaved: new Date() 
+            });
+            console.log('useAutoSave: Auto-save completed, updated previousDataRef');
+            
+            // Reset to idle after showing saved status for 2 seconds
+            setTimeout(() => {
+              setSaveStatus(prev => ({ ...prev, status: 'idle' }));
+            }, 2000);
+          } catch (error) {
+            console.error('useAutoSave: Auto-save failed:', error);
+            setSaveStatus({ 
+              status: 'error', 
+              error: error instanceof Error ? error.message : 'Save failed' 
+            });
+          }
         }, delay);
       } else {
         console.log('useAutoSave: Data unchanged, skipping auto-save');
@@ -59,4 +85,6 @@ export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptio
       }
     };
   }, []);
+
+  return saveStatus;
 };

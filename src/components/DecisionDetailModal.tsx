@@ -7,6 +7,7 @@ import { DecisionPreAnalysisSection } from './DecisionPreAnalysisSection';
 import { DecisionReflectionSection } from './DecisionReflectionSection';
 import { DecisionTimestamps } from './DecisionTimestamps';
 import { useAutoSave } from '@/hooks/useAutoSave';
+import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
 
 interface DecisionDetailModalProps {
   decision: Decision | null;
@@ -37,9 +38,9 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
     console.log('DecisionDetailModal: Auto-save completed');
   };
 
-  // Set up auto-save with 1 second delay - ALWAYS call this hook
-  useAutoSave({
-    data: formData || {} as Decision, // Provide fallback to avoid null
+  // Set up auto-save with 1 second delay and get save status
+  const saveStatus = useAutoSave({
+    data: formData || {} as Decision,
     onSave: handleAutoSave,
     delay: 1000
   });
@@ -59,20 +60,51 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
     });
   };
 
+  const SaveStatusIndicator = () => {
+    switch (saveStatus.status) {
+      case 'saving':
+        return (
+          <div className="flex items-center space-x-2 text-tactical-accent">
+            <Loader2 className="w-4 h-4 animate-spin" />
+            <span className="text-sm font-mono">Saving...</span>
+          </div>
+        );
+      case 'saved':
+        return (
+          <div className="flex items-center space-x-2 text-green-400">
+            <CheckCircle className="w-4 h-4" />
+            <span className="text-sm font-mono">Saved</span>
+          </div>
+        );
+      case 'error':
+        return (
+          <div className="flex items-center space-x-2 text-red-400">
+            <AlertCircle className="w-4 h-4" />
+            <span className="text-sm font-mono">Save failed</span>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-tactical-surface border border-tactical-border rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Header - simplified without edit toggle */}
+        {/* Header with save status */}
         <div className="flex items-center justify-between p-6 border-b border-tactical-border">
           <h2 className="text-xl font-bold text-tactical-accent font-tactical">
             DECISION DETAILS
           </h2>
-          <button
-            onClick={onClose}
-            className="text-tactical-text/60 hover:text-tactical-text text-2xl font-bold"
-          >
-            ×
-          </button>
+          <div className="flex items-center space-x-4">
+            <SaveStatusIndicator />
+            <button
+              onClick={onClose}
+              className="text-tactical-text/60 hover:text-tactical-text text-2xl font-bold"
+            >
+              ×
+            </button>
+          </div>
         </div>
 
         {/* Content */}
