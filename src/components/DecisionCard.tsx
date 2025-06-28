@@ -11,14 +11,6 @@ interface DecisionCardProps {
 }
 
 export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArchive }: DecisionCardProps) => {
-  const getImpactColor = () => {
-    switch (decision.impact) {
-      case 'high': return 'border-l-impact-high';
-      case 'medium': return 'border-l-impact-medium';
-      case 'low': return 'border-l-impact-low';
-    }
-  };
-
   const getUrgencyIcon = () => {
     const baseClasses = "w-4 h-4";
     switch (decision.urgency) {
@@ -96,7 +88,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
       onClick={handleClick}
-      className={`tactical-card border-l-4 ${getImpactColor()} cursor-pointer hover:scale-[1.02] animate-slide-in transition-all duration-200 relative group`}
+      className="tactical-card cursor-pointer hover:scale-[1.02] animate-slide-in transition-all duration-200 relative group"
     >
       {/* Archive Button - Top-left */}
       {onArchive && (
@@ -125,7 +117,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
 
       {/* Title and Category */}
       <div className="flex items-start justify-between mb-3">
-        <h4 className="font-semibold text-sm text-tactical-text leading-tight flex-1 mr-2 ml-6">
+        <h4 className="font-semibold text-sm text-tactical-text leading-tight flex-1 mr-2">
           {decision.title}
         </h4>
         <span className={`px-2 py-1 text-xs font-mono rounded border ${getCategoryBadgeColor()}`}>
