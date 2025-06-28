@@ -7,9 +7,10 @@ interface DecisionPreAnalysisSectionProps {
   decision: Decision;
   editMode: boolean;
   onUpdate: (updates: Partial<Decision>) => void;
+  disabled?: boolean;
 }
 
-export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: DecisionPreAnalysisSectionProps) => {
+export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate, disabled = false }: DecisionPreAnalysisSectionProps) => {
   // Only show for active stages (not decided)
   const shouldShow = decision.stage !== 'decided';
   
@@ -21,7 +22,12 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
   const currentPreAnalysis = decision.preAnalysis || {};
   
   const handleInputChange = (field: keyof PreAnalysis, value: string) => {
-    console.log('DecisionPreAnalysisSection: Input change for field:', field, 'value length:', value.length);
+    console.log('DecisionPreAnalysisSection: Input change for field:', field, 'value length:', value.length, 'disabled:', disabled);
+    
+    if (disabled) {
+      console.log('DecisionPreAnalysisSection: Input blocked due to disabled state');
+      return;
+    }
     
     // Update immediately without debouncing - let the parent handle batching
     const updatedPreAnalysis = {
@@ -75,7 +81,8 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
                 value={question.value}
                 onChange={(e) => handleInputChange(question.key, e.target.value)}
                 placeholder={question.placeholder}
-                className="min-h-[80px] bg-tactical-surface border-tactical-border text-tactical-text font-mono text-sm resize-none focus:border-tactical-accent"
+                disabled={disabled}
+                className="min-h-[80px] bg-tactical-surface border-tactical-border text-tactical-text font-mono text-sm resize-none focus:border-tactical-accent disabled:opacity-50"
                 rows={3}
               />
             ) : (

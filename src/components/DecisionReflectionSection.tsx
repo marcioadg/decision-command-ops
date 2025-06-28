@@ -10,9 +10,10 @@ interface DecisionReflectionSectionProps {
   decision: Decision;
   editMode: boolean;
   onUpdate: (updatedDecision: Partial<Decision>) => void;
+  disabled?: boolean;
 }
 
-export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: DecisionReflectionSectionProps) => {
+export const DecisionReflectionSection = ({ decision, editMode, onUpdate, disabled = false }: DecisionReflectionSectionProps) => {
   const [showReflection, setShowReflection] = useState(false);
 
   const hasReflectionContent = () => {
@@ -38,6 +39,13 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
   }
 
   const handleReflectionUpdate = (updates: Partial<Decision['reflection']>) => {
+    console.log('DecisionReflectionSection: Reflection update, disabled:', disabled);
+    
+    if (disabled) {
+      console.log('DecisionReflectionSection: Update blocked due to disabled state');
+      return;
+    }
+    
     onUpdate({
       reflection: {
         sevenDay: decision.reflection?.sevenDay,
@@ -50,6 +58,11 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
   };
 
   const handleIntervalUpdate = (interval: '7-day' | '30-day' | '90-day', updates: Partial<ReflectionInterval>) => {
+    if (disabled) {
+      console.log('DecisionReflectionSection: Interval update blocked due to disabled state');
+      return;
+    }
+    
     const intervalKey = interval === '7-day' ? 'sevenDay' : interval === '30-day' ? 'thirtyDay' : 'ninetyDay';
     const currentInterval = decision.reflection?.[intervalKey];
     
@@ -64,6 +77,11 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
   };
 
   const handleQuestionsUpdate = (questions: string[]) => {
+    if (disabled) {
+      console.log('DecisionReflectionSection: Questions update blocked due to disabled state');
+      return;
+    }
+    
     handleReflectionUpdate({ questions });
   };
 
@@ -98,7 +116,8 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
 
       <button
         onClick={() => setShowReflection(!showReflection)}
-        className="flex items-center space-x-2 text-tactical-accent hover:text-tactical-accent/80 transition-colors mb-4"
+        disabled={disabled}
+        className="flex items-center space-x-2 text-tactical-accent hover:text-tactical-accent/80 transition-colors mb-4 disabled:opacity-50"
       >
         {showReflection ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         <MessageSquare className="w-4 h-4" />
@@ -115,7 +134,7 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
           {/* Reflection Questions */}
           <ReflectionQuestions
             questions={decision.reflection?.questions}
-            editMode={editMode}
+            editMode={editMode && !disabled}
             onUpdate={handleQuestionsUpdate}
           />
 
@@ -129,7 +148,7 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
               data={data}
               defaultDays={defaultDays}
               createdAt={decision.createdAt}
-              editMode={editMode}
+              editMode={editMode && !disabled}
               onUpdate={(updates) => handleIntervalUpdate(key, updates)}
             />
           ))}
