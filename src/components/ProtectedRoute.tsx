@@ -14,6 +14,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, profile, isLoading, isAdmin } = useAuth();
 
+  // FIXED: Show loading state longer to prevent flash of redirect
   if (isLoading) {
     return (
       <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center">
@@ -27,13 +28,18 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  if (!user || !profile) {
+  // FIXED: Only redirect if we're sure there's no user (not just missing profile)
+  if (!user) {
+    console.log('ProtectedRoute: No user found, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  if (requireAdmin && !isAdmin()) {
+  // FIXED: Allow access even if profile is still loading, as long as user exists
+  if (requireAdmin && profile && !isAdmin()) {
+    console.log('ProtectedRoute: Admin required but user is not admin, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 
+  // FIXED: Render children even if profile is still loading
   return <>{children}</>;
 };

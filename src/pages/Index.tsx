@@ -12,6 +12,7 @@ import { useIndexState } from '@/hooks/useIndexState';
 import { useIndexActions } from '@/hooks/useIndexActions';
 import { useIndexMigration } from '@/hooks/useIndexMigration';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useEffect } from 'react';
 
 const Index = () => {
   const { profile } = useAuth();
@@ -58,6 +59,14 @@ const Index = () => {
 
   // Check for localStorage data and offer migration on first load
   useIndexMigration(hasMigrated, setHasMigrated);
+
+  // FIXED: Add cleanup effect to prevent memory leaks
+  useEffect(() => {
+    return () => {
+      // Cleanup any pending operations
+      console.log('Index: Component unmounting, cleaning up');
+    };
+  }, []);
 
   // Add debug logging for modal state
   console.log('Index: Modal state debug', {

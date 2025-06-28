@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Decision } from '@/types/Decision';
 
 interface UseCoordinatedAutoSaveProps {
-  decision: Decision;
+  decision: Decision | null; // FIXED: Allow null decision
   onSave: (updates: Partial<Decision>) => Promise<void>;
   pauseRealtimeForDecision?: (decisionId: string, duration?: number) => void;
 }
@@ -25,6 +25,12 @@ export const useCoordinatedAutoSave = ({
   const isSavingRef = useRef(false);
 
   const batchedSave = useCallback(async (updates: Partial<Decision>) => {
+    // FIXED: Early return if no decision
+    if (!decision) {
+      console.log('useCoordinatedAutoSave: No decision provided, skipping save');
+      return;
+    }
+
     // Add updates to pending batch
     pendingUpdatesRef.current = {
       ...pendingUpdatesRef.current,
@@ -49,8 +55,8 @@ export const useCoordinatedAutoSave = ({
       try {
         isSavingRef.current = true;
         
-        // Pause real-time updates during save
-        if (pauseRealtimeForDecision) {
+        // FIXED: Check decision exists before using it
+        if (decision && pauseRealtimeForDecision) {
           pauseRealtimeForDecision(decision.id, 5000);
         }
 
@@ -85,7 +91,7 @@ export const useCoordinatedAutoSave = ({
         isSavingRef.current = false;
       }
     }, 1000); // Longer delay to batch more updates
-  }, [decision.id, onSave, pauseRealtimeForDecision]);
+  }, [decision, onSave, pauseRealtimeForDecision]); // FIXED: Added decision to dependencies
 
   // Cleanup on unmount
   const cleanup = useCallback(() => {
