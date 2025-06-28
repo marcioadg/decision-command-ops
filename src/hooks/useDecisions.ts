@@ -1,18 +1,29 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Decision } from '@/types/Decision';
 import { decisionService } from '@/services/decisionService';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useDecisionRealtime } from './decision/useDecisionRealtime';
+import { useDecisionCRUD } from './decision/useDecisionCRUD';
+import { useDecisionRetry } from './decision/useDecisionRetry';
 
 export const useDecisions = () => {
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [retryCount, setRetryCount] = useState(0);
-  const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+
+  // Set up real-time subscription
+  const { isRealTimeConnected } = useDecisionRealtime({ user, setDecisions });
+
+  // Set up CRUD operations
+  const { createDecision, updateDecision, deleteDecision } = useDecisionCRUD({
+    isRealTimeConnected,
+    setDecisions
+  });
 
   const loadDecisions = useCallback(async (showToast = true) => {
     if (!user) {
@@ -32,7 +43,7 @@ export const useDecisions = () => {
       console.log('Loaded decisions:', data.length);
       
       setDecisions(data);
-      setRetryCount(0); // Reset retry count on success
+      setRetryCount(0);
       
       if (showToast && data.length === 0) {
         toast({
@@ -59,236 +70,8 @@ export const useDecisions = () => {
     }
   }, [user, toast]);
 
-  // Set up real-time subscription
-  useEffect(() => {
-    if (!user) return;
-
-    console.log('Setting up real-time subscription for decisions');
-    
-    const channel = supabase
-      .channel('decisions-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen to all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'decisions',
-          filter: `user_id=eq.${user.id}` // Only listen to current user's decisions
-        },
-        (payload) => {
-          console.log('Real-time decision change received:', payload);
-          
-          const { eventType, new: newRecord, old: oldRecord } = payload;
-          
-          setDecisions(prev => {
-            switch (eventType) {
-              case 'INSERT':
-                if (newRecord) {
-                  // Convert database record to Decision type
-                  const newDecision: Decision = {
-                    id: newRecord.id,
-                    title: newRecord.title,
-                    category: newRecord.category,
-                    priority: newRecord.priority === 'high' ? 'high' : newRecord.priority === 'medium' ? 'medium' : 'low',
-                    stage: newRecord.stage,
-                    confidence: newRecord.confidence,
-                    owner: newRecord.owner || '',
-                    createdAt: new Date(newRecord.created_at),
-                    updatedAt: newRecord.updated_at ? new Date(newRecord.updated_at) : undefined,
-                    notes: newRecord.notes || undefined,
-                    biasCheck: newRecord.bias_check || undefined,
-                    archived: newRecord.archived || false,
-                    preAnalysis: newRecord.pre_analysis ? {
-                      upside: newRecord.pre_analysis.upside,
-                      downside: newRecord.pre_analysis.downside,
-                      alignment: newRecord.pre_analysis.alignment
-                    } : undefined,
-                    reflection: {
-                      sevenDay: newRecord.reflection_7_day_date ? {
-                        date: new Date(newRecord.reflection_7_day_date),
-                        completed: newRecord.reflection_7_day_completed || false,
-                        answers: newRecord.reflection_7_day_answers || undefined
-                      } : undefined,
-                      thirtyDay: newRecord.reflection_30_day_date ? {
-                        date: new Date(newRecord.reflection_30_day_date),
-                        completed: newRecord.reflection_30_day_completed || false,
-                        answers: newRecord.reflection_30_day_answers || undefined
-                      } : undefined,
-                      ninetyDay: newRecord.reflection_90_day_date ? {
-                        date: new Date(newRecord.reflection_90_day_date),
-                        completed: newRecord.reflection_90_day_completed || false,
-                        answers: newRecord.reflection_90_day_answers || undefined
-                      } : undefined,
-                      questions: newRecord.reflection_questions || undefined
-                    }
-                  };
-                  
-                  // Check if decision already exists to avoid duplicates
-                  const exists = prev.some(d => d.id === newDecision.id);
-                  if (!exists) {
-                    console.log('Adding new decision from real-time:', newDecision.id);
-                    return [newDecision, ...prev];
-                  }
-                }
-                return prev;
-                
-              case 'UPDATE':
-                if (newRecord) {
-                  console.log('Updating decision from real-time:', newRecord.id);
-                  return prev.map(decision => {
-                    if (decision.id === newRecord.id) {
-                      return {
-                        ...decision,
-                        title: newRecord.title,
-                        category: newRecord.category,
-                        priority: newRecord.priority === 'high' ? 'high' : newRecord.priority === 'medium' ? 'medium' : 'low',
-                        stage: newRecord.stage,
-                        confidence: newRecord.confidence,
-                        owner: newRecord.owner || '',
-                        updatedAt: newRecord.updated_at ? new Date(newRecord.updated_at) : new Date(),
-                        notes: newRecord.notes || undefined,
-                        biasCheck: newRecord.bias_check || undefined,
-                        archived: newRecord.archived || false,
-                        preAnalysis: newRecord.pre_analysis ? {
-                          upside: newRecord.pre_analysis.upside,
-                          downside: newRecord.pre_analysis.downside,
-                          alignment: newRecord.pre_analysis.alignment
-                        } : undefined,
-                        reflection: {
-                          sevenDay: newRecord.reflection_7_day_date ? {
-                            date: new Date(newRecord.reflection_7_day_date),
-                            completed: newRecord.reflection_7_day_completed || false,
-                            answers: newRecord.reflection_7_day_answers || undefined
-                          } : undefined,
-                          thirtyDay: newRecord.reflection_30_day_date ? {
-                            date: new Date(newRecord.reflection_30_day_date),
-                            completed: newRecord.reflection_30_day_completed || false,
-                            answers: newRecord.reflection_30_day_answers || undefined
-                          } : undefined,
-                          ninetyDay: newRecord.reflection_90_day_date ? {
-                            date: new Date(newRecord.reflection_90_day_date),
-                            completed: newRecord.reflection_90_day_completed || false,
-                            answers: newRecord.reflection_90_day_answers || undefined
-                          } : undefined,
-                          questions: newRecord.reflection_questions || undefined
-                        }
-                      };
-                    }
-                    return decision;
-                  });
-                }
-                return prev;
-                
-              case 'DELETE':
-                if (oldRecord) {
-                  console.log('Removing decision from real-time:', oldRecord.id);
-                  return prev.filter(decision => decision.id !== oldRecord.id);
-                }
-                return prev;
-                
-              default:
-                return prev;
-            }
-          });
-        }
-      )
-      .subscribe((status) => {
-        console.log('Real-time subscription status:', status);
-        setIsRealTimeConnected(status === 'SUBSCRIBED');
-        
-        if (status === 'CHANNEL_ERROR') {
-          console.error('Real-time channel error');
-          setIsRealTimeConnected(false);
-        }
-      });
-
-    return () => {
-      console.log('Cleaning up real-time subscription');
-      supabase.removeChannel(channel);
-      setIsRealTimeConnected(false);
-    };
-  }, [user]);
-
-  const createDecision = useCallback(async (decision: Omit<Decision, 'id' | 'createdAt'>) => {
-    try {
-      console.log('Creating decision:', decision.title);
-      const newDecision = await decisionService.createDecision(decision);
-      
-      // Don't manually update state here - let real-time handle it
-      // But if real-time is not connected, fall back to manual update
-      if (!isRealTimeConnected) {
-        setDecisions(prev => [newDecision, ...prev]);
-      }
-      
-      toast({
-        title: "Decision Created",
-        description: `"${newDecision.title}" has been added to your pipeline.`
-      });
-      return newDecision;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to create decision';
-      console.error('Error creating decision:', err);
-      toast({
-        title: "Error Creating Decision",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw err;
-    }
-  }, [toast, isRealTimeConnected]);
-
-  const updateDecision = useCallback(async (decision: Decision) => {
-    try {
-      console.log('Updating decision:', decision.id);
-      const updatedDecision = await decisionService.updateDecision(decision);
-      
-      // Don't manually update state here - let real-time handle it
-      // But if real-time is not connected, fall back to manual update
-      if (!isRealTimeConnected) {
-        setDecisions(prev => 
-          prev.map(d => d.id === updatedDecision.id ? updatedDecision : d)
-        );
-      }
-      
-      return updatedDecision;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update decision';
-      console.error('Error updating decision:', err);
-      toast({
-        title: "Error Updating Decision",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw err;
-    }
-  }, [toast, isRealTimeConnected]);
-
-  const deleteDecision = useCallback(async (id: string) => {
-    try {
-      console.log('Deleting decision:', id);
-      await decisionService.deleteDecision(id);
-      
-      // Don't manually update state here - let real-time handle it
-      // But if real-time is not connected, fall back to manual update
-      if (!isRealTimeConnected) {
-        setDecisions(prev => prev.filter(d => d.id !== id));
-      }
-      
-      toast({
-        title: "Decision Deleted",
-        description: "The decision has been removed from your pipeline."
-      });
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete decision';
-      console.error('Error deleting decision:', err);
-      toast({
-        title: "Error Deleting Decision",
-        description: errorMessage,
-        variant: "destructive"
-      });
-      throw err;
-    }
-  }, [toast, isRealTimeConnected]);
+  // Set up auto-retry logic
+  useDecisionRetry({ error, retryCount, loadDecisions });
 
   const migrateFromLocalStorage = useCallback(async () => {
     try {
@@ -299,7 +82,7 @@ export const useDecisions = () => {
           title: "Data Migrated",
           description: `${migratedCount} decisions have been migrated to your account.`
         });
-        await loadDecisions(false); // Reload decisions after migration
+        await loadDecisions(false);
       }
       return migratedCount;
     } catch (err) {
@@ -313,20 +96,6 @@ export const useDecisions = () => {
       return 0;
     }
   }, [toast, loadDecisions]);
-
-  // Auto-retry on mount if there was an error
-  useEffect(() => {
-    if (error && retryCount < 3) {
-      const retryDelay = Math.min(1000 * Math.pow(2, retryCount), 10000);
-      console.log(`Auto-retrying in ${retryDelay}ms (attempt ${retryCount + 1})`);
-      
-      const timer = setTimeout(() => {
-        loadDecisions(false);
-      }, retryDelay);
-      
-      return () => clearTimeout(timer);
-    }
-  }, [error, retryCount, loadDecisions]);
 
   useEffect(() => {
     loadDecisions();
