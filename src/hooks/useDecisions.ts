@@ -1,9 +1,9 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Decision } from '@/types/Decision';
 import { decisionService } from '@/services/decisionService';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
-import { ToastAction } from '@/components/ui/toast';
 
 export const useDecisions = () => {
   const [decisions, setDecisions] = useState<Decision[]>([]);
@@ -50,18 +50,13 @@ export const useDecisions = () => {
         toast({
           title: "Error Loading Decisions",
           description: errorMessage,
-          variant: "destructive",
-          action: retryCount < 3 ? (
-            <ToastAction altText="Retry loading decisions" onClick={() => loadDecisions(false)}>
-              Retry
-            </ToastAction>
-          ) : undefined
+          variant: "destructive"
         });
       }
     } finally {
       setLoading(false);
     }
-  }, [user, toast, retryCount]);
+  }, [user, toast]);
 
   const createDecision = useCallback(async (decision: Omit<Decision, 'id' | 'createdAt'>) => {
     try {
