@@ -42,7 +42,7 @@ export const IndexHeader = ({
           </div>
           
           <div className="hud-metric">
-            AVG CONFIDENCE: {avgConfidence}%
+            CONFIDENCE: {avgConfidence}%
           </div>
           
           <div className={`hud-metric ${clarityScore >= 70 ? 'bg-impact-high/20 text-impact-high' : clarityScore >= 40 ? 'bg-urgency-medium/20 text-urgency-medium' : 'bg-urgency-high/20 text-urgency-high'}`}>
