@@ -125,7 +125,6 @@ All colors MUST be HSL.
   
   .stage-header {
     @apply font-mono text-xs uppercase tracking-wider border-b pb-2 mb-4;
-    color: hsl(var(--tactical-accent));
     border-color: hsl(var(--tactical-border));
   }
 
