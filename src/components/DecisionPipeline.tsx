@@ -10,6 +10,7 @@ interface DecisionPipelineProps {
   onDecisionUpdate: (decision: Decision) => void;
   onDecisionClick: (decision: Decision) => void;
   onArchive?: (decision: Decision) => void;
+  onQuickAdd?: (stage: DecisionStage) => void;
   showArchived?: boolean;
 }
 
@@ -25,6 +26,7 @@ export const DecisionPipeline = ({
   onDecisionUpdate, 
   onDecisionClick, 
   onArchive,
+  onQuickAdd,
   showArchived = false 
 }: DecisionPipelineProps) => {
   const [draggedDecision, setDraggedDecision] = useState<Decision | null>(null);
@@ -76,6 +78,7 @@ export const DecisionPipeline = ({
             onDrop={handleDrop}
             onDecisionClick={onDecisionClick}
             onArchive={onArchive}
+            onQuickAdd={onQuickAdd}
             isDragActive={draggedDecision !== null}
             showArchived={showArchived}
           />

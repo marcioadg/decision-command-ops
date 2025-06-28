@@ -1,14 +1,19 @@
 
-import { Decision } from '@/types/Decision';
+import { DecisionStage, Decision } from '@/types/Decision';
 import { QuickAddForm } from './QuickAddForm';
 
 interface QuickAddModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAdd: (decision: Omit<Decision, 'id' | 'createdAt'>) => Promise<void>;
+  preFilledData?: {
+    title?: string;
+    notes?: string;
+    stage?: DecisionStage;
+  };
 }
 
-export const QuickAddModal = ({ isOpen, onClose, onAdd }: QuickAddModalProps) => {
+export const QuickAddModal = ({ isOpen, onClose, onAdd, preFilledData }: QuickAddModalProps) => {
   // Don't render if not open
   if (!isOpen) {
     return null;
@@ -29,7 +34,7 @@ export const QuickAddModal = ({ isOpen, onClose, onAdd }: QuickAddModalProps) =>
           </button>
         </div>
 
-        <QuickAddForm onAdd={onAdd} onCancel={onClose} />
+        <QuickAddForm onAdd={onAdd} onCancel={onClose} preFilledData={preFilledData} />
       </div>
     </div>
   );

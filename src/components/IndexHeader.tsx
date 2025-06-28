@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { NotificationBell } from '@/components/NotificationBell';
-import { Plus, Archive, LogOut, Database } from 'lucide-react';
+import { Plus, Archive, LogOut, Database, BookOpen } from 'lucide-react';
 import { Decision } from '@/types/Decision';
 
 interface IndexHeaderProps {
@@ -11,6 +11,7 @@ interface IndexHeaderProps {
   error?: string;
   onDecisionClick: (decision: Decision) => void;
   onQuickAddClick: () => void;
+  onJournalClick: () => void;
   onToggleArchived: () => void;
   onLogout: () => void;
 }
@@ -22,6 +23,7 @@ export const IndexHeader = ({
   error,
   onDecisionClick,
   onQuickAddClick,
+  onJournalClick,
   onToggleArchived,
   onLogout
 }: IndexHeaderProps) => {
@@ -51,6 +53,16 @@ export const IndexHeader = ({
             decisions={decisions}
             onDecisionClick={onDecisionClick}
           />
+          
+          <Button
+            onClick={onJournalClick}
+            className="bg-tactical-surface hover:bg-tactical-surface/80 text-tactical-accent border border-tactical-accent font-mono text-xs"
+            size="sm"
+            variant="outline"
+          >
+            <BookOpen className="w-4 h-4 mr-1" />
+            JOURNAL
+          </Button>
           
           <Button
             onClick={onQuickAddClick}

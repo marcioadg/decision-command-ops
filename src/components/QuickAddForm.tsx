@@ -1,21 +1,26 @@
 
 import { useState } from 'react';
-import { Decision, DecisionCategory, DecisionPriority } from '@/types/Decision';
+import { Decision, DecisionCategory, DecisionPriority, DecisionStage } from '@/types/Decision';
 import { QuickAddFormFields } from './QuickAddFormFields';
 import { QuickAddFormActions } from './QuickAddFormActions';
 
 interface QuickAddFormProps {
   onAdd: (decision: Omit<Decision, 'id' | 'createdAt'>) => Promise<void>;
   onCancel: () => void;
+  preFilledData?: {
+    title?: string;
+    notes?: string;
+    stage?: DecisionStage;
+  };
 }
 
-export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
+export const QuickAddForm = ({ onAdd, onCancel, preFilledData }: QuickAddFormProps) => {
   const [formData, setFormData] = useState({
-    title: '',
+    title: preFilledData?.title || '',
     category: '' as DecisionCategory | '',
     priority: '' as DecisionPriority | '',
     confidence: '' as number | '',
-    notes: ''
+    notes: preFilledData?.notes || ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -30,7 +35,7 @@ export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
           priority: formData.priority as DecisionPriority,
           confidence: formData.confidence as number,
           notes: formData.notes,
-          stage: 'backlog',
+          stage: preFilledData?.stage || 'backlog',
           owner: 'System' // Default fallback for backward compatibility
         };
         await onAdd(newDecision);

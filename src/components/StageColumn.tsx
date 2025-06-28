@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
+import { Plus } from 'lucide-react';
 
 interface StageColumnProps {
   stage: { key: DecisionStage; label: string; description: string };
@@ -11,6 +12,7 @@ interface StageColumnProps {
   onDrop: (stage: DecisionStage) => void;
   onDecisionClick: (decision: Decision) => void;
   onArchive?: (decision: Decision) => void;
+  onQuickAdd?: (stage: DecisionStage) => void;
   isDragActive: boolean;
   showArchived?: boolean;
 }
@@ -23,6 +25,7 @@ export const StageColumn = ({
   onDrop,
   onDecisionClick,
   onArchive,
+  onQuickAdd,
   isDragActive,
   showArchived = false
 }: StageColumnProps) => {
@@ -41,6 +44,12 @@ export const StageColumn = ({
     e.preventDefault();
     setIsDragOver(false);
     onDrop(stage.key);
+  };
+
+  const handleQuickAdd = () => {
+    if (onQuickAdd) {
+      onQuickAdd(stage.key);
+    }
   };
 
   const getStageColor = () => {
@@ -100,6 +109,19 @@ export const StageColumn = ({
           <div className="border-2 border-dashed border-tactical-accent bg-tactical-accent/5 rounded-lg p-4 text-center">
             <span className="text-tactical-accent font-mono text-sm">Drop here</span>
           </div>
+        )}
+        
+        {/* Add Button */}
+        {onQuickAdd && (
+          <button
+            onClick={handleQuickAdd}
+            className="w-full border-2 border-dashed border-tactical-border hover:border-tactical-accent bg-tactical-surface/20 hover:bg-tactical-accent/5 rounded-lg p-3 text-center transition-all duration-200 group"
+          >
+            <div className="flex items-center justify-center space-x-2 text-tactical-text/60 group-hover:text-tactical-accent">
+              <Plus className="w-4 h-4" />
+              <span className="font-mono text-xs">ADD TO {stage.label}</span>
+            </div>
+          </button>
         )}
       </div>
     </div>

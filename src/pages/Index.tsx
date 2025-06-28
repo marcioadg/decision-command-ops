@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { DecisionDetailModal } from '@/components/DecisionDetailModal';
 import { QuickAddModal } from '@/components/QuickAddModal';
@@ -6,11 +5,12 @@ import { IndexHeader } from '@/components/IndexHeader';
 import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
 import { IndexErrorScreen } from '@/components/IndexErrorScreen';
 import { IndexMainContent } from '@/components/IndexMainContent';
-import { Decision } from '@/types/Decision';
+import { Decision, DecisionStage } from '@/types/Decision';
 import { useAuth } from '@/hooks/useAuth';
 import { useDecisions } from '@/hooks/useDecisions';
 import { soundSystem } from '@/utils/soundSystem';
 import { useToast } from '@/hooks/use-toast';
+import { JournalModal } from '@/components/JournalModal';
 
 const Index = () => {
   const { profile, signOut } = useAuth();
@@ -31,6 +31,10 @@ const Index = () => {
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
   const [hasMigrated, setHasMigrated] = useState(false);
+  
+  const [isJournalOpen, setIsJournalOpen] = useState(false);
+  const [journalData, setJournalData] = useState<{ title: string; notes: string } | null>(null);
+  const [quickAddStage, setQuickAddStage] = useState<DecisionStage | undefined>(undefined);
 
   // Check for localStorage data and offer migration on first load
   useEffect(() => {
@@ -111,6 +115,24 @@ const Index = () => {
   };
 
   const handleQuickAddClick = () => {
+    setQuickAddStage(undefined);
+    setJournalData(null);
+    setIsQuickAddOpen(true);
+  };
+
+  const handleJournalClick = () => {
+    setIsJournalOpen(true);
+  };
+
+  const handleJournalComplete = (data: { title: string; notes: string }) => {
+    setJournalData(data);
+    setIsJournalOpen(false);
+    setIsQuickAddOpen(true);
+  };
+
+  const handleStageQuickAdd = (stage: DecisionStage) => {
+    setQuickAddStage(stage);
+    setJournalData(null);
     setIsQuickAddOpen(true);
   };
 
@@ -121,6 +143,12 @@ const Index = () => {
 
   const handleCloseQuickAdd = () => {
     setIsQuickAddOpen(false);
+    setJournalData(null);
+    setQuickAddStage(undefined);
+  };
+
+  const handleCloseJournal = () => {
+    setIsJournalOpen(false);
   };
 
   if (loading) {
@@ -147,6 +175,7 @@ const Index = () => {
         error={error}
         onDecisionClick={handleDecisionClick}
         onQuickAddClick={handleQuickAddClick}
+        onJournalClick={handleJournalClick}
         onToggleArchived={handleToggleArchived}
         onLogout={handleLogout}
       />
@@ -157,6 +186,7 @@ const Index = () => {
         onDecisionUpdate={handleDecisionUpdate}
         onDecisionClick={handleDecisionClick}
         onArchive={handleArchive}
+        onQuickAdd={handleStageQuickAdd}
       />
 
       {/* Modals */}
@@ -171,6 +201,17 @@ const Index = () => {
         isOpen={isQuickAddOpen}
         onClose={handleCloseQuickAdd}
         onAdd={handleQuickAdd}
+        preFilledData={{
+          title: journalData?.title,
+          notes: journalData?.notes,
+          stage: quickAddStage
+        }}
+      />
+
+      <JournalModal
+        isOpen={isJournalOpen}
+        onClose={handleCloseJournal}
+        onComplete={handleJournalComplete}
       />
     </div>
   );

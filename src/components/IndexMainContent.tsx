@@ -1,7 +1,7 @@
 
 import { DecisionPipeline } from '@/components/DecisionPipeline';
 import { StatusBar } from '@/components/StatusBar';
-import { Decision } from '@/types/Decision';
+import { Decision, DecisionStage } from '@/types/Decision';
 
 interface IndexMainContentProps {
   decisions: Decision[];
@@ -9,6 +9,7 @@ interface IndexMainContentProps {
   onDecisionUpdate: (decision: Decision) => void;
   onDecisionClick: (decision: Decision) => void;
   onArchive: (decision: Decision) => void;
+  onQuickAdd?: (stage: DecisionStage) => void;
 }
 
 export const IndexMainContent = ({
@@ -16,7 +17,8 @@ export const IndexMainContent = ({
   showArchived,
   onDecisionUpdate,
   onDecisionClick,
-  onArchive
+  onArchive,
+  onQuickAdd
 }: IndexMainContentProps) => {
   return (
     <>
@@ -27,6 +29,7 @@ export const IndexMainContent = ({
           onDecisionUpdate={onDecisionUpdate}
           onDecisionClick={onDecisionClick}
           onArchive={onArchive}
+          onQuickAdd={onQuickAdd}
           showArchived={showArchived}
         />
       </main>
