@@ -9,6 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      decisions: {
+        Row: {
+          archived: boolean
+          bias_check: string | null
+          category: string
+          confidence: number
+          created_at: string
+          id: string
+          impact: string
+          notes: string | null
+          owner: string
+          reflection_answers: string[] | null
+          reflection_questions: string[] | null
+          reflection_reminder_date: string | null
+          stage: string
+          title: string
+          updated_at: string | null
+          urgency: string
+          user_id: string
+        }
+        Insert: {
+          archived?: boolean
+          bias_check?: string | null
+          category: string
+          confidence: number
+          created_at?: string
+          id?: string
+          impact: string
+          notes?: string | null
+          owner: string
+          reflection_answers?: string[] | null
+          reflection_questions?: string[] | null
+          reflection_reminder_date?: string | null
+          stage: string
+          title: string
+          updated_at?: string | null
+          urgency: string
+          user_id: string
+        }
+        Update: {
+          archived?: boolean
+          bias_check?: string | null
+          category?: string
+          confidence?: number
+          created_at?: string
+          id?: string
+          impact?: string
+          notes?: string | null
+          owner?: string
+          reflection_answers?: string[] | null
+          reflection_questions?: string[] | null
+          reflection_reminder_date?: string | null
+          stage?: string
+          title?: string
+          updated_at?: string | null
+          urgency?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

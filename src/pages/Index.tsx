@@ -6,44 +6,61 @@ import { QuickAddModal } from '@/components/QuickAddModal';
 import { StatusBar } from '@/components/StatusBar';
 import { Decision } from '@/types/Decision';
 import { Button } from '@/components/ui/button';
-import { Plus, Archive, User, LogOut } from 'lucide-react';
+import { Plus, Archive, LogOut, Database } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useDecisions } from '@/hooks/useDecisions';
 import { soundSystem } from '@/utils/soundSystem';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
   const { profile, signOut } = useAuth();
   const { toast } = useToast();
-  const [decisions, setDecisions] = useState<Decision[]>([]);
+  const {
+    decisions,
+    loading,
+    createDecision,
+    updateDecision,
+    deleteDecision,
+    migrateFromLocalStorage
+  } = useDecisions();
+
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
+  const [hasMigrated, setHasMigrated] = useState(false);
 
+  // Check for localStorage data and offer migration on first load
   useEffect(() => {
-    const savedDecisions = localStorage.getItem('tactical-decisions');
-    if (savedDecisions) {
-      const parsed = JSON.parse(savedDecisions).map((d: any) => ({
-        ...d,
-        createdAt: new Date(d.createdAt),
-        updatedAt: d.updatedAt ? new Date(d.updatedAt) : undefined,
-        reflection: d.reflection ? {
-          ...d.reflection,
-          reminderDate: new Date(d.reflection.reminderDate)
-        } : undefined
-      }));
-      setDecisions(parsed);
+    const checkForMigration = async () => {
+      if (hasMigrated) return;
+      
+      const savedDecisions = localStorage.getItem('tactical-decisions');
+      if (savedDecisions) {
+        try {
+          const localDecisions = JSON.parse(savedDecisions);
+          if (localDecisions.length > 0) {
+            const migratedCount = await migrateFromLocalStorage();
+            if (migratedCount > 0) {
+              setHasMigrated(true);
+            }
+          }
+        } catch (error) {
+          console.error('Error checking for migration:', error);
+        }
+      }
+    };
+
+    checkForMigration();
+  }, [migrateFromLocalStorage, hasMigrated]);
+
+  const handleDecisionUpdate = async (updatedDecision: Decision) => {
+    try {
+      await updateDecision(updatedDecision);
+      soundSystem.playCardDrop();
+    } catch (error) {
+      // Error is already handled in the hook
     }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem('tactical-decisions', JSON.stringify(decisions));
-  }, [decisions]);
-
-  const handleDecisionUpdate = (updatedDecision: Decision) => {
-    setDecisions(prev => 
-      prev.map(d => d.id === updatedDecision.id ? updatedDecision : d)
-    );
   };
 
   const handleDecisionClick = (decision: Decision) => {
@@ -51,9 +68,27 @@ const Index = () => {
     setIsDetailModalOpen(true);
   };
 
-  const handleQuickAdd = (decision: Decision) => {
-    setDecisions(prev => [...prev, decision]);
-    soundSystem.playCardDrop();
+  const handleQuickAdd = async (decision: Decision) => {
+    try {
+      await createDecision(decision);
+      soundSystem.playCardDrop();
+    } catch (error) {
+      // Error is already handled in the hook
+    }
+  };
+
+  const handleArchive = async (decision: Decision) => {
+    try {
+      const updatedDecision: Decision = {
+        ...decision,
+        archived: !decision.archived,
+        updatedAt: new Date()
+      };
+      await updateDecision(updatedDecision);
+      soundSystem.playArchive();
+    } catch (error) {
+      // Error is already handled in the hook
+    }
   };
 
   const handleLogout = () => {
@@ -63,6 +98,17 @@ const Index = () => {
       description: "You have been logged out",
     });
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tactical-accent mx-auto mb-4"></div>
+          <p className="text-tactical-text font-mono">Loading tactical decisions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-tactical-bg tactical-grid">
@@ -75,6 +121,10 @@ const Index = () => {
             </h1>
             <div className="hud-metric">
               OPERATOR: {profile?.name || 'Unknown'}
+            </div>
+            <div className="hud-metric">
+              <Database className="w-4 h-4 mr-1 inline" />
+              DATABASE MODE
             </div>
           </div>
           
@@ -117,6 +167,7 @@ const Index = () => {
           decisions={decisions}
           onDecisionUpdate={handleDecisionUpdate}
           onDecisionClick={handleDecisionClick}
+          onArchive={handleArchive}
           showArchived={showArchived}
         />
       </main>

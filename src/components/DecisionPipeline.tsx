@@ -9,6 +9,7 @@ interface DecisionPipelineProps {
   decisions: Decision[];
   onDecisionUpdate: (decision: Decision) => void;
   onDecisionClick: (decision: Decision) => void;
+  onArchive?: (decision: Decision) => void;
   showArchived?: boolean;
 }
 
@@ -20,7 +21,13 @@ const stages: { key: DecisionStage; label: string; description: string }[] = [
   { key: 'lessons', label: 'LESSONS', description: 'Reflections and learnings captured' }
 ];
 
-export const DecisionPipeline = ({ decisions, onDecisionUpdate, onDecisionClick, showArchived = false }: DecisionPipelineProps) => {
+export const DecisionPipeline = ({ 
+  decisions, 
+  onDecisionUpdate, 
+  onDecisionClick, 
+  onArchive,
+  showArchived = false 
+}: DecisionPipelineProps) => {
   const [draggedDecision, setDraggedDecision] = useState<Decision | null>(null);
 
   const handleDragStart = (decision: Decision) => {
@@ -44,16 +51,6 @@ export const DecisionPipeline = ({ decisions, onDecisionUpdate, onDecisionClick,
     }
   };
 
-  const handleArchive = (decision: Decision) => {
-    const updatedDecision: Decision = {
-      ...decision,
-      archived: !decision.archived,
-      updatedAt: new Date()
-    };
-    onDecisionUpdate(updatedDecision);
-    soundSystem.playArchive();
-  };
-
   const getDecisionsByStage = (stage: DecisionStage) => {
     return decisions.filter(decision => 
       decision.stage === stage && 
@@ -72,7 +69,7 @@ export const DecisionPipeline = ({ decisions, onDecisionUpdate, onDecisionClick,
           onDragEnd={handleDragEnd}
           onDrop={handleDrop}
           onDecisionClick={onDecisionClick}
-          onArchive={handleArchive}
+          onArchive={onArchive}
           isDragActive={draggedDecision !== null}
           showArchived={showArchived}
         />
