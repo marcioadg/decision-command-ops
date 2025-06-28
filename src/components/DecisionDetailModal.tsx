@@ -24,24 +24,19 @@ export const DecisionDetailModal = ({
   onUpdate, 
   pauseRealtimeForDecision 
 }: DecisionDetailModalProps) => {
-  // FIXED: Move all hooks to the top before any conditional returns
+  // FIXED: Move all hooks to the top and handle null decision properly
   const [isSaving, setIsSaving] = useState(false);
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Pause real-time updates for the entire modal session with longer duration
-  useEffect(() => {
-    if (isOpen && decision && pauseRealtimeForDecision) {
-      console.log('DecisionDetailModal: Pausing real-time updates for editing session');
-      pauseRealtimeForDecision(decision.id, 15000); // Increased to 15 seconds
-    }
-  }, [decision?.id, pauseRealtimeForDecision, isOpen]);
-
-  // Set up coordinated auto-save
+  // FIXED: Set up coordinated auto-save with proper null handling
   const { batchedSave, saveStatus } = useCoordinatedAutoSave({
-    decision: decision!,
+    decision, // Pass null decision - hook will handle it internally
     onSave: async (updates) => {
-      if (!decision) return;
+      if (!decision) {
+        console.log('DecisionDetailModal: No decision available for save');
+        return;
+      }
       
       const updatedDecision: Decision = {
         ...decision,
@@ -49,19 +44,32 @@ export const DecisionDetailModal = ({
         updatedAt: new Date()
       };
       
+      console.log('DecisionDetailModal: Saving decision updates:', updates);
       await onUpdate(updatedDecision);
     },
     pauseRealtimeForDecision
   });
 
-  // Don't render if not open or no decision - MOVED AFTER HOOKS
+  // Pause real-time updates for the entire modal session
+  useEffect(() => {
+    if (isOpen && decision && pauseRealtimeForDecision) {
+      console.log('DecisionDetailModal: Pausing real-time updates for editing session');
+      pauseRealtimeForDecision(decision.id, 15000);
+    }
+  }, [decision?.id, pauseRealtimeForDecision, isOpen]);
+
+  // FIXED: Now we can safely do conditional returns after all hooks
   if (!isOpen || !decision) {
     return null;
   }
 
   const handleUpdate = async (updates: Partial<Decision>) => {
     console.log('DecisionDetailModal: Handling coordinated update:', updates);
-    await batchedSave(updates);
+    try {
+      await batchedSave(updates);
+    } catch (error) {
+      console.error('DecisionDetailModal: Error in handleUpdate:', error);
+    }
   };
 
   const SaveStatusIndicator = () => {
