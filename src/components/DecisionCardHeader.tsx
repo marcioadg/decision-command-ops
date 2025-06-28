@@ -12,7 +12,7 @@ export const DecisionCardHeader = ({ title, category }: DecisionCardHeaderProps)
       case 'People': return 'text-blue-400';
       case 'Capital': return 'text-green-400';
       case 'Strategy': return 'text-purple-400';
-      case 'Product': return 'text-orange-400';
+      case 'Product': return 'text-gray-400';
       case 'Timing': return 'text-yellow-400';
       case 'Personal': return 'text-pink-400';
       default: return 'text-tactical-text';
