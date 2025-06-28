@@ -57,6 +57,12 @@ export const DecisionPipeline = ({
     const decisionId = draggedDecision.id;
     const originalStage = draggedDecision.stage;
 
+    console.log('DecisionPipeline: Starting drag drop operation:', {
+      decisionId,
+      originalStage,
+      newStage: stage
+    });
+
     // Apply optimistic update immediately
     applyOptimisticUpdate(decisionId, stage);
     setUpdatingDecisions(prev => new Set(prev).add(decisionId));
@@ -72,11 +78,14 @@ export const DecisionPipeline = ({
         updatedAt: new Date()
       };
 
+      console.log('DecisionPipeline: Calling onDecisionUpdate with:', updatedDecision);
+
       // Perform the actual database update
       await onDecisionUpdate(updatedDecision);
       
-      // Remove optimistic update on success (the real data will come from the server)
-      removeOptimisticUpdate(decisionId);
+      console.log('DecisionPipeline: Database update successful for decision:', decisionId);
+      
+      // Don't manually remove optimistic update here - let the hook detect server confirmation
       
       // Play celebration sound for "decided" stage
       if (stage === 'decided') {
@@ -85,7 +94,7 @@ export const DecisionPipeline = ({
         soundSystem.playStageTransition();
       }
     } catch (error) {
-      console.error('Failed to update decision:', error);
+      console.error('DecisionPipeline: Failed to update decision:', error);
       
       // Rollback optimistic update on failure
       rollbackOptimisticUpdate(decisionId);
