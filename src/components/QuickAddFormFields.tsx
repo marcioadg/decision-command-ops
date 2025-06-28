@@ -1,3 +1,4 @@
+
 import { DecisionCategory, DecisionImpact, DecisionUrgency } from '@/types/Decision';
 
 interface FormData {
@@ -6,7 +7,6 @@ interface FormData {
   impact: DecisionImpact;
   urgency: DecisionUrgency;
   confidence: number;
-  owner: string;
   notes: string;
 }
 

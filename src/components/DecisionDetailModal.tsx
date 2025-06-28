@@ -19,15 +19,17 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Decision | null>(null);
 
-  // Sync formData when decision prop changes
+  // Only sync formData when entering edit mode
   useEffect(() => {
-    if (decision) {
+    if (editMode && decision) {
       setFormData({ ...decision });
+    } else if (!editMode) {
+      setFormData(null);
     }
-  }, [decision]);
+  }, [decision, editMode]);
 
   // Don't render if not open or no decision
-  if (!isOpen || !decision || !formData) {
+  if (!isOpen || !decision) {
     return null;
   }
 
@@ -45,14 +47,14 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
   };
 
   const handleCancel = () => {
-    // Reset form data to original decision
-    setFormData({ ...decision });
+    // Reset form data and exit edit mode
+    setFormData(null);
     setEditMode(false);
   };
 
   const handleEditMode = () => {
     if (!editMode) {
-      // Entering edit mode - ensure we have fresh copy of current decision
+      // Entering edit mode - populate form with current decision
       setFormData({ ...decision });
     }
     setEditMode(!editMode);
@@ -67,6 +69,9 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
       return updated;
     });
   };
+
+  // Use formData in edit mode, otherwise use original decision for display
+  const displayData = editMode && formData ? formData : decision;
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -83,21 +88,21 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
         <div className="p-6 space-y-6">
           {/* Decision Form */}
           <DecisionForm
-            decision={formData}
+            decision={displayData}
             editMode={editMode}
             onUpdate={handleFormUpdate}
           />
 
           {/* Pre-Decision Analysis Section */}
           <DecisionPreAnalysisSection
-            decision={formData}
+            decision={displayData}
             editMode={editMode}
             onUpdate={handleFormUpdate}
           />
 
           {/* Reflection Section */}
           <DecisionReflectionSection
-            decision={formData}
+            decision={displayData}
             editMode={editMode}
             onUpdate={handleFormUpdate}
           />

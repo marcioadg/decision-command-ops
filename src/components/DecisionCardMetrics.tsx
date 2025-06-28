@@ -6,10 +6,9 @@ interface DecisionCardMetricsProps {
   urgency: DecisionUrgency;
   confidence: number;
   impact: DecisionImpact;
-  owner: string;
 }
 
-export const DecisionCardMetrics = ({ urgency, confidence, impact, owner }: DecisionCardMetricsProps) => {
+export const DecisionCardMetrics = ({ urgency, confidence, impact }: DecisionCardMetricsProps) => {
   const getUrgencyIcon = () => {
     const baseClasses = "w-4 h-4";
     switch (urgency) {
@@ -46,13 +45,10 @@ export const DecisionCardMetrics = ({ urgency, confidence, impact, owner }: Deci
         </div>
       </div>
 
-      {/* Impact and Owner */}
+      {/* Impact */}
       <div className="flex items-center justify-between text-xs">
         <div className="hud-metric">
           IMPACT: {impact.toUpperCase()}
-        </div>
-        <div className="hud-metric">
-          {owner}
         </div>
       </div>
     </>

@@ -30,7 +30,7 @@ export const IndexHeader = ({
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold text-tactical-accent font-mono tracking-wider">
-            TACTICAL DECISION PIPELINE
+            DECISION COMMAND
           </h1>
           <div className="hud-metric">
             OPERATOR: {profileName || 'Unknown'}

@@ -52,7 +52,6 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
         urgency={decision.urgency}
         confidence={decision.confidence}
         impact={decision.impact}
-        owner={decision.owner}
       />
 
       {/* Notes Preview */}

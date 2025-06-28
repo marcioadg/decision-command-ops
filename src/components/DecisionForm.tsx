@@ -110,21 +110,6 @@ export const DecisionForm = ({ decision, editMode, onUpdate }: DecisionFormProps
         </div>
       </div>
 
-      {/* Owner */}
-      <div>
-        <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Owner</label>
-        {editMode ? (
-          <input
-            type="text"
-            value={decision.owner || ''}
-            onChange={(e) => onUpdate({ owner: e.target.value })}
-            className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
-          />
-        ) : (
-          <p className="text-tactical-text">{decision.owner}</p>
-        )}
-      </div>
-
       {/* Notes */}
       <div>
         <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Notes</label>

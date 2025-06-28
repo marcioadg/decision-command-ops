@@ -16,7 +16,6 @@ export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
     impact: 'medium' as DecisionImpact,
     urgency: 'medium' as DecisionUrgency,
     confidence: 50,
-    owner: 'CEO',
     notes: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -28,7 +27,8 @@ export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
       try {
         const newDecision: Omit<Decision, 'id' | 'createdAt'> = {
           ...formData,
-          stage: 'backlog'
+          stage: 'backlog',
+          owner: 'System' // Default fallback for backward compatibility
         };
         await onAdd(newDecision);
         setFormData({
@@ -37,7 +37,6 @@ export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
           impact: 'medium',
           urgency: 'medium',
           confidence: 50,
-          owner: 'CEO',
           notes: ''
         });
         onCancel();

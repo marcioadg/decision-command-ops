@@ -24,7 +24,7 @@ export interface Decision {
   urgency: DecisionUrgency;
   stage: DecisionStage;
   confidence: number; // 0-100
-  owner: string;
+  owner?: string; // Made optional
   createdAt: Date;
   updatedAt?: Date;
   notes?: string;
