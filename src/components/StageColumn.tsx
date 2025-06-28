@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
@@ -48,7 +49,6 @@ export const StageColumn = ({
       case 'considering': return 'border-t-urgency-medium';
       case 'committed': return 'border-t-tactical-accent';
       case 'decided': return 'border-t-impact-high';
-      case 'lessons': return 'border-t-info';
       default: return 'border-t-tactical-border';
     }
   };
