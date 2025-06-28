@@ -1,6 +1,6 @@
 
 import { Decision } from '@/types/Decision';
-import { Clock, Star, Archive, Calendar, MessageSquare } from 'lucide-react';
+import { Clock, Star, Archive, Calendar, MessageSquare, AlertTriangle } from 'lucide-react';
 
 interface DecisionCardProps {
   decision: Decision;
@@ -43,18 +43,72 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
   };
 
   const getReflectionStatus = () => {
-    if (!decision.reflection?.reminderDate) return null;
+    if (!decision.reflection) return null;
     
-    const hasAnswers = decision.reflection.answers?.length > 0;
-    const isPast = new Date(decision.reflection.reminderDate) < new Date();
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
-    if (hasAnswers) {
-      return { type: 'complete', color: 'text-green-400' };
-    } else if (isPast) {
-      return { type: 'overdue', color: 'text-red-400' };
-    } else {
-      return { type: 'scheduled', color: 'text-yellow-400' };
+    const intervals = [
+      { data: decision.reflection.sevenDay, name: '7-day' },
+      { data: decision.reflection.thirtyDay, name: '30-day' },
+      { data: decision.reflection.ninetyDay, name: '90-day' }
+    ].filter(interval => interval.data);
+
+    if (intervals.length === 0) return null;
+
+    // Find the most urgent status
+    let mostUrgent = { status: 'completed', interval: null, daysUntil: Infinity };
+
+    intervals.forEach(({ data, name }) => {
+      if (!data) return;
+      
+      if (data.completed) return; // Skip completed reflections
+      
+      const dueDate = new Date(data.date.getFullYear(), data.date.getMonth(), data.date.getDate());
+      const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+      
+      if (daysUntil < 0 && mostUrgent.status !== 'overdue') {
+        mostUrgent = { status: 'overdue', interval: name, daysUntil };
+      } else if (daysUntil === 0 && mostUrgent.status !== 'overdue') {
+        mostUrgent = { status: 'due-today', interval: name, daysUntil };
+      } else if (daysUntil > 0 && daysUntil < mostUrgent.daysUntil && mostUrgent.status === 'completed') {
+        mostUrgent = { status: 'due-soon', interval: name, daysUntil };
+      }
+    });
+
+    if (mostUrgent.status === 'completed') {
+      // All reflections are completed
+      const completedCount = intervals.filter(({ data }) => data?.completed).length;
+      return {
+        type: 'complete',
+        color: 'text-green-400',
+        text: `${completedCount}/${intervals.length} COMPLETE`,
+        icon: MessageSquare
+      };
     }
+
+    const statusConfig = {
+      'overdue': {
+        type: 'overdue',
+        color: 'text-red-400',
+        text: `${mostUrgent.interval?.toUpperCase()} OVERDUE`,
+        icon: AlertTriangle
+      },
+      'due-today': {
+        type: 'due-today',
+        color: 'text-yellow-400',
+        text: `${mostUrgent.interval?.toUpperCase()} DUE TODAY`,
+        icon: Clock
+      },
+      'due-soon': {
+        type: 'due-soon',
+        color: 'text-blue-400',
+        text: `${mostUrgent.interval?.toUpperCase()} IN ${mostUrgent.daysUntil}D`,
+        icon: Calendar
+      }
+    };
+
+    return statusConfig[mostUrgent.status as keyof typeof statusConfig] || null;
   };
 
   const reflectionStatus = getReflectionStatus();
@@ -107,11 +161,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
           className={`absolute top-2 right-2 ${reflectionStatus.color}`}
           title={`Reflection ${reflectionStatus.type}`}
         >
-          {reflectionStatus.type === 'complete' ? (
-            <MessageSquare className="w-4 h-4 fill-current" />
-          ) : (
-            <Calendar className="w-4 h-4" />
-          )}
+          <reflectionStatus.icon className="w-4 h-4" />
         </div>
       )}
 
@@ -166,15 +216,9 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
       {reflectionStatus && (
         <div className="mt-2 pt-2 border-t border-tactical-border">
           <div className={`flex items-center space-x-1 text-xs ${reflectionStatus.color}`}>
-            {reflectionStatus.type === 'complete' ? (
-              <MessageSquare className="w-3 h-3" />
-            ) : (
-              <Calendar className="w-3 h-3" />
-            )}
+            <reflectionStatus.icon className="w-3 h-3" />
             <span className="font-mono">
-              {reflectionStatus.type === 'complete' ? 'REFLECTED' : 
-               reflectionStatus.type === 'overdue' ? 'REFLECTION OVERDUE' : 
-               'REFLECTION SCHEDULED'}
+              {reflectionStatus.text}
             </span>
           </div>
         </div>

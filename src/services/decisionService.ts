@@ -44,29 +44,75 @@ const convertToDecision = (dbDecision: any): Decision => ({
   archived: dbDecision.archived || false,
   createdAt: new Date(dbDecision.created_at),
   updatedAt: dbDecision.updated_at ? new Date(dbDecision.updated_at) : undefined,
-  reflection: dbDecision.reflection_reminder_date ? {
-    reminderDate: new Date(dbDecision.reflection_reminder_date),
-    questions: dbDecision.reflection_questions || [],
-    answers: dbDecision.reflection_answers || []
+  reflection: (dbDecision.reflection_7_day_date || dbDecision.reflection_30_day_date || dbDecision.reflection_90_day_date || dbDecision.reflection_questions) ? {
+    sevenDay: dbDecision.reflection_7_day_date ? {
+      date: new Date(dbDecision.reflection_7_day_date),
+      completed: dbDecision.reflection_7_day_completed || false,
+      answers: dbDecision.reflection_7_day_answers || []
+    } : undefined,
+    thirtyDay: dbDecision.reflection_30_day_date ? {
+      date: new Date(dbDecision.reflection_30_day_date),
+      completed: dbDecision.reflection_30_day_completed || false,
+      answers: dbDecision.reflection_30_day_answers || []
+    } : undefined,
+    ninetyDay: dbDecision.reflection_90_day_date ? {
+      date: new Date(dbDecision.reflection_90_day_date),
+      completed: dbDecision.reflection_90_day_completed || false,
+      answers: dbDecision.reflection_90_day_answers || []
+    } : undefined,
+    questions: dbDecision.reflection_questions || []
   } : undefined
 });
 
 // Convert frontend Decision to database format
-const convertToDbDecision = (decision: Decision): any => ({
-  title: decision.title,
-  category: decision.category,
-  impact: decision.impact,
-  urgency: decision.urgency,
-  stage: decision.stage,
-  confidence: decision.confidence,
-  owner: decision.owner,
-  notes: decision.notes,
-  bias_check: decision.biasCheck,
-  archived: decision.archived || false,
-  reflection_reminder_date: decision.reflection?.reminderDate.toISOString(),
-  reflection_questions: decision.reflection?.questions,
-  reflection_answers: decision.reflection?.answers
-});
+const convertToDbDecision = (decision: Decision): any => {
+  const dbDecision: any = {
+    title: decision.title,
+    category: decision.category,
+    impact: decision.impact,
+    urgency: decision.urgency,
+    stage: decision.stage,
+    confidence: decision.confidence,
+    owner: decision.owner,
+    notes: decision.notes,
+    bias_check: decision.biasCheck,
+    archived: decision.archived || false,
+    reflection_questions: decision.reflection?.questions
+  };
+
+  // Add reflection interval data
+  if (decision.reflection?.sevenDay) {
+    dbDecision.reflection_7_day_date = decision.reflection.sevenDay.date.toISOString();
+    dbDecision.reflection_7_day_completed = decision.reflection.sevenDay.completed;
+    dbDecision.reflection_7_day_answers = decision.reflection.sevenDay.answers;
+  }
+  if (decision.reflection?.thirtyDay) {
+    dbDecision.reflection_30_day_date = decision.reflection.thirtyDay.date.toISOString();
+    dbDecision.reflection_30_day_completed = decision.reflection.thirtyDay.completed;
+    dbDecision.reflection_30_day_answers = decision.reflection.thirtyDay.answers;
+  }
+  if (decision.reflection?.ninetyDay) {
+    dbDecision.reflection_90_day_date = decision.reflection.ninetyDay.date.toISOString();
+    dbDecision.reflection_90_day_completed = decision.reflection.ninetyDay.completed;
+    dbDecision.reflection_90_day_answers = decision.reflection.ninetyDay.answers;
+  }
+
+  return dbDecision;
+};
+
+// Auto-calculate reflection dates when decision moves to 'decided' stage
+const calculateReflectionDates = (createdAt: Date) => {
+  const sevenDayDate = new Date(createdAt);
+  sevenDayDate.setDate(sevenDayDate.getDate() + 7);
+  
+  const thirtyDayDate = new Date(createdAt);
+  thirtyDayDate.setDate(thirtyDayDate.getDate() + 30);
+  
+  const ninetyDayDate = new Date(createdAt);
+  ninetyDayDate.setDate(ninetyDayDate.getDate() + 90);
+  
+  return { sevenDayDate, thirtyDayDate, ninetyDayDate };
+};
 
 export const decisionService = {
   // Get all decisions for current user
@@ -110,8 +156,27 @@ export const decisionService = {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
+      const now = new Date();
+      const newDecision = { ...decision, id: '', createdAt: now };
+      
+      // Auto-set reflection dates if moving to 'decided' stage
+      if (decision.stage === 'decided' && !decision.reflection?.sevenDay) {
+        const { sevenDayDate, thirtyDayDate, ninetyDayDate } = calculateReflectionDates(now);
+        newDecision.reflection = {
+          ...decision.reflection,
+          sevenDay: { date: sevenDayDate, completed: false },
+          thirtyDay: { date: thirtyDayDate, completed: false },
+          ninetyDay: { date: ninetyDayDate, completed: false },
+          questions: decision.reflection?.questions || [
+            'What went well with this decision?',
+            'What could have been improved?',
+            'What would I do differently next time?'
+          ]
+        };
+      }
+
       const dbDecision = {
-        ...convertToDbDecision({ ...decision, id: '', createdAt: new Date() }),
+        ...convertToDbDecision(newDecision),
         user_id: user.id
       };
 
@@ -147,6 +212,22 @@ export const decisionService = {
   async updateDecision(decision: Decision): Promise<Decision> {
     try {
       console.log('Updating decision:', decision.id);
+      
+      // Auto-set reflection dates if moving to 'decided' stage for the first time
+      if (decision.stage === 'decided' && !decision.reflection?.sevenDay) {
+        const { sevenDayDate, thirtyDayDate, ninetyDayDate } = calculateReflectionDates(decision.createdAt);
+        decision.reflection = {
+          ...decision.reflection,
+          sevenDay: { date: sevenDayDate, completed: false },
+          thirtyDay: { date: thirtyDayDate, completed: false },
+          ninetyDay: { date: ninetyDayDate, completed: false },
+          questions: decision.reflection?.questions || [
+            'What went well with this decision?',
+            'What could have been improved?',
+            'What would I do differently next time?'
+          ]
+        };
+      }
       
       const dbDecision = convertToDbDecision(decision);
 
@@ -226,9 +307,14 @@ export const decisionService = {
         ...d,
         createdAt: new Date(d.createdAt),
         updatedAt: d.updatedAt ? new Date(d.updatedAt) : undefined,
+        // Convert old reflection structure to new one
         reflection: d.reflection ? {
-          ...d.reflection,
-          reminderDate: new Date(d.reflection.reminderDate)
+          questions: d.reflection.questions || [],
+          sevenDay: d.reflection.reminderDate ? {
+            date: new Date(d.reflection.reminderDate),
+            completed: d.reflection.answers?.length > 0,
+            answers: d.reflection.answers || []
+          } : undefined
         } : undefined
       }));
 
@@ -260,6 +346,52 @@ export const decisionService = {
       }
       
       return 0;
+    }
+  },
+
+  // Get decisions that need reflection
+  async getReflectionsDue(): Promise<{
+    overdue: Decision[];
+    dueToday: Decision[];
+    dueThisWeek: Decision[];
+  }> {
+    try {
+      const decisions = await this.getDecisions();
+      const now = new Date();
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+      const nextWeek = new Date(today);
+      nextWeek.setDate(nextWeek.getDate() + 7);
+
+      const overdue: Decision[] = [];
+      const dueToday: Decision[] = [];
+      const dueThisWeek: Decision[] = [];
+
+      decisions.forEach(decision => {
+        if (!decision.reflection) return;
+
+        const checkReflection = (interval: any, type: string) => {
+          if (!interval || interval.completed) return;
+          
+          const dueDate = new Date(interval.date.getFullYear(), interval.date.getMonth(), interval.date.getDate());
+          
+          if (dueDate < today) {
+            overdue.push(decision);
+          } else if (dueDate.getTime() === today.getTime()) {
+            dueToday.push(decision);
+          } else if (dueDate < nextWeek) {
+            dueThisWeek.push(decision);
+          }
+        };
+
+        checkReflection(decision.reflection.sevenDay, '7-day');
+        checkReflection(decision.reflection.thirtyDay, '30-day');
+        checkReflection(decision.reflection.ninetyDay, '90-day');
+      });
+
+      return { overdue, dueToday, dueThisWeek };
+    } catch (error) {
+      console.error('Error getting reflections due:', error);
+      return { overdue: [], dueToday: [], dueThisWeek: [] };
     }
   }
 };

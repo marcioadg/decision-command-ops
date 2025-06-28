@@ -4,6 +4,7 @@ import { DecisionPipeline } from '@/components/DecisionPipeline';
 import { DecisionDetailModal } from '@/components/DecisionDetailModal';
 import { QuickAddModal } from '@/components/QuickAddModal';
 import { StatusBar } from '@/components/StatusBar';
+import { NotificationBell } from '@/components/NotificationBell';
 import { Decision } from '@/types/Decision';
 import { Button } from '@/components/ui/button';
 import { Plus, Archive, LogOut, Database } from 'lucide-react';
@@ -183,6 +184,11 @@ const Index = () => {
           </div>
           
           <div className="flex items-center space-x-2">
+            <NotificationBell
+              decisions={decisions}
+              onDecisionClick={handleDecisionClick}
+            />
+            
             <Button
               onClick={() => setIsQuickAddOpen(true)}
               className="bg-tactical-accent hover:bg-tactical-accent/80 text-tactical-bg font-mono text-xs"

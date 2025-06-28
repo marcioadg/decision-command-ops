@@ -4,6 +4,12 @@ export type DecisionImpact = 'high' | 'medium' | 'low';
 export type DecisionUrgency = 'high' | 'medium' | 'low';
 export type DecisionStage = 'backlog' | 'considering' | 'committed' | 'decided' | 'lessons';
 
+export interface ReflectionInterval {
+  date: Date;
+  completed: boolean;
+  answers?: string[];
+}
+
 export interface Decision {
   id: string;
   title: string;
@@ -19,8 +25,9 @@ export interface Decision {
   biasCheck?: string;
   archived?: boolean;
   reflection?: {
-    reminderDate: Date;
-    questions: string[];
-    answers?: string[];
+    sevenDay?: ReflectionInterval;
+    thirtyDay?: ReflectionInterval;
+    ninetyDay?: ReflectionInterval;
+    questions?: string[];
   };
 }
