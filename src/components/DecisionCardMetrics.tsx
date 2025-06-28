@@ -1,5 +1,5 @@
 
-import { Clock, Fire } from 'lucide-react';
+import { Clock, Flame } from 'lucide-react';
 import { DecisionUrgency, DecisionImpact, DecisionCategory } from '@/types/Decision';
 
 interface DecisionCardMetricsProps {
@@ -33,9 +33,9 @@ export const DecisionCardMetrics = ({ urgency, confidence, impact, category }: D
   const getImpactIcon = () => {
     const baseClasses = "w-4 h-4";
     switch (impact) {
-      case 'high': return <Fire className={`${baseClasses} text-impact-high`} />;
-      case 'medium': return <Fire className={`${baseClasses} text-urgency-medium`} />;
-      case 'low': return <Fire className={`${baseClasses} text-tactical-text/60`} />;
+      case 'high': return <Flame className={`${baseClasses} text-impact-high`} />;
+      case 'medium': return <Flame className={`${baseClasses} text-urgency-medium`} />;
+      case 'low': return <Flame className={`${baseClasses} text-tactical-text/60`} />;
     }
   };
 
