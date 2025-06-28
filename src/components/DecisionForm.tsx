@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Decision, DecisionCategory, DecisionImpact, DecisionUrgency } from '@/types/Decision';
+import { Decision, DecisionCategory, DecisionPriority } from '@/types/Decision';
 
 interface DecisionFormProps {
   decision: Decision;
@@ -10,8 +10,7 @@ interface DecisionFormProps {
 
 export const DecisionForm = ({ decision, editMode, onUpdate }: DecisionFormProps) => {
   const categories: DecisionCategory[] = ['People', 'Capital', 'Strategy', 'Product', 'Timing', 'Personal'];
-  const impacts: DecisionImpact[] = ['high', 'medium', 'low'];
-  const urgencies: DecisionUrgency[] = ['high', 'medium', 'low'];
+  const priorities: DecisionPriority[] = ['high', 'medium', 'low'];
   
   // Generate confidence options from 0 to 100 in 10% increments
   const confidenceOptions = Array.from({ length: 11 }, (_, i) => i * 10);
@@ -53,38 +52,19 @@ export const DecisionForm = ({ decision, editMode, onUpdate }: DecisionFormProps
         </div>
 
         <div>
-          <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Impact</label>
+          <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Priority</label>
           {editMode ? (
             <select
-              value={decision.impact || ''}
-              onChange={(e) => onUpdate({ impact: e.target.value as DecisionImpact })}
+              value={decision.priority || ''}
+              onChange={(e) => onUpdate({ priority: e.target.value as DecisionPriority })}
               className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
             >
-              {impacts.map(impact => (
-                <option key={impact} value={impact}>{impact.toUpperCase()}</option>
+              {priorities.map(priority => (
+                <option key={priority} value={priority}>{priority.toUpperCase()}</option>
               ))}
             </select>
           ) : (
-            <p className="text-tactical-text">{decision.impact.toUpperCase()}</p>
-          )}
-        </div>
-
-        <div>
-          <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Urgency</label>
-          {editMode ? (
-            <select
-              value={decision.urgency || ''}
-              onChange={(e) => onUpdate({ urgency: e.target.value as DecisionUrgency })}
-              className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
-            >
-              {urgencies.map(urgency => (
-                <option key={urgency} value={urgency}>{urgency.toUpperCase()}</option>
-              ))}
-            </select>
-          ) : (
-            <div className="flex items-center space-x-2">
-              <span className="text-tactical-text">{decision.urgency.toUpperCase()}</span>
-            </div>
+            <p className="text-tactical-text">{decision.priority.toUpperCase()}</p>
           )}
         </div>
 

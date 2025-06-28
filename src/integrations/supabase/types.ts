@@ -101,9 +101,9 @@ export type Database = {
           confidence: number
           created_at: string
           id: string
-          impact: string
           notes: string | null
           owner: string
+          priority: string
           reflection_30_day_answers: string[] | null
           reflection_30_day_completed: boolean | null
           reflection_30_day_date: string | null
@@ -118,7 +118,6 @@ export type Database = {
           stage: string
           title: string
           updated_at: string | null
-          urgency: string
           user_id: string
         }
         Insert: {
@@ -129,9 +128,9 @@ export type Database = {
           confidence: number
           created_at?: string
           id?: string
-          impact: string
           notes?: string | null
           owner: string
+          priority: string
           reflection_30_day_answers?: string[] | null
           reflection_30_day_completed?: boolean | null
           reflection_30_day_date?: string | null
@@ -146,7 +145,6 @@ export type Database = {
           stage: string
           title: string
           updated_at?: string | null
-          urgency: string
           user_id: string
         }
         Update: {
@@ -157,9 +155,9 @@ export type Database = {
           confidence?: number
           created_at?: string
           id?: string
-          impact?: string
           notes?: string | null
           owner?: string
+          priority?: string
           reflection_30_day_answers?: string[] | null
           reflection_30_day_completed?: boolean | null
           reflection_30_day_date?: string | null
@@ -174,7 +172,6 @@ export type Database = {
           stage?: string
           title?: string
           updated_at?: string | null
-          urgency?: string
           user_id?: string
         }
         Relationships: [

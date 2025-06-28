@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { Decision, DecisionCategory, DecisionImpact, DecisionUrgency } from '@/types/Decision';
+import { Decision, DecisionCategory, DecisionPriority } from '@/types/Decision';
 import { QuickAddFormFields } from './QuickAddFormFields';
 import { QuickAddFormActions } from './QuickAddFormActions';
 
@@ -13,8 +13,7 @@ export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
   const [formData, setFormData] = useState({
     title: '',
     category: 'Strategy' as DecisionCategory,
-    impact: 'medium' as DecisionImpact,
-    urgency: 'medium' as DecisionUrgency,
+    priority: 'medium' as DecisionPriority,
     confidence: 50,
     notes: ''
   });
@@ -34,8 +33,7 @@ export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
         setFormData({
           title: '',
           category: 'Strategy',
-          impact: 'medium',
-          urgency: 'medium',
+          priority: 'medium',
           confidence: 50,
           notes: ''
         });

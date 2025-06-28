@@ -1,7 +1,6 @@
 
 export type DecisionCategory = 'People' | 'Capital' | 'Strategy' | 'Product' | 'Timing' | 'Personal';
-export type DecisionImpact = 'high' | 'medium' | 'low';
-export type DecisionUrgency = 'high' | 'medium' | 'low';
+export type DecisionPriority = 'high' | 'medium' | 'low';
 export type DecisionStage = 'backlog' | 'considering' | 'committed' | 'decided';
 
 export interface ReflectionInterval {
@@ -20,8 +19,7 @@ export interface Decision {
   id: string;
   title: string;
   category: DecisionCategory;
-  impact: DecisionImpact;
-  urgency: DecisionUrgency;
+  priority: DecisionPriority;
   stage: DecisionStage;
   confidence: number; // 0-100
   owner?: string; // Made optional

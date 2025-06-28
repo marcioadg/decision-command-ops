@@ -49,9 +49,8 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
 
       {/* Metrics */}
       <DecisionCardMetrics
-        urgency={decision.urgency}
+        priority={decision.priority}
         confidence={decision.confidence}
-        impact={decision.impact}
         category={decision.category}
       />
 

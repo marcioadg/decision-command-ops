@@ -1,15 +1,14 @@
 
-import { Clock, Flame } from 'lucide-react';
-import { DecisionUrgency, DecisionImpact, DecisionCategory } from '@/types/Decision';
+import { Flame } from 'lucide-react';
+import { DecisionPriority, DecisionCategory } from '@/types/Decision';
 
 interface DecisionCardMetricsProps {
-  urgency: DecisionUrgency;
+  priority: DecisionPriority;
   confidence: number;
-  impact: DecisionImpact;
   category: DecisionCategory;
 }
 
-export const DecisionCardMetrics = ({ urgency, confidence, impact, category }: DecisionCardMetricsProps) => {
+export const DecisionCardMetrics = ({ priority, confidence, category }: DecisionCardMetricsProps) => {
   const getCategoryBadgeColor = () => {
     switch (category) {
       case 'People': return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
@@ -21,19 +20,10 @@ export const DecisionCardMetrics = ({ urgency, confidence, impact, category }: D
     }
   };
 
-  const getUrgencyIcon = () => {
+  const getPriorityIcon = () => {
     const baseClasses = "w-4 h-4";
-    switch (urgency) {
-      case 'high': return <Clock className={`${baseClasses} text-urgency-high`} />;
-      case 'medium': return <Clock className={`${baseClasses} text-urgency-medium`} />;
-      case 'low': return <Clock className={`${baseClasses} text-urgency-low`} />;
-    }
-  };
-
-  const getImpactIcon = () => {
-    const baseClasses = "w-4 h-4";
-    switch (impact) {
-      case 'high': return <Flame className={`${baseClasses} text-impact-high`} />;
+    switch (priority) {
+      case 'high': return <Flame className={`${baseClasses} text-urgency-high`} />;
       case 'medium': return <Flame className={`${baseClasses} text-urgency-medium`} />;
       case 'low': return <Flame className={`${baseClasses} text-tactical-text/60`} />;
     }
@@ -57,19 +47,11 @@ export const DecisionCardMetrics = ({ urgency, confidence, impact, category }: D
 
       {/* Horizontal Metrics Row */}
       <div className="flex items-center justify-between gap-2 text-xs">
-        {/* Urgency */}
+        {/* Priority */}
         <div className="flex items-center space-x-1">
-          {getUrgencyIcon()}
+          {getPriorityIcon()}
           <span className="font-mono text-tactical-text/70">
-            {urgency.toUpperCase()}
-          </span>
-        </div>
-
-        {/* Impact */}
-        <div className="flex items-center space-x-1">
-          {getImpactIcon()}
-          <span className="font-mono text-tactical-text/70">
-            {impact.toUpperCase()}
+            {priority.toUpperCase()}
           </span>
         </div>
 

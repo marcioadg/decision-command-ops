@@ -1,5 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Decision, DecisionCategory, DecisionImpact, DecisionUrgency, DecisionStage } from '@/types/Decision';
+import { Decision, DecisionCategory, DecisionPriority, DecisionStage } from '@/types/Decision';
 
 // Network utility functions
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -34,8 +34,7 @@ const convertToDecision = (dbDecision: any): Decision => ({
   id: dbDecision.id,
   title: dbDecision.title,
   category: dbDecision.category as DecisionCategory,
-  impact: dbDecision.impact as DecisionImpact,
-  urgency: dbDecision.urgency as DecisionUrgency,
+  priority: dbDecision.priority as DecisionPriority,
   stage: dbDecision.stage as DecisionStage,
   confidence: dbDecision.confidence,
   owner: dbDecision.owner,
@@ -69,8 +68,7 @@ const convertToDbDecision = (decision: Decision): any => {
   const dbDecision: any = {
     title: decision.title,
     category: decision.category,
-    impact: decision.impact,
-    urgency: decision.urgency,
+    priority: decision.priority,
     stage: decision.stage,
     confidence: decision.confidence,
     owner: decision.owner,
