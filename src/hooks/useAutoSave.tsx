@@ -17,12 +17,14 @@ export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptio
       clearTimeout(timeoutRef.current);
     }
 
-    // Only auto-save if data has actually changed
-    if (JSON.stringify(data) !== JSON.stringify(previousDataRef.current)) {
-      timeoutRef.current = setTimeout(() => {
-        onSave(data);
-        previousDataRef.current = data;
-      }, delay);
+    // Only auto-save if data exists and has actually changed
+    if (data && typeof data === 'object' && Object.keys(data).length > 0) {
+      if (JSON.stringify(data) !== JSON.stringify(previousDataRef.current)) {
+        timeoutRef.current = setTimeout(() => {
+          onSave(data);
+          previousDataRef.current = data;
+        }, delay);
+      }
     }
 
     return () => {

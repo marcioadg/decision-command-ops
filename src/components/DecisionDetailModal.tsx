@@ -25,11 +25,6 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
     }
   }, [decision]);
 
-  // Don't render if not open or no decision
-  if (!isOpen || !decision || !formData) {
-    return null;
-  }
-
   const handleAutoSave = (data: Decision) => {
     console.log('Auto-saving decision:', data);
     const updatedDecision: Decision = {
@@ -39,12 +34,17 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
     onUpdate(updatedDecision);
   };
 
-  // Set up auto-save with 1 second delay
+  // Set up auto-save with 1 second delay - ALWAYS call this hook
   useAutoSave({
-    data: formData,
+    data: formData || {} as Decision, // Provide fallback to avoid null
     onSave: handleAutoSave,
     delay: 1000
   });
+
+  // Don't render if not open or no decision
+  if (!isOpen || !decision || !formData) {
+    return null;
+  }
 
   const handleFormUpdate = (updates: Partial<Decision>) => {
     console.log('Updating form data with:', updates);
