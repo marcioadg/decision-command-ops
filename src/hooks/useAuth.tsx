@@ -45,7 +45,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         return;
       }
 
-      setProfile(data);
+      // Type assertion to ensure role is properly typed
+      const typedProfile: UserProfile = {
+        ...data,
+        role: data.role as 'user' | 'admin' | 'company_admin'
+      };
+
+      setProfile(typedProfile);
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }

@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { DecisionPipeline } from '@/components/DecisionPipeline';
 import { DecisionDetailModal } from '@/components/DecisionDetailModal';
@@ -11,7 +12,7 @@ import { soundSystem } from '@/utils/soundSystem';
 import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
-  const { user, logout } = useAuth();
+  const { profile, signOut } = useAuth();
   const { toast } = useToast();
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
@@ -56,7 +57,7 @@ const Index = () => {
   };
 
   const handleLogout = () => {
-    logout();
+    signOut();
     toast({
       title: "SESSION TERMINATED",
       description: "You have been logged out",
@@ -73,7 +74,7 @@ const Index = () => {
               TACTICAL DECISION PIPELINE
             </h1>
             <div className="hud-metric">
-              OPERATOR: {user?.name}
+              OPERATOR: {profile?.name || 'Unknown'}
             </div>
           </div>
           
