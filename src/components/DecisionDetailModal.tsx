@@ -7,6 +7,7 @@ import { DecisionPreAnalysisSection } from './DecisionPreAnalysisSection';
 import { DecisionReflectionSection } from './DecisionReflectionSection';
 import { DecisionTimestamps } from './DecisionTimestamps';
 import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
+import { useCoordinatedAutoSave } from '@/hooks/useCoordinatedAutoSave';
 
 interface DecisionDetailModalProps {
   decision: Decision | null;
@@ -28,32 +29,19 @@ export const DecisionDetailModal = ({
   const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
-  // Pause real-time updates for the entire modal session
+  // Pause real-time updates for the entire modal session with longer duration
   useEffect(() => {
     if (isOpen && decision && pauseRealtimeForDecision) {
       console.log('DecisionDetailModal: Pausing real-time updates for editing session');
-      pauseRealtimeForDecision(decision.id, 10000); // 10 second pause for editing
+      pauseRealtimeForDecision(decision.id, 15000); // Increased to 15 seconds
     }
   }, [decision?.id, pauseRealtimeForDecision, isOpen]);
 
-  // Don't render if not open or no decision - MOVED AFTER HOOKS
-  if (!isOpen || !decision) {
-    return null;
-  }
-
-  const handleUpdate = async (updates: Partial<Decision>) => {
-    if (!decision) return;
-    
-    console.log('DecisionDetailModal: Handling update:', updates);
-    
-    try {
-      setIsSaving(true);
-      setSaveError(null);
-      
-      // Pause real-time updates during save
-      if (pauseRealtimeForDecision) {
-        pauseRealtimeForDecision(decision.id, 5000);
-      }
+  // Set up coordinated auto-save
+  const { batchedSave, saveStatus } = useCoordinatedAutoSave({
+    decision: decision!,
+    onSave: async (updates) => {
+      if (!decision) return;
       
       const updatedDecision: Decision = {
         ...decision,
@@ -61,21 +49,23 @@ export const DecisionDetailModal = ({
         updatedAt: new Date()
       };
       
-      console.log('DecisionDetailModal: Saving updated decision:', updatedDecision);
       await onUpdate(updatedDecision);
-      console.log('DecisionDetailModal: Save completed successfully');
-      
-      setLastSaveTime(new Date());
-    } catch (error) {
-      console.error('DecisionDetailModal: Save failed:', error);
-      setSaveError(error instanceof Error ? error.message : 'Save failed');
-    } finally {
-      setIsSaving(false);
-    }
+    },
+    pauseRealtimeForDecision
+  });
+
+  // Don't render if not open or no decision - MOVED AFTER HOOKS
+  if (!isOpen || !decision) {
+    return null;
+  }
+
+  const handleUpdate = async (updates: Partial<Decision>) => {
+    console.log('DecisionDetailModal: Handling coordinated update:', updates);
+    await batchedSave(updates);
   };
 
   const SaveStatusIndicator = () => {
-    if (isSaving) {
+    if (saveStatus.status === 'saving') {
       return (
         <div className="flex items-center space-x-2 text-tactical-accent">
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -84,21 +74,21 @@ export const DecisionDetailModal = ({
       );
     }
     
-    if (saveError) {
+    if (saveStatus.status === 'error') {
       return (
         <div className="flex items-center space-x-2 text-red-400">
           <AlertCircle className="w-4 h-4" />
-          <span className="text-sm font-mono">Error: {saveError}</span>
+          <span className="text-sm font-mono">Error: {saveStatus.error}</span>
         </div>
       );
     }
     
-    if (lastSaveTime) {
+    if (saveStatus.status === 'saved' && saveStatus.lastSaved) {
       return (
         <div className="flex items-center space-x-2 text-green-400">
           <CheckCircle className="w-4 h-4" />
           <span className="text-sm font-mono">
-            Saved {lastSaveTime.toLocaleTimeString()}
+            Saved {saveStatus.lastSaved.toLocaleTimeString()}
           </span>
         </div>
       );

@@ -1,8 +1,7 @@
 
 import { Decision, PreAnalysis } from '@/types/Decision';
 import { Textarea } from '@/components/ui/textarea';
-import { useState, useEffect } from 'react';
-import { useDebounced } from '@/hooks/useDebounced';
+import { useState } from 'react';
 
 interface DecisionPreAnalysisSectionProps {
   decision: Decision;
@@ -18,57 +17,19 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
     return null;
   }
 
-  // Local state for input values to prevent conflicts
-  const [localValues, setLocalValues] = useState({
-    upside: decision.preAnalysis?.upside || '',
-    downside: decision.preAnalysis?.downside || '',
-    alignment: decision.preAnalysis?.alignment || ''
-  });
-
-  // Debounced values to prevent excessive saves
-  const debouncedUpside = useDebounced(localValues.upside, 500);
-  const debouncedDownside = useDebounced(localValues.downside, 500);
-  const debouncedAlignment = useDebounced(localValues.alignment, 500);
-
-  // Update local state when decision changes (from external sources)
-  useEffect(() => {
-    console.log('DecisionPreAnalysisSection: Decision preAnalysis changed, updating local state');
-    setLocalValues({
-      upside: decision.preAnalysis?.upside || '',
-      downside: decision.preAnalysis?.downside || '',
-      alignment: decision.preAnalysis?.alignment || ''
-    });
-  }, [decision.preAnalysis]);
-
-  // Save debounced changes to the backend
-  useEffect(() => {
-    const currentPreAnalysis = decision.preAnalysis || {};
-    const hasChanges = 
-      debouncedUpside !== (currentPreAnalysis.upside || '') ||
-      debouncedDownside !== (currentPreAnalysis.downside || '') ||
-      debouncedAlignment !== (currentPreAnalysis.alignment || '');
-
-    if (hasChanges && editMode) {
-      console.log('DecisionPreAnalysisSection: Saving debounced changes:', {
-        upside: debouncedUpside,
-        downside: debouncedDownside,
-        alignment: debouncedAlignment
-      });
-      
-      const updatedPreAnalysis = {
-        ...currentPreAnalysis,
-        upside: debouncedUpside,
-        downside: debouncedDownside,
-        alignment: debouncedAlignment
-      };
-      
-      onUpdate({ preAnalysis: updatedPreAnalysis });
-    }
-  }, [debouncedUpside, debouncedDownside, debouncedAlignment, decision.preAnalysis, editMode, onUpdate]);
-
+  // FIXED: Use decision values directly instead of local state to prevent loops
+  const currentPreAnalysis = decision.preAnalysis || {};
+  
   const handleInputChange = (field: keyof PreAnalysis, value: string) => {
     console.log('DecisionPreAnalysisSection: Input change for field:', field, 'value length:', value.length);
-    setLocalValues(prev => ({ ...prev, [field]: value }));
+    
+    // Update immediately without debouncing - let the parent handle batching
+    const updatedPreAnalysis = {
+      ...currentPreAnalysis,
+      [field]: value
+    };
+    
+    onUpdate({ preAnalysis: updatedPreAnalysis });
   };
 
   const questions = [
@@ -76,19 +37,19 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
       key: 'upside' as keyof PreAnalysis,
       label: "What's the upside of this decision?",
       placeholder: "Consider the potential benefits, opportunities, and positive outcomes...",
-      value: localValues.upside
+      value: currentPreAnalysis.upside || ''
     },
     {
       key: 'downside' as keyof PreAnalysis,
       label: "What's the downside of this decision?",
       placeholder: "Think about risks, costs, and potential negative consequences...",
-      value: localValues.downside
+      value: currentPreAnalysis.downside || ''
     },
     {
       key: 'alignment' as keyof PreAnalysis,
       label: "Does it align with my long-term goals?",
       placeholder: "Evaluate how this decision supports or conflicts with your strategic objectives...",
-      value: localValues.alignment
+      value: currentPreAnalysis.alignment || ''
     }
   ];
 
@@ -112,10 +73,7 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
             {editMode ? (
               <Textarea
                 value={question.value}
-                onChange={(e) => {
-                  console.log('DecisionPreAnalysisSection: Textarea onChange triggered for:', question.key);
-                  handleInputChange(question.key, e.target.value);
-                }}
+                onChange={(e) => handleInputChange(question.key, e.target.value)}
                 placeholder={question.placeholder}
                 className="min-h-[80px] bg-tactical-surface border-tactical-border text-tactical-text font-mono text-sm resize-none focus:border-tactical-accent"
                 rows={3}
