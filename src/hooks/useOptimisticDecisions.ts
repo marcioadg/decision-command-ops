@@ -12,14 +12,16 @@ export const useOptimisticDecisions = (decisions: Decision[]) => {
   const [optimisticUpdates, setOptimisticUpdates] = useState<OptimisticUpdate[]>([]);
 
   // Clean up optimistic updates when server state confirms the change
+  // FIXED: Removed optimisticUpdates from dependency array to prevent infinite loop
   useEffect(() => {
     console.log('useOptimisticDecisions: Checking for confirmed updates', {
-      optimisticUpdates: optimisticUpdates.length,
       decisions: decisions.length
     });
 
-    setOptimisticUpdates(prev => {
-      const remaining = prev.filter(update => {
+    setOptimisticUpdates(prevUpdates => {
+      if (prevUpdates.length === 0) return prevUpdates;
+
+      const remaining = prevUpdates.filter(update => {
         const decision = decisions.find(d => d.id === update.id);
         if (!decision) {
           console.log('useOptimisticDecisions: Decision not found, keeping optimistic update:', update.id);
@@ -29,61 +31,56 @@ export const useOptimisticDecisions = (decisions: Decision[]) => {
         // Check if server state matches our optimistic state
         const serverStateMatches = decision.stage === update.newStage;
         
-        // With real-time updates, we can be more aggressive about cleanup
-        // If the server state matches and the decision has been updated recently, remove optimistic update
-        const isRecentUpdate = decision.updatedAt && 
-          (Date.now() - decision.updatedAt.getTime()) < 30000; // 30 seconds window
-
         if (serverStateMatches) {
           console.log('useOptimisticDecisions: Server state matches optimistic state, removing update:', {
             decisionId: update.id,
             optimisticStage: update.newStage,
-            serverStage: decision.stage,
-            serverUpdatedAt: decision.updatedAt,
-            isRecentUpdate
+            serverStage: decision.stage
           });
           return false; // Remove this optimistic update
         }
 
-        // Keep update if server hasn't caught up yet, but with shorter timeout due to real-time
+        // Keep update if server hasn't caught up yet, but with timeout
         const updateAge = Date.now() - update.timestamp;
-        if (updateAge > 10000) { // 10 seconds timeout (reduced from 15)
+        if (updateAge > 10000) { // 10 seconds timeout
           console.log('useOptimisticDecisions: Timing out old optimistic update:', update.id);
           return false;
         }
 
-        console.log('useOptimisticDecisions: Keeping optimistic update:', {
-          decisionId: update.id,
-          optimisticStage: update.newStage,
-          serverStage: decision.stage,
-          updateAge: updateAge + 'ms'
-        });
         return true;
       });
 
-      return remaining;
+      // Only update state if there's actually a change
+      if (remaining.length !== prevUpdates.length) {
+        console.log('useOptimisticDecisions: Updated optimistic updates count:', remaining.length);
+        return remaining;
+      }
+      
+      return prevUpdates;
     });
-  }, [decisions, optimisticUpdates]);
+  }, [decisions]); // Only depend on decisions, not optimisticUpdates
 
-  // Clean up old optimistic updates after timeout (fallback) - reduced frequency due to real-time
+  // Clean up old optimistic updates after timeout (fallback)
   useEffect(() => {
     const cleanup = () => {
-      const now = Date.now();
-      setOptimisticUpdates(prev => {
-        const remaining = prev.filter(update => {
-          const isOld = now - update.timestamp > 12000; // 12 seconds timeout (reduced from 15)
+      setOptimisticUpdates(prevUpdates => {
+        const now = Date.now();
+        const remaining = prevUpdates.filter(update => {
+          const isOld = now - update.timestamp > 12000; // 12 seconds timeout
           if (isOld) {
             console.log('useOptimisticDecisions: Timing out old optimistic update:', update.id);
           }
           return !isOld;
         });
-        return remaining;
+        
+        // Only update if there's a change
+        return remaining.length !== prevUpdates.length ? remaining : prevUpdates;
       });
     };
 
-    const interval = setInterval(cleanup, 3000); // Check every 3 seconds (increased from 5)
+    const interval = setInterval(cleanup, 5000); // Check every 5 seconds
     return () => clearInterval(interval);
-  }, []);
+  }, []); // No dependencies needed for this cleanup
 
   const applyOptimisticUpdate = useCallback((decisionId: string, newStage: DecisionStage) => {
     const decision = decisions.find(d => d.id === decisionId);
@@ -126,11 +123,6 @@ export const useOptimisticDecisions = (decisions: Decision[]) => {
   const optimisticDecisions = decisions.map(decision => {
     const optimisticUpdate = optimisticUpdates.find(update => update.id === decision.id);
     if (optimisticUpdate) {
-      console.log('useOptimisticDecisions: Applying optimistic state to decision:', {
-        decisionId: decision.id,
-        originalStage: decision.stage,
-        optimisticStage: optimisticUpdate.newStage
-      });
       return {
         ...decision,
         stage: optimisticUpdate.newStage,
