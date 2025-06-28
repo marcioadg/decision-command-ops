@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Decision } from '@/types/Decision';
 import { decisionService } from '@/services/decisionService';
@@ -116,6 +115,7 @@ export const useDecisions = () => {
     migrateFromLocalStorage,
     refreshDecisions: () => loadDecisions(true),
     retryCount,
-    isRealTimeConnected
+    isRealTimeConnected,
+    pauseRealtimeForDecision
   };
 };
