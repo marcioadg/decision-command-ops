@@ -1,86 +1,43 @@
 import { useState, useEffect } from 'react';
 import { DecisionPipeline } from '@/components/DecisionPipeline';
-import { StatusBar } from '@/components/StatusBar';
-import { QuickAddModal } from '@/components/QuickAddModal';
 import { DecisionDetailModal } from '@/components/DecisionDetailModal';
+import { QuickAddModal } from '@/components/QuickAddModal';
+import { StatusBar } from '@/components/StatusBar';
 import { Decision } from '@/types/Decision';
+import { Button } from '@/components/ui/button';
+import { Plus, Archive, User, LogOut } from 'lucide-react';
+import { useAuth } from '@/hooks/useAuth';
 import { soundSystem } from '@/utils/soundSystem';
-import { Archive, Volume2, VolumeX } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 const Index = () => {
+  const { user, logout } = useAuth();
+  const { toast } = useToast();
   const [decisions, setDecisions] = useState<Decision[]>([]);
-  const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [showArchived, setShowArchived] = useState(false);
-  const [soundEnabled, setSoundEnabled] = useState(true);
 
-  // Sample data for demo
   useEffect(() => {
-    const sampleDecisions: Decision[] = [
-      {
-        id: '1',
-        title: 'Hire VP of Engineering',
-        category: 'People',
-        impact: 'high',
-        urgency: 'high',
-        stage: 'considering',
-        confidence: 4,
-        owner: 'CEO',
-        createdAt: new Date('2024-06-20'),
-        notes: 'Need to scale engineering team for Q3 product launch. Looking for someone with experience in scaling from 10 to 50+ engineers.'
-      },
-      {
-        id: '2',
-        title: 'Series B Fundraising',
-        category: 'Capital',
-        impact: 'high',
-        urgency: 'medium',
-        stage: 'backlog',
-        confidence: 3,
-        owner: 'CEO',
-        createdAt: new Date('2024-06-25'),
-        notes: '18-month runway target, $50M round. Need to prepare pitch deck and financial projections.'
-      },
-      {
-        id: '3',
-        title: 'Enter European Market',
-        category: 'Strategy',
-        impact: 'medium',
-        urgency: 'low',
-        stage: 'committed',
-        confidence: 5,
-        owner: 'CEO',
-        createdAt: new Date('2024-06-15'),
-        notes: 'UK first, then Germany and France. Market research completed, regulatory approval needed.'
-      }
-    ];
-    setDecisions(sampleDecisions);
+    const savedDecisions = localStorage.getItem('tactical-decisions');
+    if (savedDecisions) {
+      const parsed = JSON.parse(savedDecisions).map((d: any) => ({
+        ...d,
+        createdAt: new Date(d.createdAt),
+        updatedAt: d.updatedAt ? new Date(d.updatedAt) : undefined,
+        reflection: d.reflection ? {
+          ...d.reflection,
+          reminderDate: new Date(d.reflection.reminderDate)
+        } : undefined
+      }));
+      setDecisions(parsed);
+    }
   }, []);
 
-  // Keyboard shortcut for quick add
   useEffect(() => {
-    const handleKeyPress = (e: KeyboardEvent) => {
-      if (e.key === 'd' || e.key === 'D') {
-        if (e.target === document.body || (e.target as HTMLElement).tagName === 'BODY') {
-          e.preventDefault();
-          setShowQuickAdd(true);
-          soundSystem.playModalOpen();
-        }
-      }
-      if (e.key === 'Escape') {
-        setShowQuickAdd(false);
-        setSelectedDecision(null);
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyPress);
-    return () => document.removeEventListener('keydown', handleKeyPress);
-  }, []);
-
-  // Update sound system when setting changes
-  useEffect(() => {
-    soundSystem.setEnabled(soundEnabled);
-  }, [soundEnabled]);
+    localStorage.setItem('tactical-decisions', JSON.stringify(decisions));
+  }, [decisions]);
 
   const handleDecisionUpdate = (updatedDecision: Decision) => {
     setDecisions(prev => 
@@ -88,113 +45,100 @@ const Index = () => {
     );
   };
 
-  const handleDecisionAdd = (newDecision: Omit<Decision, 'id' | 'createdAt'>) => {
-    const decision: Decision = {
-      ...newDecision,
-      id: Date.now().toString(),
-      createdAt: new Date()
-    };
-    setDecisions(prev => [...prev, decision]);
-    setShowQuickAdd(false);
-  };
-
   const handleDecisionClick = (decision: Decision) => {
     setSelectedDecision(decision);
-    soundSystem.playModalOpen();
+    setIsDetailModalOpen(true);
   };
 
-  const handleDecisionDetailUpdate = (updatedDecision: Decision) => {
-    handleDecisionUpdate(updatedDecision);
-    setSelectedDecision(updatedDecision);
+  const handleQuickAdd = (decision: Decision) => {
+    setDecisions(prev => [...prev, decision]);
+    soundSystem.playCardDrop();
   };
 
-  const archivedCount = decisions.filter(d => d.archived).length;
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: "SESSION TERMINATED",
+      description: "You have been logged out",
+    });
+  };
 
   return (
-    <div className="min-h-screen bg-tactical-bg tactical-grid flex flex-col">
+    <div className="min-h-screen bg-tactical-bg tactical-grid">
       {/* Header */}
-      <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm flex-shrink-0">
-        <div className="container mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <h1 className="text-2xl font-bold text-tactical-accent font-tactical">
-                DECISION COMMAND
-              </h1>
-              <div className="hud-metric">
-                TACTICAL PIPELINE v1.0
-              </div>
+      <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm">
+        <div className="flex items-center justify-between p-4">
+          <div className="flex items-center space-x-4">
+            <h1 className="text-xl font-bold text-tactical-accent font-mono tracking-wider">
+              TACTICAL DECISION PIPELINE
+            </h1>
+            <div className="hud-metric">
+              OPERATOR: {user?.name}
             </div>
-            <div className="flex items-center space-x-4">
-              {/* Archive Toggle */}
-              <button
-                onClick={() => setShowArchived(!showArchived)}
-                className={`flex items-center space-x-2 px-3 py-2 rounded font-mono text-sm transition-colors ${
-                  showArchived 
-                    ? 'bg-tactical-accent text-tactical-bg' 
-                    : 'bg-tactical-surface border border-tactical-border text-tactical-text hover:bg-tactical-border/50'
-                }`}
-              >
-                <Archive className="w-4 h-4" />
-                <span>ARCHIVED ({archivedCount})</span>
-              </button>
+          </div>
+          
+          <div className="flex items-center space-x-2">
+            <Button
+              onClick={() => setIsQuickAddOpen(true)}
+              className="bg-tactical-accent hover:bg-tactical-accent/80 text-tactical-bg font-mono text-xs"
+              size="sm"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              QUICK ADD
+            </Button>
+            
+            <Button
+              onClick={() => setShowArchived(!showArchived)}
+              variant={showArchived ? "default" : "outline"}
+              className="font-mono text-xs"
+              size="sm"
+            >
+              <Archive className="w-4 h-4 mr-1" />
+              {showArchived ? 'HIDE ARCHIVED' : 'SHOW ARCHIVED'}
+            </Button>
 
-              {/* Sound Toggle */}
-              <button
-                onClick={() => setSoundEnabled(!soundEnabled)}
-                className="bg-tactical-surface border border-tactical-border text-tactical-text px-3 py-2 rounded font-mono text-sm hover:bg-tactical-border/50 transition-colors"
-                title={soundEnabled ? 'Disable sounds' : 'Enable sounds'}
-              >
-                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
-              </button>
-
-              <button
-                onClick={() => {
-                  setShowQuickAdd(true);
-                  soundSystem.playModalOpen();
-                }}
-                className="bg-tactical-accent text-tactical-bg px-4 py-2 rounded font-mono text-sm font-semibold hover:bg-tactical-accent/90 transition-colors"
-              >
-                + NEW DECISION [D]
-              </button>
-            </div>
+            <Button
+              onClick={handleLogout}
+              variant="outline"
+              className="font-mono text-xs border-tactical-border hover:bg-tactical-surface"
+              size="sm"
+            >
+              <LogOut className="w-4 h-4 mr-1" />
+              LOGOUT
+            </Button>
           </div>
         </div>
       </header>
 
-      {/* Status Bar */}
-      <StatusBar decisions={decisions.filter(d => showArchived ? d.archived : !d.archived)} />
-
-      {/* Main Pipeline */}
-      <main className="container mx-auto px-6 py-6 flex-1 min-h-0">
-        <DecisionPipeline 
-          decisions={decisions} 
+      {/* Main Content */}
+      <main className="flex-1 p-4">
+        <DecisionPipeline
+          decisions={decisions}
           onDecisionUpdate={handleDecisionUpdate}
           onDecisionClick={handleDecisionClick}
           showArchived={showArchived}
         />
       </main>
 
-      {/* Quick Add Modal */}
-      {showQuickAdd && (
-        <QuickAddModal
-          onClose={() => setShowQuickAdd(false)}
-          onSubmit={handleDecisionAdd}
-        />
-      )}
+      {/* Status Bar */}
+      <StatusBar decisions={decisions} />
 
-      {/* Decision Detail Modal */}
-      {selectedDecision && (
-        <DecisionDetailModal
-          decision={selectedDecision}
-          onClose={() => setSelectedDecision(null)}
-          onUpdate={handleDecisionDetailUpdate}
-        />
-      )}
+      {/* Modals */}
+      <DecisionDetailModal
+        decision={selectedDecision}
+        isOpen={isDetailModalOpen}
+        onClose={() => {
+          setIsDetailModalOpen(false);
+          setSelectedDecision(null);
+        }}
+        onUpdate={handleDecisionUpdate}
+      />
 
-      {/* Keyboard Shortcut Hint */}
-      <div className="fixed bottom-4 right-4 hud-metric">
-        Press <span className="text-tactical-accent font-semibold">D</span> for quick add
-      </div>
+      <QuickAddModal
+        isOpen={isQuickAddOpen}
+        onClose={() => setIsQuickAddOpen(false)}
+        onAdd={handleQuickAdd}
+      />
     </div>
   );
 };
