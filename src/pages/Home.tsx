@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -43,7 +42,7 @@ const Home = () => {
       <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="text-xl font-bold text-tactical-accent font-mono tracking-wider">
-            TACTICAL DECISIONS
+            DECISION COMMAND
           </div>
           
           <div className="flex items-center space-x-4">
@@ -73,7 +72,7 @@ const Home = () => {
                   size="sm"
                 >
                   <User className="w-4 h-4 mr-2" />
-                  SIGN UP FREE
+                  SIGN UP
                 </Button>
               </>
             )}
@@ -88,7 +87,7 @@ const Home = () => {
         <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
           <div className="mb-6">
             <span className="inline-block px-4 py-2 bg-tactical-accent/10 border border-tactical-accent/20 rounded-full text-tactical-accent font-mono text-sm mb-4">
-              🎯 100% FREE - NO CREDIT CARD REQUIRED
+              🎯 NO CREDIT CARD REQUIRED
             </span>
           </div>
           
@@ -108,14 +107,14 @@ const Home = () => {
               size="lg" 
               className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-bold px-8 py-4 text-lg"
             >
-              {user ? 'GO TO DASHBOARD' : 'GET STARTED FREE'}
+              {user ? 'GO TO DASHBOARD' : 'GET STARTED'}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </div>
 
           <div className="text-tactical-text/70 text-sm mb-8">
             <div className="mb-2">
-              <strong className="text-tactical-accent">Always Free Forever</strong> • No Credit Card Required
+              <strong className="text-tactical-accent">Start Free</strong> • No Credit Card Required
             </div>
             {!user && (
               <div>
@@ -248,7 +247,7 @@ const Home = () => {
                 rating: 5
               },
               {
-                quote: "Our team went from decision chaos to tactical precision. Best part? It's completely free to get started.",
+                quote: "Our team went from decision chaos to tactical precision. Easy to get started and incredibly powerful.",
                 author: "Jennifer Walsh",
                 title: "Director of Operations",
                 rating: 5
@@ -281,7 +280,7 @@ const Home = () => {
           </h2>
           
           <p className="text-xl text-tactical-text/80 mb-8">
-            Join thousands of leaders who transformed their decision process - completely free
+            Join thousands of leaders who transformed their decision process
           </p>
           
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
@@ -290,7 +289,7 @@ const Home = () => {
               size="lg" 
               className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-bold px-8 py-4 text-lg"
             >
-              {user ? 'GO TO DASHBOARD' : 'GET STARTED FREE - NO CREDIT CARD'}
+              {user ? 'GO TO DASHBOARD' : 'GET STARTED NOW'}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </div>
@@ -298,7 +297,7 @@ const Home = () => {
           <div className="flex items-center justify-center gap-6 text-tactical-text/70 text-sm">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-tactical-accent" />
-              Always free forever
+              Start free today
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-tactical-accent" />
