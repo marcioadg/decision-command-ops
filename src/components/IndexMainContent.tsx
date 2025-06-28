@@ -1,6 +1,5 @@
 
 import { DecisionPipeline } from '@/components/DecisionPipeline';
-import { StatusBar } from '@/components/StatusBar';
 import { Decision, DecisionStage } from '@/types/Decision';
 
 interface IndexMainContentProps {
@@ -21,21 +20,15 @@ export const IndexMainContent = ({
   onQuickAdd
 }: IndexMainContentProps) => {
   return (
-    <>
-      {/* Main Content */}
-      <main className="flex-1 p-4">
-        <DecisionPipeline
-          decisions={decisions}
-          onDecisionUpdate={onDecisionUpdate}
-          onDecisionClick={onDecisionClick}
-          onArchive={onArchive}
-          onQuickAdd={onQuickAdd}
-          showArchived={showArchived}
-        />
-      </main>
-
-      {/* Status Bar */}
-      <StatusBar decisions={decisions} />
-    </>
+    <main className="flex-1 p-4">
+      <DecisionPipeline
+        decisions={decisions}
+        onDecisionUpdate={onDecisionUpdate}
+        onDecisionClick={onDecisionClick}
+        onArchive={onArchive}
+        onQuickAdd={onQuickAdd}
+        showArchived={showArchived}
+      />
+    </main>
   );
 };

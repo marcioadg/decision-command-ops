@@ -5,6 +5,7 @@ import { IndexHeader } from '@/components/IndexHeader';
 import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
 import { IndexErrorScreen } from '@/components/IndexErrorScreen';
 import { IndexMainContent } from '@/components/IndexMainContent';
+import { StatusBar } from '@/components/StatusBar';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { useAuth } from '@/hooks/useAuth';
 import { useDecisions } from '@/hooks/useDecisions';
@@ -179,6 +180,8 @@ const Index = () => {
         onToggleArchived={handleToggleArchived}
         onLogout={handleLogout}
       />
+
+      <StatusBar decisions={decisions} />
 
       <IndexMainContent
         decisions={decisions}
