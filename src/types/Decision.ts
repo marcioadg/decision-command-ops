@@ -2,7 +2,7 @@
 export type DecisionCategory = 'People' | 'Capital' | 'Strategy' | 'Product' | 'Timing' | 'Personal';
 export type DecisionImpact = 'high' | 'medium' | 'low';
 export type DecisionUrgency = 'high' | 'medium' | 'low';
-export type DecisionStage = 'backlog' | 'considering' | 'committed' | 'decided' | 'lessons';
+export type DecisionStage = 'backlog' | 'considering' | 'committed' | 'decided';
 
 export interface ReflectionInterval {
   date: Date;

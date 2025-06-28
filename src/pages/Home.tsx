@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -11,17 +12,6 @@ const Home = () => {
   const { user, profile, isLoading } = useAuth();
   const [showDemo, setShowDemo] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
-
-  // Redirect authenticated users to dashboard
-  useEffect(() => {
-    if (user && profile) {
-      if (profile.role === 'admin') {
-        navigate('/admin');
-      } else {
-        navigate('/dashboard');
-      }
-    }
-  }, [user, profile, navigate]);
 
   const handleStartTrial = () => {
     if (user) {
@@ -50,34 +40,45 @@ const Home = () => {
 
   return (
     <div className="min-h-screen bg-tactical-bg">
-      {/* Header with Login */}
+      {/* Header with Login/Dashboard Access */}
       <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="text-xl font-bold text-tactical-accent font-mono tracking-wider">
             TACTICAL DECISIONS
           </div>
           
-          {!user && (
-            <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-4">
+            {user ? (
               <Button
-                onClick={handleSignIn}
-                variant="outline"
-                className="border-tactical-accent/50 text-tactical-accent hover:bg-tactical-accent/10 font-mono text-xs"
-                size="sm"
-              >
-                <LogIn className="w-4 h-4 mr-2" />
-                SIGN IN
-              </Button>
-              <Button
-                onClick={() => setIsLoginModalOpen(true)}
+                onClick={() => navigate(profile?.role === 'admin' ? '/admin' : '/dashboard')}
                 className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-mono text-xs"
                 size="sm"
               >
                 <User className="w-4 h-4 mr-2" />
-                SIGN UP
+                GO TO DASHBOARD
               </Button>
-            </div>
-          )}
+            ) : (
+              <>
+                <Button
+                  onClick={handleSignIn}
+                  variant="outline"
+                  className="border-tactical-accent/50 text-tactical-accent hover:bg-tactical-accent/10 font-mono text-xs"
+                  size="sm"
+                >
+                  <LogIn className="w-4 h-4 mr-2" />
+                  SIGN IN
+                </Button>
+                <Button
+                  onClick={() => setIsLoginModalOpen(true)}
+                  className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-mono text-xs"
+                  size="sm"
+                >
+                  <User className="w-4 h-4 mr-2" />
+                  SIGN UP
+                </Button>
+              </>
+            )}
+          </div>
         </div>
       </header>
 
@@ -205,24 +206,23 @@ const Home = () => {
               Make Decisions Like a <span className="text-tactical-accent">Tactical Commander</span>
             </h2>
             <p className="text-xl text-tactical-text/80 max-w-3xl mx-auto">
-              From backlog to lessons learned in 5 strategic stages. Every decision flows through a proven military-grade process.
+              From backlog to execution in 4 strategic stages. Every decision flows through a proven military-grade process.
             </p>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
             {[
               { stage: "BACKLOG", desc: "Capture & Prioritize", icon: "📝" },
               { stage: "ANALYSIS", desc: "Gather Intelligence", icon: "🔍" },
               { stage: "DECISION", desc: "Strategic Choice", icon: "⚡" },
-              { stage: "EXECUTION", desc: "Tactical Action", icon: "🚀" },
-              { stage: "REFLECTION", desc: "Lessons Learned", icon: "📊" }
+              { stage: "EXECUTION", desc: "Tactical Action", icon: "🚀" }
             ].map((item, index) => (
               <Card key={index} className="bg-tactical-surface border-tactical-border hover:border-tactical-accent/50 transition-all">
                 <CardContent className="p-6 text-center">
                   <div className="text-4xl mb-4">{item.icon}</div>
                   <h3 className="font-bold text-tactical-accent mb-2 font-mono">{item.stage}</h3>
                   <p className="text-tactical-text/70 text-sm">{item.desc}</p>
-                  {index < 4 && <ArrowRight className="w-4 h-4 text-tactical-accent/50 mx-auto mt-4" />}
+                  {index < 3 && <ArrowRight className="w-4 h-4 text-tactical-accent/50 mx-auto mt-4" />}
                 </CardContent>
               </Card>
             ))}

@@ -19,13 +19,18 @@ export const DecisionCardHeader = ({ title, category }: DecisionCardHeaderProps)
   };
 
   return (
-    <div className="flex items-start justify-between mb-3">
-      <h4 className="font-semibold text-sm text-tactical-text leading-tight flex-1 mr-2">
+    <div className="mb-3">
+      {/* Decision Title - Full Width, Emphasized */}
+      <h4 className="font-semibold text-sm text-tactical-text leading-tight mb-2 w-full">
         {title}
       </h4>
-      <span className={`px-2 py-1 text-xs font-mono rounded border ${getCategoryBadgeColor()}`}>
-        {category}
-      </span>
+      
+      {/* Category Badge - Below Title */}
+      <div className="flex justify-start">
+        <span className={`px-2 py-1 text-xs font-mono rounded border ${getCategoryBadgeColor()}`}>
+          {category}
+        </span>
+      </div>
     </div>
   );
 };

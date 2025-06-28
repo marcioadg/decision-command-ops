@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
@@ -16,8 +17,7 @@ const stages: { key: DecisionStage; label: string; description: string }[] = [
   { key: 'backlog', label: 'BACKLOG', description: 'Identified decisions awaiting evaluation' },
   { key: 'considering', label: 'CONSIDERING', description: 'Active analysis and stakeholder input' },
   { key: 'committed', label: 'COMMITTED', description: 'Decision made, execution pending' },
-  { key: 'decided', label: 'DECIDED', description: 'Executed decisions with outcomes' },
-  { key: 'lessons', label: 'LESSONS', description: 'Reflections and learnings captured' }
+  { key: 'decided', label: 'DECIDED', description: 'Executed decisions with outcomes' }
 ];
 
 export const DecisionPipeline = ({ 

@@ -15,10 +15,9 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
     considering: activeDecisions.filter(d => d.stage === 'considering').length,
     committed: activeDecisions.filter(d => d.stage === 'committed').length,
     decided: activeDecisions.filter(d => d.stage === 'decided').length,
-    lessons: activeDecisions.filter(d => d.stage === 'lessons').length,
   };
 
-  // Active count excludes decided and lessons stages
+  // Active count excludes decided stage (no lessons column anymore)
   const activeWorkCount = stageStats.backlog + stageStats.considering + stageStats.committed;
   
   const highImpactDecisions = activeDecisions.filter(d => d.impact === 'high').length;
@@ -27,7 +26,7 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
     : 0;
 
   const clarityScore = activeDecisions.length > 0 
-    ? Math.round(((stageStats.decided + stageStats.lessons) / totalDecisions) * 100)
+    ? Math.round((stageStats.decided / totalDecisions) * 100)
     : 0;
 
   return (

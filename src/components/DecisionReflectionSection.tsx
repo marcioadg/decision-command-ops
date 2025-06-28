@@ -30,7 +30,8 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
 
   const hasAnyReflection = decision.reflection?.sevenDay || decision.reflection?.thirtyDay || decision.reflection?.ninetyDay || decision.reflection?.questions?.length;
   const shouldShowReflectionPrompt = decision.stage === 'decided' && !hasAnyReflection;
-  const canShowReflection = decision.stage === 'decided' || decision.stage === 'lessons' || hasReflectionContent();
+  // Only show reflections for decided stage, or if there's saved content (for backwards compatibility)
+  const canShowReflection = decision.stage === 'decided' || hasReflectionContent();
 
   if (!canShowReflection) {
     return null;
