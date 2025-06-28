@@ -47,8 +47,13 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
           
           const { eventType, new: newRecord, old: oldRecord } = payload;
           
-          // Check if updates are paused for this decision
-          const recordId = newRecord?.id || oldRecord?.id;
+          // Check if updates are paused for this decision with proper type checking
+          const recordId = (newRecord && typeof newRecord === 'object' && 'id' in newRecord) 
+            ? newRecord.id 
+            : (oldRecord && typeof oldRecord === 'object' && 'id' in oldRecord) 
+              ? oldRecord.id 
+              : null;
+              
           if (recordId && pausedDecisionIds.has(recordId)) {
             console.log(`Ignoring real-time update for paused decision ${recordId}`);
             return;
@@ -57,7 +62,7 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
           setDecisions(prev => {
             switch (eventType) {
               case 'INSERT':
-                if (newRecord) {
+                if (newRecord && typeof newRecord === 'object' && 'id' in newRecord) {
                   const newDecision = convertDatabaseRecordToDecision(newRecord);
                   const exists = prev.some(d => d.id === newDecision.id);
                   if (!exists) {
@@ -68,7 +73,7 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
                 return prev;
                 
               case 'UPDATE':
-                if (newRecord) {
+                if (newRecord && typeof newRecord === 'object' && 'id' in newRecord) {
                   console.log('Updating decision from real-time:', newRecord.id);
                   return prev.map(decision => {
                     if (decision.id === newRecord.id) {
@@ -85,7 +90,7 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
                 return prev;
                 
               case 'DELETE':
-                if (oldRecord) {
+                if (oldRecord && typeof oldRecord === 'object' && 'id' in oldRecord) {
                   console.log('Removing decision from real-time:', oldRecord.id);
                   return prev.filter(decision => decision.id !== oldRecord.id);
                 }
