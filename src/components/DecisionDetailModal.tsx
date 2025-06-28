@@ -1,21 +1,28 @@
-
 import { useState } from 'react';
 import { Decision, DecisionCategory, DecisionImpact, DecisionUrgency } from '@/types/Decision';
 import { X, Star, Clock } from 'lucide-react';
 
 interface DecisionDetailModalProps {
-  decision: Decision;
+  decision: Decision | null;
+  isOpen: boolean;
   onClose: () => void;
   onUpdate: (decision: Decision) => void;
 }
 
-export const DecisionDetailModal = ({ decision, onClose, onUpdate }: DecisionDetailModalProps) => {
+export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: DecisionDetailModalProps) => {
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState(decision);
 
+  // Don't render if not open or no decision
+  if (!isOpen || !decision) {
+    return null;
+  }
+
   const handleSave = () => {
-    onUpdate({ ...formData, updatedAt: new Date() });
-    setEditMode(false);
+    if (formData) {
+      onUpdate({ ...formData, updatedAt: new Date() });
+      setEditMode(false);
+    }
   };
 
   const categories: DecisionCategory[] = ['People', 'Capital', 'Strategy', 'Product', 'Timing', 'Personal'];
@@ -38,9 +45,9 @@ export const DecisionDetailModal = ({ decision, onClose, onUpdate }: DecisionDet
       <Star
         key={i}
         className={`w-4 h-4 cursor-pointer transition-colors ${
-          i < formData.confidence ? 'text-tactical-accent fill-tactical-accent' : 'text-tactical-text/30 hover:text-tactical-accent/50'
+          i < (formData?.confidence || 0) ? 'text-tactical-accent fill-tactical-accent' : 'text-tactical-text/30 hover:text-tactical-accent/50'
         }`}
-        onClick={() => editMode && setFormData(prev => ({ ...prev, confidence: i + 1 }))}
+        onClick={() => editMode && formData && setFormData(prev => prev ? ({ ...prev, confidence: i + 1 }) : null)}
       />
     ));
   };
@@ -82,8 +89,8 @@ export const DecisionDetailModal = ({ decision, onClose, onUpdate }: DecisionDet
             {editMode ? (
               <input
                 type="text"
-                value={formData.title}
-                onChange={(e) => setFormData(prev => ({ ...prev, title: e.target.value }))}
+                value={formData?.title || ''}
+                onChange={(e) => setFormData(prev => prev ? ({ ...prev, title: e.target.value }) : null)}
                 className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
               />
             ) : (
@@ -97,8 +104,8 @@ export const DecisionDetailModal = ({ decision, onClose, onUpdate }: DecisionDet
               <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Category</label>
               {editMode ? (
                 <select
-                  value={formData.category}
-                  onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value as DecisionCategory }))}
+                  value={formData?.category || ''}
+                  onChange={(e) => setFormData(prev => prev ? ({ ...prev, category: e.target.value as DecisionCategory }) : null)}
                   className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
                 >
                   {categories.map(cat => (
@@ -114,8 +121,8 @@ export const DecisionDetailModal = ({ decision, onClose, onUpdate }: DecisionDet
               <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Impact</label>
               {editMode ? (
                 <select
-                  value={formData.impact}
-                  onChange={(e) => setFormData(prev => ({ ...prev, impact: e.target.value as DecisionImpact }))}
+                  value={formData?.impact || ''}
+                  onChange={(e) => setFormData(prev => prev ? ({ ...prev, impact: e.target.value as DecisionImpact }) : null)}
                   className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
                 >
                   {impacts.map(impact => (
@@ -131,8 +138,8 @@ export const DecisionDetailModal = ({ decision, onClose, onUpdate }: DecisionDet
               <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Urgency</label>
               {editMode ? (
                 <select
-                  value={formData.urgency}
-                  onChange={(e) => setFormData(prev => ({ ...prev, urgency: e.target.value as DecisionUrgency }))}
+                  value={formData?.urgency || ''}
+                  onChange={(e) => setFormData(prev => prev ? ({ ...prev, urgency: e.target.value as DecisionUrgency }) : null)}
                   className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
                 >
                   {urgencies.map(urgency => (
@@ -152,7 +159,7 @@ export const DecisionDetailModal = ({ decision, onClose, onUpdate }: DecisionDet
               <div className="flex items-center space-x-1">
                 {renderStars()}
                 <span className="ml-2 text-tactical-text/60 font-mono text-sm">
-                  {editMode ? formData.confidence : decision.confidence}/5
+                  {editMode ? formData?.confidence || 0 : decision.confidence}/5
                 </span>
               </div>
             </div>
@@ -164,8 +171,8 @@ export const DecisionDetailModal = ({ decision, onClose, onUpdate }: DecisionDet
             {editMode ? (
               <input
                 type="text"
-                value={formData.owner}
-                onChange={(e) => setFormData(prev => ({ ...prev, owner: e.target.value }))}
+                value={formData?.owner || ''}
+                onChange={(e) => setFormData(prev => prev ? ({ ...prev, owner: e.target.value }) : null)}
                 className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
               />
             ) : (
@@ -178,8 +185,8 @@ export const DecisionDetailModal = ({ decision, onClose, onUpdate }: DecisionDet
             <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Notes</label>
             {editMode ? (
               <textarea
-                value={formData.notes || ''}
-                onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+                value={formData?.notes || ''}
+                onChange={(e) => setFormData(prev => prev ? ({ ...prev, notes: e.target.value }) : null)}
                 className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none h-32 resize-none"
                 placeholder="Additional context and details..."
               />

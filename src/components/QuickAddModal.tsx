@@ -3,11 +3,12 @@ import { useState } from 'react';
 import { Decision, DecisionCategory, DecisionImpact, DecisionUrgency } from '@/types/Decision';
 
 interface QuickAddModalProps {
+  isOpen: boolean;
   onClose: () => void;
-  onSubmit: (decision: Omit<Decision, 'id' | 'createdAt'>) => void;
+  onAdd: (decision: Decision) => void;
 }
 
-export const QuickAddModal = ({ onClose, onSubmit }: QuickAddModalProps) => {
+export const QuickAddModal = ({ isOpen, onClose, onAdd }: QuickAddModalProps) => {
   const [formData, setFormData] = useState({
     title: '',
     category: 'Strategy' as DecisionCategory,
@@ -18,13 +19,31 @@ export const QuickAddModal = ({ onClose, onSubmit }: QuickAddModalProps) => {
     notes: ''
   });
 
+  // Don't render if not open
+  if (!isOpen) {
+    return null;
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (formData.title.trim()) {
-      onSubmit({
+      const newDecision: Decision = {
+        id: crypto.randomUUID(),
         ...formData,
-        stage: 'backlog'
+        stage: 'backlog',
+        createdAt: new Date()
+      };
+      onAdd(newDecision);
+      setFormData({
+        title: '',
+        category: 'Strategy',
+        impact: 'medium',
+        urgency: 'medium',
+        confidence: 3,
+        owner: 'CEO',
+        notes: ''
       });
+      onClose();
     }
   };
 
