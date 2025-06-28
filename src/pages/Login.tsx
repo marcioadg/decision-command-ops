@@ -1,165 +1,87 @@
-
-import React, { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { LogIn, Shield, Terminal } from 'lucide-react';
-import { soundSystem } from '@/utils/soundSystem';
+import { Card, CardContent } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [isSignUp, setIsSignUp] = useState(false);
-  const { login, isLoading } = useAuth();
   const navigate = useNavigate();
+  const { login, user } = useAuth();
   const { toast } = useToast();
+  const [credentials, setCredentials] = useState({
+    username: '',
+    password: ''
+  });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setCredentials({
+      ...credentials,
+      [e.target.name]: e.target.value
+    });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast({
-        title: "AUTHENTICATION ERROR",
-        description: "All fields are required for access",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (password.length < 6) {
-      toast({
-        title: "SECURITY BREACH",
-        description: "Password must be at least 6 characters",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const success = await login(email, password);
-    
-    if (success) {
-      soundSystem.playCardDrop();
+    if (credentials.username === 'admin' && credentials.password === 'tactical123') {
+      login({ name: 'Commander', username: 'admin' });
       toast({
         title: "ACCESS GRANTED",
-        description: `Welcome to the tactical command center`,
+        description: "Welcome to the Tactical Decision Pipeline",
       });
-      navigate('/');
+      navigate('/dashboard');
     } else {
       toast({
         title: "ACCESS DENIED",
-        description: "Invalid credentials detected",
-        variant: "destructive"
+        description: "Invalid credentials. Try admin/tactical123",
+        variant: "destructive",
       });
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSubmit(e as any);
     }
   };
 
   return (
-    <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <div className="flex items-center justify-center mb-4">
-            <Shield className="w-12 h-12 text-tactical-accent mr-3" />
-            <Terminal className="w-8 h-8 text-tactical-text" />
-          </div>
-          <h1 className="text-2xl font-bold text-tactical-accent font-mono tracking-wider">
-            TACTICAL COMMAND
-          </h1>
-          <p className="text-tactical-text/70 font-mono text-sm mt-2">
-            AUTHENTICATION REQUIRED
-          </p>
-        </div>
-
-        {/* Login Form */}
-        <div className="tactical-card">
-          <div className="stage-header">
-            {isSignUp ? 'CREATE ACCOUNT' : 'SYSTEM ACCESS'}
-          </div>
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-tactical-text font-mono text-xs uppercase tracking-wider">
-                Email Address
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="operator@tactical.com"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="bg-tactical-surface border-tactical-border text-tactical-text font-mono focus:border-tactical-accent"
-                disabled={isLoading}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-tactical-text font-mono text-xs uppercase tracking-wider">
-                Access Code
-              </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="bg-tactical-surface border-tactical-border text-tactical-text font-mono focus:border-tactical-accent"
-                disabled={isLoading}
-              />
-            </div>
-
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="w-full bg-tactical-accent hover:bg-tactical-accent/80 text-tactical-bg font-mono uppercase tracking-wider"
-            >
-              {isLoading ? (
-                <div className="flex items-center">
-                  <div className="w-4 h-4 border-2 border-tactical-bg border-t-transparent rounded-full animate-spin mr-2" />
-                  AUTHENTICATING...
-                </div>
-              ) : (
-                <div className="flex items-center">
-                  <LogIn className="w-4 h-4 mr-2" />
-                  {isSignUp ? 'CREATE ACCOUNT' : 'GRANT ACCESS'}
-                </div>
-              )}
-            </Button>
-          </form>
-
-          {/* Toggle Sign Up/Login */}
-          <div className="mt-6 pt-4 border-t border-tactical-border text-center">
-            <button
-              type="button"
-              onClick={() => setIsSignUp(!isSignUp)}
-              className="text-tactical-accent hover:text-tactical-accent/80 font-mono text-sm uppercase tracking-wider transition-colors"
-              disabled={isLoading}
-            >
-              {isSignUp ? 'EXISTING OPERATOR? SIGN IN' : 'NEW OPERATOR? CREATE ACCOUNT'}
-            </button>
-          </div>
-
-          {/* Demo Credentials */}
-          <div className="mt-4 p-3 bg-tactical-surface/50 border border-tactical-border rounded">
-            <p className="text-tactical-text/60 font-mono text-xs uppercase tracking-wider mb-2">
-              Demo Access:
-            </p>
-            <p className="text-tactical-text/80 font-mono text-xs">
-              Email: demo@tactical.com<br />
-              Password: tactical123
-            </p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-tactical-bg tactical-grid">
+      <div className="flex flex-col items-center justify-center h-full">
+        <Card className="w-full max-w-md bg-tactical-surface border-tactical-border">
+          <CardContent className="p-8">
+            <h1 className="text-2xl font-bold text-center mb-6 text-tactical-accent font-mono tracking-wider">
+              TACTICAL LOGIN
+            </h1>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <Input
+                  type="text"
+                  name="username"
+                  placeholder="Username"
+                  value={credentials.username}
+                  onChange={handleChange}
+                  className="bg-tactical-bg border-tactical-border text-tactical-text placeholder:text-tactical-text/50"
+                />
+              </div>
+              <div>
+                <Input
+                  type="password"
+                  name="password"
+                  placeholder="Password"
+                  value={credentials.password}
+                  onChange={handleChange}
+                  className="bg-tactical-bg border-tactical-border text-tactical-text placeholder:text-tactical-text/50"
+                />
+              </div>
+              <Button type="submit" className="w-full bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-mono">
+                LOGIN
+              </Button>
+            </form>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
