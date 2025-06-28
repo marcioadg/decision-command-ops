@@ -39,9 +39,11 @@ export const supabaseCompanyService = {
         userLimit: company.user_limit,
         userCount: company.profiles?.[0]?.count || 0,
         isActive: company.is_active,
-        settings: company.settings,
-        createdAt: new Date(company.created_at),
-        updatedAt: new Date(company.updated_at)
+        settings: typeof company.settings === 'string' 
+          ? JSON.parse(company.settings) 
+          : company.settings as { allowSelfRegistration: boolean; requireApproval: boolean; domainRestriction: boolean; },
+        createdAt: new Date(company.created_at).toISOString(),
+        updatedAt: new Date(company.updated_at).toISOString()
       })) || [];
     } catch (error) {
       console.error('Error fetching companies:', error);
@@ -79,9 +81,11 @@ export const supabaseCompanyService = {
         userLimit: company.user_limit,
         userCount: 0,
         isActive: company.is_active,
-        settings: company.settings,
-        createdAt: new Date(company.created_at),
-        updatedAt: new Date(company.updated_at)
+        settings: typeof company.settings === 'string' 
+          ? JSON.parse(company.settings) 
+          : company.settings as { allowSelfRegistration: boolean; requireApproval: boolean; domainRestriction: boolean; },
+        createdAt: new Date(company.created_at).toISOString(),
+        updatedAt: new Date(company.updated_at).toISOString()
       };
     } catch (error) {
       console.error('Error creating company:', error);
@@ -117,9 +121,11 @@ export const supabaseCompanyService = {
         userLimit: company.user_limit,
         userCount: 0, // Would need separate query for accurate count
         isActive: company.is_active,
-        settings: company.settings,
-        createdAt: new Date(company.created_at),
-        updatedAt: new Date(company.updated_at)
+        settings: typeof company.settings === 'string' 
+          ? JSON.parse(company.settings) 
+          : company.settings as { allowSelfRegistration: boolean; requireApproval: boolean; domainRestriction: boolean; },
+        createdAt: new Date(company.created_at).toISOString(),
+        updatedAt: new Date(company.updated_at).toISOString()
       };
     } catch (error) {
       console.error('Error updating company:', error);

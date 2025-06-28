@@ -73,7 +73,7 @@ export const auditService = {
         resourceType: log.resource_type,
         resourceId: log.resource_id,
         details: log.details,
-        ipAddress: log.ip_address,
+        ipAddress: log.ip_address || undefined,
         userAgent: log.user_agent,
         createdAt: new Date(log.created_at)
       })) || [];
@@ -102,7 +102,7 @@ export const auditService = {
         resourceType: log.resource_type,
         resourceId: log.resource_id,
         details: log.details,
-        ipAddress: log.ip_address,
+        ipAddress: log.ip_address || undefined,
         userAgent: log.user_agent,
         createdAt: new Date(log.created_at)
       })) || [];

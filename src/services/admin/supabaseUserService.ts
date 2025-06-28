@@ -24,8 +24,8 @@ export const supabaseUserService = {
         companyName: profile.companies?.name || 'No Company',
         role: profile.role as 'user' | 'company_admin',
         isActive: true, // This would need to be tracked separately
-        createdAt: new Date(profile.created_at),
-        updatedAt: new Date(profile.updated_at)
+        createdAt: new Date(profile.created_at).toISOString(),
+        updatedAt: new Date(profile.updated_at).toISOString()
       })) || [];
     } catch (error) {
       console.error('Error fetching users:', error);
@@ -64,8 +64,8 @@ export const supabaseUserService = {
         companyName: profile.companies?.name || 'No Company',
         role: profile.role as 'user' | 'company_admin',
         isActive: true,
-        createdAt: new Date(profile.created_at),
-        updatedAt: new Date(profile.updated_at)
+        createdAt: new Date(profile.created_at).toISOString(),
+        updatedAt: new Date(profile.updated_at).toISOString()
       };
     } catch (error) {
       console.error('Error updating user:', error);
