@@ -4,6 +4,7 @@ import { DecisionCardHeader } from './DecisionCardHeader';
 import { DecisionCardMetrics } from './DecisionCardMetrics';
 import { DecisionCardReflectionStatus } from './DecisionCardReflectionStatus';
 import { DecisionCardActions } from './DecisionCardActions';
+import { getDaysAgo } from '@/lib/dateUtils';
 
 interface DecisionCardProps {
   decision: Decision;
@@ -65,7 +66,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
 
       {/* Timestamp */}
       <div className="mt-2 text-xs font-mono text-tactical-text/40">
-        {decision.createdAt.toLocaleDateString()}
+        {getDaysAgo(decision.createdAt)}
       </div>
     </div>
   );

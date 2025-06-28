@@ -21,7 +21,7 @@ export const DecisionCardMetrics = ({ priority, confidence, category }: Decision
   };
 
   const getPriorityIcon = () => {
-    const baseClasses = "w-4 h-4";
+    const baseClasses = "w-3 h-3";
     switch (priority) {
       case 'high': return <Flame className={`${baseClasses} text-urgency-high`} />;
       case 'medium': return <Flame className={`${baseClasses} text-urgency-medium`} />;
@@ -37,29 +37,27 @@ export const DecisionCardMetrics = ({ priority, confidence, category }: Decision
   };
 
   return (
-    <>
+    <div className="flex items-center justify-between gap-2 text-xs">
       {/* Category Badge */}
-      <div className="flex justify-start mb-3">
-        <span className={`px-2 py-1 text-xs font-mono rounded border ${getCategoryBadgeColor()}`}>
-          {category}
-        </span>
-      </div>
+      <span className={`px-2 py-1 text-xs font-mono rounded border ${getCategoryBadgeColor()}`}>
+        {category}
+      </span>
 
-      {/* Horizontal Metrics Row */}
-      <div className="flex items-center justify-between gap-2 text-xs">
+      {/* Priority and Confidence Row */}
+      <div className="flex items-center gap-3">
         {/* Priority */}
         <div className="flex items-center space-x-1">
           {getPriorityIcon()}
-          <span className="font-mono text-tactical-text/70">
+          <span className="font-mono text-tactical-text/70 text-xs">
             {priority.toUpperCase()}
           </span>
         </div>
 
         {/* Confidence */}
-        <div className={`px-2 py-1 rounded font-mono ${getConfidenceColor()}`}>
+        <div className={`px-2 py-1 rounded font-mono text-xs ${getConfidenceColor()}`}>
           {confidence}%
         </div>
       </div>
-    </>
+    </div>
   );
 };

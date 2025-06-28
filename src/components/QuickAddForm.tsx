@@ -12,29 +12,33 @@ interface QuickAddFormProps {
 export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
   const [formData, setFormData] = useState({
     title: '',
-    category: 'Strategy' as DecisionCategory,
-    priority: 'medium' as DecisionPriority,
-    confidence: 50,
+    category: '' as DecisionCategory | '',
+    priority: '' as DecisionPriority | '',
+    confidence: '' as number | '',
     notes: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (formData.title.trim() && !isSubmitting) {
+    if (formData.title.trim() && formData.category && formData.priority && formData.confidence !== '' && !isSubmitting) {
       setIsSubmitting(true);
       try {
         const newDecision: Omit<Decision, 'id' | 'createdAt'> = {
-          ...formData,
+          title: formData.title,
+          category: formData.category as DecisionCategory,
+          priority: formData.priority as DecisionPriority,
+          confidence: formData.confidence as number,
+          notes: formData.notes,
           stage: 'backlog',
           owner: 'System' // Default fallback for backward compatibility
         };
         await onAdd(newDecision);
         setFormData({
           title: '',
-          category: 'Strategy',
-          priority: 'medium',
-          confidence: 50,
+          category: '',
+          priority: '',
+          confidence: '',
           notes: ''
         });
         onCancel();
@@ -50,6 +54,13 @@ export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
     setFormData(prev => ({ ...prev, ...updates }));
   };
 
+  const isValid = !!(
+    formData.title.trim() && 
+    formData.category && 
+    formData.priority && 
+    formData.confidence !== ''
+  );
+
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       <QuickAddFormFields
@@ -60,7 +71,7 @@ export const QuickAddForm = ({ onAdd, onCancel }: QuickAddFormProps) => {
       
       <QuickAddFormActions
         onCancel={onCancel}
-        isValid={!!formData.title.trim()}
+        isValid={isValid}
         isSubmitting={isSubmitting}
       />
     </form>

@@ -3,9 +3,9 @@ import { DecisionCategory, DecisionPriority } from '@/types/Decision';
 
 interface FormData {
   title: string;
-  category: DecisionCategory;
-  priority: DecisionPriority;
-  confidence: number;
+  category: DecisionCategory | '';
+  priority: DecisionPriority | '';
+  confidence: number | '';
   notes: string;
 }
 
@@ -47,10 +47,11 @@ export const QuickAddFormFields = ({ formData, onUpdate, isSubmitting }: QuickAd
           </label>
           <select
             value={formData.category}
-            onChange={(e) => onUpdate({ category: e.target.value as DecisionCategory })}
+            onChange={(e) => onUpdate({ category: e.target.value as DecisionCategory | '' })}
             className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
             disabled={isSubmitting}
           >
+            <option value="">Select category...</option>
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
             ))}
@@ -63,10 +64,11 @@ export const QuickAddFormFields = ({ formData, onUpdate, isSubmitting }: QuickAd
           </label>
           <select
             value={formData.priority}
-            onChange={(e) => onUpdate({ priority: e.target.value as DecisionPriority })}
+            onChange={(e) => onUpdate({ priority: e.target.value as DecisionPriority | '' })}
             className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
             disabled={isSubmitting}
           >
+            <option value="">Select priority...</option>
             {priorities.map(priority => (
               <option key={priority} value={priority}>{priority.toUpperCase()}</option>
             ))}
@@ -81,10 +83,11 @@ export const QuickAddFormFields = ({ formData, onUpdate, isSubmitting }: QuickAd
         </label>
         <select
           value={formData.confidence}
-          onChange={(e) => onUpdate({ confidence: parseInt(e.target.value) })}
+          onChange={(e) => onUpdate({ confidence: e.target.value === '' ? '' : parseInt(e.target.value) })}
           className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
           disabled={isSubmitting}
         >
+          <option value="">Select confidence...</option>
           {confidenceOptions.map(percentage => (
             <option key={percentage} value={percentage}>{percentage}%</option>
           ))}
