@@ -1,4 +1,3 @@
-
 import { useEffect, useRef, useState } from 'react';
 
 interface UseAutoSaveOptions<T> {
@@ -17,9 +16,17 @@ export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptio
   const timeoutRef = useRef<NodeJS.Timeout>();
   const previousDataRef = useRef<T>(data);
   const [saveStatus, setSaveStatus] = useState<AutoSaveStatus>({ status: 'idle' });
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     console.log('useAutoSave: Effect triggered with data:', data);
+    
+    // Skip auto-save on initial mount to avoid saving unchanged data
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      previousDataRef.current = data;
+      return;
+    }
     
     // Clear existing timeout
     if (timeoutRef.current) {
@@ -44,12 +51,12 @@ export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptio
           try {
             console.log('useAutoSave: Executing auto-save with data:', data);
             await onSave(data);
-            previousDataRef.current = data;
+            previousDataRef.current = JSON.parse(JSON.stringify(data)); // Deep clone to avoid reference issues
             setSaveStatus({ 
               status: 'saved', 
               lastSaved: new Date() 
             });
-            console.log('useAutoSave: Auto-save completed, updated previousDataRef');
+            console.log('useAutoSave: Auto-save completed successfully');
             
             // Reset to idle after showing saved status for 2 seconds
             setTimeout(() => {
@@ -61,13 +68,20 @@ export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptio
               status: 'error', 
               error: error instanceof Error ? error.message : 'Save failed' 
             });
+            
+            // Reset error status after 5 seconds
+            setTimeout(() => {
+              setSaveStatus(prev => ({ ...prev, status: 'idle', error: undefined }));
+            }, 5000);
           }
         }, delay);
       } else {
         console.log('useAutoSave: Data unchanged, skipping auto-save');
+        setSaveStatus(prev => prev.status === 'saving' ? { ...prev, status: 'idle' } : prev);
       }
     } else {
       console.log('useAutoSave: Invalid data, skipping auto-save');
+      setSaveStatus(prev => prev.status === 'saving' ? { ...prev, status: 'idle' } : prev);
     }
 
     return () => {

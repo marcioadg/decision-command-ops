@@ -98,6 +98,11 @@ export const useDecisions = () => {
                     notes: newRecord.notes || undefined,
                     biasCheck: newRecord.bias_check || undefined,
                     archived: newRecord.archived || false,
+                    preAnalysis: newRecord.pre_analysis ? {
+                      upside: newRecord.pre_analysis.upside,
+                      downside: newRecord.pre_analysis.downside,
+                      alignment: newRecord.pre_analysis.alignment
+                    } : undefined,
                     reflection: {
                       sevenDay: newRecord.reflection_7_day_date ? {
                         date: new Date(newRecord.reflection_7_day_date),
@@ -144,6 +149,11 @@ export const useDecisions = () => {
                         notes: newRecord.notes || undefined,
                         biasCheck: newRecord.bias_check || undefined,
                         archived: newRecord.archived || false,
+                        preAnalysis: newRecord.pre_analysis ? {
+                          upside: newRecord.pre_analysis.upside,
+                          downside: newRecord.pre_analysis.downside,
+                          alignment: newRecord.pre_analysis.alignment
+                        } : undefined,
                         reflection: {
                           sevenDay: newRecord.reflection_7_day_date ? {
                             date: new Date(newRecord.reflection_7_day_date),
