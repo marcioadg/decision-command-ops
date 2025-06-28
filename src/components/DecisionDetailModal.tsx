@@ -33,6 +33,8 @@ export const DecisionDetailModal = ({
   const [originalDecision, setOriginalDecision] = useState<Decision | null>(null);
   const [saveStatus, setSaveStatus] = useState<SaveStatus>({ status: 'idle' });
   const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
+  const [lastSaveTime, setLastSaveTime] = useState<number>(0);
+  const [isSaving, setIsSaving] = useState(false);
 
   const { hasUnsavedChanges, resetChanges } = useUnsavedChanges({
     originalDecision,
@@ -46,27 +48,52 @@ export const DecisionDetailModal = ({
       setCurrentDecision(decisionCopy);
       setOriginalDecision(decisionCopy);
       setSaveStatus({ status: 'idle' });
+      setLastSaveTime(0);
+      setIsSaving(false);
       console.log('DecisionDetailModal: Initialized with decision:', decision.id);
     }
   }, [isOpen, decision]);
 
-  // Handle incoming real-time updates while modal is open
+  // Handle incoming real-time updates while modal is open - FIXED to prevent save conflicts
   useEffect(() => {
-    if (isOpen && decision && currentDecision) {
-      // Only update if the incoming decision is different and we don't have unsaved changes
-      const incomingDecisionString = JSON.stringify(decision);
-      const currentDecisionString = JSON.stringify(currentDecision);
+    if (isOpen && decision && currentDecision && !isSaving) {
+      const now = Date.now();
+      const timeSinceLastSave = now - lastSaveTime;
+      const SAVE_COOLDOWN = 3000; // 3 second cooldown after save
       
-      if (incomingDecisionString !== currentDecisionString && !hasUnsavedChanges) {
-        console.log('DecisionDetailModal: Syncing with real-time update');
-        const updatedDecision = JSON.parse(JSON.stringify(decision));
+      // Don't apply real-time updates if we just saved recently
+      if (timeSinceLastSave < SAVE_COOLDOWN) {
+        console.log('DecisionDetailModal: Ignoring real-time update due to recent save cooldown');
+        return;
+      }
+
+      // Check if the incoming decision is different and we don't have unsaved changes
+      const incomingDecision = decision;
+      const incomingTimestamp = new Date(incomingDecision.updatedAt || incomingDecision.createdAt).getTime();
+      const currentTimestamp = new Date(currentDecision.updatedAt || currentDecision.createdAt).getTime();
+      
+      // Only apply real-time updates if:
+      // 1. We don't have unsaved changes
+      // 2. The incoming update is genuinely newer
+      // 3. It's not from our own recent save operation
+      if (!hasUnsavedChanges && incomingTimestamp > currentTimestamp) {
+        console.log('DecisionDetailModal: Applying real-time update:', {
+          incomingTime: incomingTimestamp,
+          currentTime: currentTimestamp,
+          timeSinceLastSave
+        });
+        const updatedDecision = JSON.parse(JSON.stringify(incomingDecision));
         setCurrentDecision(updatedDecision);
         setOriginalDecision(updatedDecision);
-      } else if (hasUnsavedChanges) {
-        console.log('DecisionDetailModal: Ignoring real-time update due to unsaved changes');
+      } else {
+        console.log('DecisionDetailModal: Skipping real-time update:', {
+          hasUnsavedChanges,
+          incomingNewer: incomingTimestamp > currentTimestamp,
+          timeSinceLastSave
+        });
       }
     }
-  }, [decision, hasUnsavedChanges, isOpen]);
+  }, [decision, hasUnsavedChanges, isOpen, lastSaveTime, isSaving]);
 
   if (!isOpen || !decision || !currentDecision) {
     return null;
@@ -80,6 +107,7 @@ export const DecisionDetailModal = ({
   const handleSave = async () => {
     if (!currentDecision || !hasUnsavedChanges) return;
 
+    setIsSaving(true);
     setSaveStatus({ status: 'saving' });
     
     try {
@@ -96,11 +124,15 @@ export const DecisionDetailModal = ({
         onImmediateUpdate(updatedDecision);
       }
       
+      // Update local state immediately to prevent clearing
+      setCurrentDecision(updatedDecision);
+      
       // Perform the actual database update
       await onUpdate(updatedDecision);
       
-      // Update original decision to new saved state
+      // Update original decision to new saved state and track save time
       setOriginalDecision(JSON.parse(JSON.stringify(updatedDecision)));
+      setLastSaveTime(Date.now());
       resetChanges();
       
       setSaveStatus({ status: 'saved' });
@@ -129,6 +161,8 @@ export const DecisionDetailModal = ({
       setTimeout(() => {
         setSaveStatus({ status: 'idle', error: undefined });
       }, 5000);
+    } finally {
+      setIsSaving(false);
     }
   };
 
