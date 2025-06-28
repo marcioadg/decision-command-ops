@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
@@ -6,6 +5,7 @@ import { StageColumn } from './StageColumn';
 import { soundSystem } from '@/utils/soundSystem';
 import { useOptimisticDecisions } from '@/hooks/useOptimisticDecisions';
 import { useToast } from '@/hooks/use-toast';
+import { Wifi, WifiOff } from 'lucide-react';
 
 interface DecisionPipelineProps {
   decisions: Decision[];
@@ -14,6 +14,7 @@ interface DecisionPipelineProps {
   onArchive?: (decision: Decision) => void;
   onQuickAdd?: (stage: DecisionStage) => void;
   showArchived?: boolean;
+  isRealTimeConnected?: boolean;
 }
 
 const stages: { key: DecisionStage; label: string; description: string }[] = [
@@ -29,7 +30,8 @@ export const DecisionPipeline = ({
   onDecisionClick, 
   onArchive,
   onQuickAdd,
-  showArchived = false 
+  showArchived = false,
+  isRealTimeConnected = false
 }: DecisionPipelineProps) => {
   const [draggedDecision, setDraggedDecision] = useState<Decision | null>(null);
   const [updatingDecisions, setUpdatingDecisions] = useState<Set<string>>(new Set());
@@ -60,7 +62,8 @@ export const DecisionPipeline = ({
     console.log('DecisionPipeline: Starting drag drop operation:', {
       decisionId,
       originalStage,
-      newStage: stage
+      newStage: stage,
+      isRealTimeConnected
     });
 
     // Apply optimistic update immediately
@@ -85,7 +88,8 @@ export const DecisionPipeline = ({
       
       console.log('DecisionPipeline: Database update successful for decision:', decisionId);
       
-      // Don't manually remove optimistic update here - let the hook detect server confirmation
+      // With real-time updates, optimistic updates will be cleaned up automatically
+      // when the real-time event confirms the change
       
       // Play celebration sound for "decided" stage
       if (stage === 'decided') {
@@ -122,6 +126,25 @@ export const DecisionPipeline = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4">
+      {/* Real-time connection status indicator */}
+      <div className="flex items-center justify-end mb-2">
+        <div className={`flex items-center space-x-1 text-xs font-mono ${
+          isRealTimeConnected ? 'text-impact-high' : 'text-tactical-text/40'
+        }`}>
+          {isRealTimeConnected ? (
+            <>
+              <Wifi className="w-3 h-3" />
+              <span>LIVE</span>
+            </>
+          ) : (
+            <>
+              <WifiOff className="w-3 h-3" />
+              <span>OFFLINE</span>
+            </>
+          )}
+        </div>
+      </div>
+
       <div className="flex gap-3 h-full">
         {stages.map(stage => (
           <StageColumn

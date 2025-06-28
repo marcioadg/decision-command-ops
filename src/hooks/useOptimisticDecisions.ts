@@ -29,27 +29,34 @@ export const useOptimisticDecisions = (decisions: Decision[]) => {
         // Check if server state matches our optimistic state
         const serverStateMatches = decision.stage === update.newStage;
         
-        // Also check timestamp - if decision was updated recently, it's likely our update
+        // With real-time updates, we can be more aggressive about cleanup
+        // If the server state matches and the decision has been updated recently, remove optimistic update
         const isRecentUpdate = decision.updatedAt && 
-          (Date.now() - decision.updatedAt.getTime()) < 10000; // 10 seconds
+          (Date.now() - decision.updatedAt.getTime()) < 30000; // 30 seconds window
 
-        if (serverStateMatches && isRecentUpdate) {
-          console.log('useOptimisticDecisions: Server confirmed optimistic update, removing:', {
+        if (serverStateMatches) {
+          console.log('useOptimisticDecisions: Server state matches optimistic state, removing update:', {
             decisionId: update.id,
             optimisticStage: update.newStage,
             serverStage: decision.stage,
-            serverUpdatedAt: decision.updatedAt
+            serverUpdatedAt: decision.updatedAt,
+            isRecentUpdate
           });
           return false; // Remove this optimistic update
         }
 
-        // Keep update if server hasn't caught up yet
+        // Keep update if server hasn't caught up yet, but with shorter timeout due to real-time
+        const updateAge = Date.now() - update.timestamp;
+        if (updateAge > 10000) { // 10 seconds timeout (reduced from 15)
+          console.log('useOptimisticDecisions: Timing out old optimistic update:', update.id);
+          return false;
+        }
+
         console.log('useOptimisticDecisions: Keeping optimistic update:', {
           decisionId: update.id,
           optimisticStage: update.newStage,
           serverStage: decision.stage,
-          serverStateMatches,
-          isRecentUpdate
+          updateAge: updateAge + 'ms'
         });
         return true;
       });
@@ -58,13 +65,13 @@ export const useOptimisticDecisions = (decisions: Decision[]) => {
     });
   }, [decisions, optimisticUpdates]);
 
-  // Clean up old optimistic updates after timeout (fallback)
+  // Clean up old optimistic updates after timeout (fallback) - reduced frequency due to real-time
   useEffect(() => {
     const cleanup = () => {
       const now = Date.now();
       setOptimisticUpdates(prev => {
         const remaining = prev.filter(update => {
-          const isOld = now - update.timestamp > 15000; // 15 seconds timeout
+          const isOld = now - update.timestamp > 12000; // 12 seconds timeout (reduced from 15)
           if (isOld) {
             console.log('useOptimisticDecisions: Timing out old optimistic update:', update.id);
           }
@@ -74,7 +81,7 @@ export const useOptimisticDecisions = (decisions: Decision[]) => {
       });
     };
 
-    const interval = setInterval(cleanup, 5000); // Check every 5 seconds
+    const interval = setInterval(cleanup, 3000); // Check every 3 seconds (increased from 5)
     return () => clearInterval(interval);
   }, []);
 

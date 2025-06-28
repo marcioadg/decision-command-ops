@@ -9,6 +9,7 @@ interface IndexMainContentProps {
   onDecisionClick: (decision: Decision) => void;
   onArchive: (decision: Decision) => void;
   onQuickAdd?: (stage: DecisionStage) => void;
+  isRealTimeConnected?: boolean;
 }
 
 export const IndexMainContent = ({
@@ -17,7 +18,8 @@ export const IndexMainContent = ({
   onDecisionUpdate,
   onDecisionClick,
   onArchive,
-  onQuickAdd
+  onQuickAdd,
+  isRealTimeConnected = false
 }: IndexMainContentProps) => {
   return (
     <main className="flex-1 p-4">
@@ -28,6 +30,7 @@ export const IndexMainContent = ({
         onArchive={onArchive}
         onQuickAdd={onQuickAdd}
         showArchived={showArchived}
+        isRealTimeConnected={isRealTimeConnected}
       />
     </main>
   );

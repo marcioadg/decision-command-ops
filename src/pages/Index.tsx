@@ -1,4 +1,3 @@
-
 import { IndexHeader } from '@/components/IndexHeader';
 import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
 import { IndexErrorScreen } from '@/components/IndexErrorScreen';
@@ -17,7 +16,8 @@ const Index = () => {
     decisions,
     loading,
     error,
-    retryCount
+    retryCount,
+    isRealTimeConnected
   } = useDecisions();
 
   const {
@@ -90,6 +90,7 @@ const Index = () => {
         onDecisionClick={handleDecisionClick}
         onArchive={handleArchive}
         onQuickAdd={handleStageQuickAdd}
+        isRealTimeConnected={isRealTimeConnected}
       />
 
       <IndexModals
