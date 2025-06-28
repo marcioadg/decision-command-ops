@@ -19,14 +19,12 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
   const [editMode, setEditMode] = useState(false);
   const [formData, setFormData] = useState<Decision | null>(null);
 
-  // Only sync formData when entering edit mode
+  // Only sync formData when explicitly entering edit mode
   useEffect(() => {
     if (editMode && decision) {
       setFormData({ ...decision });
-    } else if (!editMode) {
-      setFormData(null);
     }
-  }, [decision, editMode]);
+  }, [editMode, decision]);
 
   // Don't render if not open or no decision
   if (!isOpen || !decision) {
@@ -43,6 +41,7 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
       };
       onUpdate(updatedDecision);
       setEditMode(false);
+      setFormData(null);
     }
   };
 
@@ -56,6 +55,9 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
     if (!editMode) {
       // Entering edit mode - populate form with current decision
       setFormData({ ...decision });
+    } else {
+      // Exiting edit mode - clear form data
+      setFormData(null);
     }
     setEditMode(!editMode);
   };

@@ -64,21 +64,23 @@ export const DecisionPipeline = ({
   };
 
   return (
-    <div className="flex gap-3 h-full w-full">
-      {stages.map(stage => (
-        <StageColumn
-          key={stage.key}
-          stage={stage}
-          decisions={getDecisionsByStage(stage.key)}
-          onDragStart={handleDragStart}
-          onDragEnd={handleDragEnd}
-          onDrop={handleDrop}
-          onDecisionClick={onDecisionClick}
-          onArchive={onArchive}
-          isDragActive={draggedDecision !== null}
-          showArchived={showArchived}
-        />
-      ))}
+    <div className="w-full max-w-7xl mx-auto px-4">
+      <div className="flex gap-3 h-full">
+        {stages.map(stage => (
+          <StageColumn
+            key={stage.key}
+            stage={stage}
+            decisions={getDecisionsByStage(stage.key)}
+            onDragStart={handleDragStart}
+            onDragEnd={handleDragEnd}
+            onDrop={handleDrop}
+            onDecisionClick={onDecisionClick}
+            onArchive={onArchive}
+            isDragActive={draggedDecision !== null}
+            showArchived={showArchived}
+          />
+        ))}
+      </div>
     </div>
   );
 };
