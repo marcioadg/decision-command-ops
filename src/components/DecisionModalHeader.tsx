@@ -21,8 +21,8 @@ export const DecisionModalHeader = ({ decision, editMode, onEditToggle, onClose 
     }
   };
 
-  const hasReflection = decision.reflection?.reminderDate || decision.reflection?.questions?.length;
-  const isReflectionComplete = decision.reflection?.answers?.length;
+  const hasReflection = decision.reflection?.sevenDay || decision.reflection?.thirtyDay || decision.reflection?.ninetyDay || decision.reflection?.questions?.length;
+  const isReflectionComplete = decision.reflection?.sevenDay?.answers?.length || decision.reflection?.thirtyDay?.answers?.length || decision.reflection?.ninetyDay?.answers?.length;
 
   return (
     <div className="flex items-center justify-between p-6 border-b border-tactical-border">
