@@ -24,15 +24,15 @@ export const DecisionDetailModal = ({
   onUpdate, 
   pauseRealtimeForDecision 
 }: DecisionDetailModalProps) => {
-  // FIXED: Move all hooks to the top and handle null decision properly
-  const [isSaving, setIsSaving] = useState(false);
-  const [lastSaveTime, setLastSaveTime] = useState<Date | null>(null);
-  const [saveError, setSaveError] = useState<string | null>(null);
+  // FIXED: All hooks must be called at the top level, unconditionally
+  const [inputBlocked, setInputBlocked] = useState(false);
 
-  // FIXED: Set up coordinated auto-save with proper null handling
+  // Set up coordinated auto-save - always call this hook
   const { batchedSave, saveStatus } = useCoordinatedAutoSave({
-    decision, // Pass null decision - hook will handle it internally
+    decision,
     onSave: async (updates) => {
+      console.log('DecisionDetailModal: onSave called with updates:', updates);
+      
       if (!decision) {
         console.log('DecisionDetailModal: No decision available for save');
         return;
@@ -44,7 +44,7 @@ export const DecisionDetailModal = ({
         updatedAt: new Date()
       };
       
-      console.log('DecisionDetailModal: Saving decision updates:', updates);
+      console.log('DecisionDetailModal: Calling onUpdate with:', updatedDecision);
       await onUpdate(updatedDecision);
     },
     pauseRealtimeForDecision
@@ -58,17 +58,36 @@ export const DecisionDetailModal = ({
     }
   }, [decision?.id, pauseRealtimeForDecision, isOpen]);
 
-  // FIXED: Now we can safely do conditional returns after all hooks
+  // Debug logging for modal state
+  useEffect(() => {
+    console.log('DecisionDetailModal: State debug', {
+      isOpen,
+      decisionId: decision?.id,
+      saveStatus: saveStatus.status,
+      inputBlocked
+    });
+  }, [isOpen, decision?.id, saveStatus.status, inputBlocked]);
+
+  // Now we can safely return early after all hooks have been called
   if (!isOpen || !decision) {
+    console.log('DecisionDetailModal: Not rendering - isOpen:', isOpen, 'decision:', !!decision);
     return null;
   }
 
   const handleUpdate = async (updates: Partial<Decision>) => {
-    console.log('DecisionDetailModal: Handling coordinated update:', updates);
+    console.log('DecisionDetailModal: handleUpdate called with:', updates);
+    
+    // Temporarily block inputs during save
+    setInputBlocked(true);
+    
     try {
       await batchedSave(updates);
+      console.log('DecisionDetailModal: batchedSave completed successfully');
     } catch (error) {
       console.error('DecisionDetailModal: Error in handleUpdate:', error);
+    } finally {
+      // Re-enable inputs after save attempt
+      setTimeout(() => setInputBlocked(false), 100);
     }
   };
 
@@ -131,6 +150,7 @@ export const DecisionDetailModal = ({
             decision={decision}
             editMode={true}
             onUpdate={handleUpdate}
+            disabled={inputBlocked}
           />
 
           {/* Pre-Decision Analysis Section */}
@@ -138,6 +158,7 @@ export const DecisionDetailModal = ({
             decision={decision}
             editMode={true}
             onUpdate={handleUpdate}
+            disabled={inputBlocked}
           />
 
           {/* Reflection Section */}
@@ -145,6 +166,7 @@ export const DecisionDetailModal = ({
             decision={decision}
             editMode={true}
             onUpdate={handleUpdate}
+            disabled={inputBlocked}
           />
 
           {/* Timestamps */}

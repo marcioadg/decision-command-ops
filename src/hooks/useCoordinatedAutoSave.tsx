@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Decision } from '@/types/Decision';
 
 interface UseCoordinatedAutoSaveProps {
-  decision: Decision | null; // Allow null decision
+  decision: Decision | null;
   onSave: (updates: Partial<Decision>) => Promise<void>;
   pauseRealtimeForDecision?: (decisionId: string, duration?: number) => void;
 }
@@ -25,13 +25,15 @@ export const useCoordinatedAutoSave = ({
   const isSavingRef = useRef(false);
 
   const batchedSave = useCallback(async (updates: Partial<Decision>) => {
-    // FIXED: Early return if no decision with proper logging
+    // Always allow the function to run, but check decision inside
+    console.log('useCoordinatedAutoSave: batchedSave called with updates:', updates);
+    
     if (!decision) {
-      console.log('useCoordinatedAutoSave: No decision provided, skipping save');
+      console.log('useCoordinatedAutoSave: No decision provided, skipping save but allowing UI updates');
       return;
     }
 
-    console.log('useCoordinatedAutoSave: Batching save for decision:', decision.id, 'updates:', updates);
+    console.log('useCoordinatedAutoSave: Processing save for decision:', decision.id);
 
     // Add updates to pending batch
     pendingUpdatesRef.current = {
@@ -57,7 +59,7 @@ export const useCoordinatedAutoSave = ({
       try {
         isSavingRef.current = true;
         
-        // FIXED: Double-check decision still exists
+        // Double-check decision still exists
         if (!decision) {
           console.log('useCoordinatedAutoSave: Decision no longer available during save');
           setSaveStatus({ status: 'idle' });
@@ -65,11 +67,12 @@ export const useCoordinatedAutoSave = ({
         }
 
         if (pauseRealtimeForDecision) {
+          console.log('useCoordinatedAutoSave: Pausing realtime for decision:', decision.id);
           pauseRealtimeForDecision(decision.id, 5000);
         }
 
         const updatesToSave = { ...pendingUpdatesRef.current };
-        pendingUpdatesRef.current = {}; // Clear pending updates
+        pendingUpdatesRef.current = {};
 
         console.log('useCoordinatedAutoSave: Executing batched save:', updatesToSave);
         await onSave(updatesToSave);
@@ -99,7 +102,7 @@ export const useCoordinatedAutoSave = ({
         isSavingRef.current = false;
       }
     }, 1000);
-  }, [decision?.id, onSave, pauseRealtimeForDecision]); // FIXED: Use decision?.id to avoid stale closures
+  }, [decision, onSave, pauseRealtimeForDecision]);
 
   // Cleanup on unmount
   const cleanup = useCallback(() => {
