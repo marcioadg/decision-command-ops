@@ -25,10 +25,10 @@ const Admin = () => {
               <Shield className="h-8 w-8 text-red-500" />
               <div>
                 <h1 className="text-2xl font-bold font-mono text-red-500 tracking-wider">
-                  SUPER-ADMIN CONSOLE
+                  ADMIN CONSOLE
                 </h1>
                 <p className="text-sm text-tactical-text/60 font-mono">
-                  CLASSIFIED ACCESS • {user?.name.toUpperCase()}
+                  ADMINISTRATIVE ACCESS • {user?.name.toUpperCase()}
                 </p>
               </div>
             </div>
