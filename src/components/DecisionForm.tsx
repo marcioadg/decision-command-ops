@@ -1,7 +1,6 @@
 
 import { useState } from 'react';
 import { Decision, DecisionCategory, DecisionImpact, DecisionUrgency } from '@/types/Decision';
-import { Star } from 'lucide-react';
 
 interface DecisionFormProps {
   decision: Decision;
@@ -13,18 +12,9 @@ export const DecisionForm = ({ decision, editMode, onUpdate }: DecisionFormProps
   const categories: DecisionCategory[] = ['People', 'Capital', 'Strategy', 'Product', 'Timing', 'Personal'];
   const impacts: DecisionImpact[] = ['high', 'medium', 'low'];
   const urgencies: DecisionUrgency[] = ['high', 'medium', 'low'];
-
-  const renderStars = () => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-4 h-4 cursor-pointer transition-colors ${
-          i < (decision.confidence || 0) ? 'text-tactical-accent fill-tactical-accent' : 'text-tactical-text/30 hover:text-tactical-accent/50'
-        }`}
-        onClick={() => editMode && onUpdate({ confidence: i + 1 })}
-      />
-    ));
-  };
+  
+  // Generate confidence options from 0 to 100 in 10% increments
+  const confidenceOptions = Array.from({ length: 11 }, (_, i) => i * 10);
 
   return (
     <div className="space-y-6">
@@ -100,12 +90,23 @@ export const DecisionForm = ({ decision, editMode, onUpdate }: DecisionFormProps
 
         <div>
           <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">Confidence</label>
-          <div className="flex items-center space-x-1">
-            {renderStars()}
-            <span className="ml-2 text-tactical-text/60 font-mono text-sm">
-              {decision.confidence}/5
-            </span>
-          </div>
+          {editMode ? (
+            <select
+              value={decision.confidence || 50}
+              onChange={(e) => onUpdate({ confidence: parseInt(e.target.value) })}
+              className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
+            >
+              {confidenceOptions.map(percentage => (
+                <option key={percentage} value={percentage}>{percentage}%</option>
+              ))}
+            </select>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <div className="bg-tactical-accent/20 text-tactical-accent px-2 py-1 rounded text-sm font-mono">
+                {decision.confidence}%
+              </div>
+            </div>
+          )}
         </div>
       </div>
 

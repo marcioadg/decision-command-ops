@@ -1,5 +1,5 @@
 
-import { Clock, Star } from 'lucide-react';
+import { Clock } from 'lucide-react';
 import { DecisionUrgency, DecisionImpact } from '@/types/Decision';
 
 interface DecisionCardMetricsProps {
@@ -19,15 +19,11 @@ export const DecisionCardMetrics = ({ urgency, confidence, impact, owner }: Deci
     }
   };
 
-  const renderStars = () => {
-    return Array.from({ length: 5 }, (_, i) => (
-      <Star
-        key={i}
-        className={`w-3 h-3 ${
-          i < confidence ? 'text-tactical-accent fill-tactical-accent' : 'text-tactical-text/30'
-        }`}
-      />
-    ));
+  const getConfidenceColor = () => {
+    if (confidence >= 80) return 'text-impact-high bg-impact-high/20';
+    if (confidence >= 60) return 'text-urgency-medium bg-urgency-medium/20';
+    if (confidence >= 40) return 'text-tactical-accent bg-tactical-accent/20';
+    return 'text-urgency-high bg-urgency-high/20';
   };
 
   return (
@@ -45,8 +41,8 @@ export const DecisionCardMetrics = ({ urgency, confidence, impact, owner }: Deci
         </div>
 
         {/* Confidence */}
-        <div className="flex items-center space-x-1">
-          {renderStars()}
+        <div className={`px-2 py-1 rounded text-xs font-mono ${getConfidenceColor()}`}>
+          {confidence}%
         </div>
       </div>
 

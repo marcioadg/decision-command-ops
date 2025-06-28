@@ -14,7 +14,7 @@ export const QuickAddModal = ({ isOpen, onClose, onAdd }: QuickAddModalProps) =>
     category: 'Strategy' as DecisionCategory,
     impact: 'medium' as DecisionImpact,
     urgency: 'medium' as DecisionUrgency,
-    confidence: 3,
+    confidence: 50,
     owner: 'CEO',
     notes: ''
   });
@@ -40,7 +40,7 @@ export const QuickAddModal = ({ isOpen, onClose, onAdd }: QuickAddModalProps) =>
           category: 'Strategy',
           impact: 'medium',
           urgency: 'medium',
-          confidence: 3,
+          confidence: 50,
           owner: 'CEO',
           notes: ''
         });
@@ -56,6 +56,7 @@ export const QuickAddModal = ({ isOpen, onClose, onAdd }: QuickAddModalProps) =>
   const categories: DecisionCategory[] = ['People', 'Capital', 'Strategy', 'Product', 'Timing', 'Personal'];
   const impacts: DecisionImpact[] = ['high', 'medium', 'low'];
   const urgencies: DecisionUrgency[] = ['high', 'medium', 'low'];
+  const confidenceOptions = Array.from({ length: 11 }, (_, i) => i * 10);
 
   return (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
@@ -145,20 +146,18 @@ export const QuickAddModal = ({ isOpen, onClose, onAdd }: QuickAddModalProps) =>
 
             <div>
               <label className="block text-xs font-mono text-tactical-text/80 mb-2 uppercase">
-                Confidence (1-5)
+                Confidence
               </label>
-              <input
-                type="range"
-                min="1"
-                max="5"
+              <select
                 value={formData.confidence}
                 onChange={(e) => setFormData(prev => ({ ...prev, confidence: parseInt(e.target.value) }))}
-                className="w-full accent-tactical-accent"
+                className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-2 text-tactical-text focus:border-tactical-accent focus:outline-none"
                 disabled={isSubmitting}
-              />
-              <div className="text-center text-tactical-accent font-mono text-sm mt-1">
-                {formData.confidence}/5
-              </div>
+              >
+                {confidenceOptions.map(percentage => (
+                  <option key={percentage} value={percentage}>{percentage}%</option>
+                ))}
+              </select>
             </div>
           </div>
 

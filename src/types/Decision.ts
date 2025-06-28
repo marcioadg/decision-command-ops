@@ -23,7 +23,7 @@ export interface Decision {
   impact: DecisionImpact;
   urgency: DecisionUrgency;
   stage: DecisionStage;
-  confidence: number; // 1-5
+  confidence: number; // 0-100
   owner: string;
   createdAt: Date;
   updatedAt?: Date;

@@ -18,8 +18,8 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
 
   const highImpactDecisions = decisions.filter(d => d.impact === 'high').length;
   const avgConfidence = decisions.length > 0 
-    ? (decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length).toFixed(1)
-    : '0';
+    ? Math.round(decisions.reduce((sum, d) => sum + d.confidence, 0) / decisions.length)
+    : 0;
 
   const clarityScore = decisions.length > 0 
     ? Math.round(((stageStats.decided + stageStats.lessons) / totalDecisions) * 100)
@@ -57,7 +57,7 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
             </div>
             
             <div className="hud-metric">
-              AVG CONFIDENCE: {avgConfidence}/5
+              AVG CONFIDENCE: {avgConfidence}%
             </div>
             
             <div className={`hud-metric ${clarityScore >= 70 ? 'bg-impact-high/20 text-impact-high' : clarityScore >= 40 ? 'bg-urgency-medium/20 text-urgency-medium' : 'bg-urgency-high/20 text-urgency-high'}`}>
