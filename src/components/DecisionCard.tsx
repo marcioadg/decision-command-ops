@@ -54,15 +54,6 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
         category={decision.category}
       />
 
-      {/* Notes Preview */}
-      {decision.notes && (
-        <div className="mt-3 pt-2 border-t border-tactical-border">
-          <p className="text-xs text-tactical-text/60 line-clamp-2">
-            {decision.notes}
-          </p>
-        </div>
-      )}
-
       {/* Timestamp */}
       <div className="mt-2 text-xs font-mono text-tactical-text/40">
         {getDaysAgo(decision.createdAt)}

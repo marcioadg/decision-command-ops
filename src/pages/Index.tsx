@@ -5,7 +5,6 @@ import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
 import { IndexErrorScreen } from '@/components/IndexErrorScreen';
 import { IndexMainContent } from '@/components/IndexMainContent';
 import { IndexModals } from '@/components/IndexModals';
-import { StatusBar } from '@/components/StatusBar';
 import { useAuth } from '@/hooks/useAuth';
 import { useDecisions } from '@/hooks/useDecisions';
 import { useIndexState } from '@/hooks/useIndexState';
@@ -117,8 +116,6 @@ const Index = () => {
           onLogout={handleLogout}
         />
       )}
-
-      {!isMobile && <StatusBar decisions={decisions} />}
 
       <IndexMainContent
         decisions={decisions}

@@ -1,7 +1,10 @@
+
 import { Button } from '@/components/ui/button';
 import { NotificationBell } from '@/components/NotificationBell';
-import { Plus, Archive, LogOut, Database, BookOpen } from 'lucide-react';
+import { Plus, Archive, LogOut, BookOpen } from 'lucide-react';
 import { Decision } from '@/types/Decision';
+import { calculateDecisionMetrics } from '@/utils/metricsUtils';
+
 interface IndexHeaderProps {
   profileName?: string;
   decisions: Decision[];
@@ -13,6 +16,7 @@ interface IndexHeaderProps {
   onToggleArchived: () => void;
   onLogout: () => void;
 }
+
 export const IndexHeader = ({
   profileName,
   decisions,
@@ -24,7 +28,10 @@ export const IndexHeader = ({
   onToggleArchived,
   onLogout
 }: IndexHeaderProps) => {
-  return <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm">
+  const { avgConfidence, clarityScore } = calculateDecisionMetrics(decisions);
+
+  return (
+    <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm">
       <div className="flex items-center justify-between p-4">
         <div className="flex items-center space-x-4">
           <h1 className="text-xl font-bold text-tactical-accent font-mono tracking-wider">
@@ -34,9 +41,19 @@ export const IndexHeader = ({
             OPERATOR: {profileName || 'Unknown'}
           </div>
           
-          {error && <div className="hud-metric bg-urgency-high/20 text-urgency-high">
+          <div className="hud-metric">
+            AVG CONFIDENCE: {avgConfidence}%
+          </div>
+          
+          <div className={`hud-metric ${clarityScore >= 70 ? 'bg-impact-high/20 text-impact-high' : clarityScore >= 40 ? 'bg-urgency-medium/20 text-urgency-medium' : 'bg-urgency-high/20 text-urgency-high'}`}>
+            CLARITY: {clarityScore}%
+          </div>
+          
+          {error && (
+            <div className="hud-metric bg-urgency-high/20 text-urgency-high">
               CONNECTION ISSUES
-            </div>}
+            </div>
+          )}
         </div>
         
         <div className="flex items-center space-x-2">
@@ -63,5 +80,6 @@ export const IndexHeader = ({
           </Button>
         </div>
       </div>
-    </header>;
+    </header>
+  );
 };
