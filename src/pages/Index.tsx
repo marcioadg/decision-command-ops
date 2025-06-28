@@ -1,15 +1,18 @@
-
 import { useState, useEffect } from 'react';
 import { DecisionPipeline } from '@/components/DecisionPipeline';
 import { StatusBar } from '@/components/StatusBar';
 import { QuickAddModal } from '@/components/QuickAddModal';
 import { DecisionDetailModal } from '@/components/DecisionDetailModal';
 import { Decision } from '@/types/Decision';
+import { soundSystem } from '@/utils/soundSystem';
+import { Archive, Volume2, VolumeX } from 'lucide-react';
 
 const Index = () => {
   const [decisions, setDecisions] = useState<Decision[]>([]);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
+  const [showArchived, setShowArchived] = useState(false);
+  const [soundEnabled, setSoundEnabled] = useState(true);
 
   // Sample data for demo
   useEffect(() => {
@@ -61,6 +64,7 @@ const Index = () => {
         if (e.target === document.body || (e.target as HTMLElement).tagName === 'BODY') {
           e.preventDefault();
           setShowQuickAdd(true);
+          soundSystem.playModalOpen();
         }
       }
       if (e.key === 'Escape') {
@@ -72,6 +76,11 @@ const Index = () => {
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
   }, []);
+
+  // Update sound system when setting changes
+  useEffect(() => {
+    soundSystem.setEnabled(soundEnabled);
+  }, [soundEnabled]);
 
   const handleDecisionUpdate = (updatedDecision: Decision) => {
     setDecisions(prev => 
@@ -91,12 +100,15 @@ const Index = () => {
 
   const handleDecisionClick = (decision: Decision) => {
     setSelectedDecision(decision);
+    soundSystem.playModalOpen();
   };
 
   const handleDecisionDetailUpdate = (updatedDecision: Decision) => {
     handleDecisionUpdate(updatedDecision);
     setSelectedDecision(updatedDecision);
   };
+
+  const archivedCount = decisions.filter(d => d.archived).length;
 
   return (
     <div className="min-h-screen bg-tactical-bg tactical-grid flex flex-col">
@@ -113,8 +125,33 @@ const Index = () => {
               </div>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Archive Toggle */}
               <button
-                onClick={() => setShowQuickAdd(true)}
+                onClick={() => setShowArchived(!showArchived)}
+                className={`flex items-center space-x-2 px-3 py-2 rounded font-mono text-sm transition-colors ${
+                  showArchived 
+                    ? 'bg-tactical-accent text-tactical-bg' 
+                    : 'bg-tactical-surface border border-tactical-border text-tactical-text hover:bg-tactical-border/50'
+                }`}
+              >
+                <Archive className="w-4 h-4" />
+                <span>ARCHIVED ({archivedCount})</span>
+              </button>
+
+              {/* Sound Toggle */}
+              <button
+                onClick={() => setSoundEnabled(!soundEnabled)}
+                className="bg-tactical-surface border border-tactical-border text-tactical-text px-3 py-2 rounded font-mono text-sm hover:bg-tactical-border/50 transition-colors"
+                title={soundEnabled ? 'Disable sounds' : 'Enable sounds'}
+              >
+                {soundEnabled ? <Volume2 className="w-4 h-4" /> : <VolumeX className="w-4 h-4" />}
+              </button>
+
+              <button
+                onClick={() => {
+                  setShowQuickAdd(true);
+                  soundSystem.playModalOpen();
+                }}
                 className="bg-tactical-accent text-tactical-bg px-4 py-2 rounded font-mono text-sm font-semibold hover:bg-tactical-accent/90 transition-colors"
               >
                 + NEW DECISION [D]
@@ -125,7 +162,7 @@ const Index = () => {
       </header>
 
       {/* Status Bar */}
-      <StatusBar decisions={decisions} />
+      <StatusBar decisions={decisions.filter(d => showArchived ? d.archived : !d.archived)} />
 
       {/* Main Pipeline */}
       <main className="container mx-auto px-6 py-6 flex-1 min-h-0">
@@ -133,6 +170,7 @@ const Index = () => {
           decisions={decisions} 
           onDecisionUpdate={handleDecisionUpdate}
           onDecisionClick={handleDecisionClick}
+          showArchived={showArchived}
         />
       </main>
 

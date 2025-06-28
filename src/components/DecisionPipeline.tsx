@@ -3,11 +3,13 @@ import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
 import { StageColumn } from './StageColumn';
+import { soundSystem } from '@/utils/soundSystem';
 
 interface DecisionPipelineProps {
   decisions: Decision[];
   onDecisionUpdate: (decision: Decision) => void;
   onDecisionClick: (decision: Decision) => void;
+  showArchived?: boolean;
 }
 
 const stages: { key: DecisionStage; label: string; description: string }[] = [
@@ -18,7 +20,7 @@ const stages: { key: DecisionStage; label: string; description: string }[] = [
   { key: 'lessons', label: 'LESSONS', description: 'Reflections and learnings captured' }
 ];
 
-export const DecisionPipeline = ({ decisions, onDecisionUpdate, onDecisionClick }: DecisionPipelineProps) => {
+export const DecisionPipeline = ({ decisions, onDecisionUpdate, onDecisionClick, showArchived = false }: DecisionPipelineProps) => {
   const [draggedDecision, setDraggedDecision] = useState<Decision | null>(null);
 
   const handleDragStart = (decision: Decision) => {
@@ -37,11 +39,26 @@ export const DecisionPipeline = ({ decisions, onDecisionUpdate, onDecisionClick 
         updatedAt: new Date()
       };
       onDecisionUpdate(updatedDecision);
+      soundSystem.playCardDrop();
+      soundSystem.playStageTransition();
     }
   };
 
+  const handleArchive = (decision: Decision) => {
+    const updatedDecision: Decision = {
+      ...decision,
+      archived: !decision.archived,
+      updatedAt: new Date()
+    };
+    onDecisionUpdate(updatedDecision);
+    soundSystem.playArchive();
+  };
+
   const getDecisionsByStage = (stage: DecisionStage) => {
-    return decisions.filter(decision => decision.stage === stage);
+    return decisions.filter(decision => 
+      decision.stage === stage && 
+      (showArchived ? decision.archived : !decision.archived)
+    );
   };
 
   return (
@@ -55,7 +72,9 @@ export const DecisionPipeline = ({ decisions, onDecisionUpdate, onDecisionClick 
           onDragEnd={handleDragEnd}
           onDrop={handleDrop}
           onDecisionClick={onDecisionClick}
+          onArchive={handleArchive}
           isDragActive={draggedDecision !== null}
+          showArchived={showArchived}
         />
       ))}
     </div>

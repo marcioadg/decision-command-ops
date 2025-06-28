@@ -17,6 +17,7 @@ export interface Decision {
   updatedAt?: Date;
   notes?: string;
   biasCheck?: string;
+  archived?: boolean;
   reflection?: {
     reminderDate: Date;
     questions: string[];

@@ -1,15 +1,15 @@
-
 import { Decision } from '@/types/Decision';
-import { Clock, Star } from 'lucide-react';
+import { Clock, Star, Archive } from 'lucide-react';
 
 interface DecisionCardProps {
   decision: Decision;
   onDragStart: (decision: Decision) => void;
   onDragEnd: () => void;
   onClick: (decision: Decision) => void;
+  onArchive?: (decision: Decision) => void;
 }
 
-export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick }: DecisionCardProps) => {
+export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArchive }: DecisionCardProps) => {
   const getImpactColor = () => {
     switch (decision.impact) {
       case 'high': return 'border-l-impact-high';
@@ -65,14 +65,32 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick }: Deci
     onDragStart(decision);
   };
 
+  const handleArchive = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (onArchive) {
+      onArchive(decision);
+    }
+  };
+
   return (
     <div
       draggable
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
       onClick={handleClick}
-      className={`tactical-card border-l-4 ${getImpactColor()} cursor-pointer hover:scale-[1.02] animate-slide-in transition-all duration-200`}
+      className={`tactical-card border-l-4 ${getImpactColor()} cursor-pointer hover:scale-[1.02] animate-slide-in transition-all duration-200 relative group`}
     >
+      {/* Archive Button */}
+      {onArchive && (
+        <button
+          onClick={handleArchive}
+          className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-tactical-surface border border-tactical-border rounded p-1 hover:bg-tactical-accent hover:text-tactical-bg"
+          title="Archive decision"
+        >
+          <Archive className="w-3 h-3" />
+        </button>
+      )}
+
       {/* Title and Category */}
       <div className="flex items-start justify-between mb-3">
         <h4 className="font-semibold text-sm text-tactical-text leading-tight flex-1 mr-2">

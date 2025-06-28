@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
@@ -10,7 +9,9 @@ interface StageColumnProps {
   onDragEnd: () => void;
   onDrop: (stage: DecisionStage) => void;
   onDecisionClick: (decision: Decision) => void;
+  onArchive?: (decision: Decision) => void;
   isDragActive: boolean;
+  showArchived?: boolean;
 }
 
 export const StageColumn = ({ 
@@ -20,7 +21,9 @@ export const StageColumn = ({
   onDragEnd, 
   onDrop,
   onDecisionClick,
-  isDragActive 
+  onArchive,
+  isDragActive,
+  showArchived = false
 }: StageColumnProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -65,6 +68,7 @@ export const StageColumn = ({
           <h3 className="stage-header text-sm">{stage.label}</h3>
           <div className="hud-metric text-xs">
             {decisions.length}
+            {showArchived && <span className="ml-1 text-tactical-accent">ARCHIVED</span>}
           </div>
         </div>
         <p className="text-xs text-tactical-text/60 font-mono line-clamp-2">
@@ -76,7 +80,7 @@ export const StageColumn = ({
       <div className="p-3 space-y-2 min-h-[200px] overflow-y-auto max-h-[calc(100vh-300px)]">
         {decisions.length === 0 ? (
           <div className="text-center py-8 text-tactical-text/40 font-mono text-sm">
-            No decisions in {stage.label.toLowerCase()}
+            No {showArchived ? 'archived ' : ''}decisions in {stage.label.toLowerCase()}
           </div>
         ) : (
           decisions.map(decision => (
@@ -86,6 +90,7 @@ export const StageColumn = ({
               onDragStart={onDragStart}
               onDragEnd={onDragEnd}
               onClick={onDecisionClick}
+              onArchive={onArchive}
             />
           ))
         )}
