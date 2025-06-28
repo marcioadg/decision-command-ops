@@ -7,48 +7,33 @@ interface JournalFormProps {
 }
 
 export const JournalForm = ({ onComplete, onCancel }: JournalFormProps) => {
-  const [responses, setResponses] = useState({
-    question1: '',
-    question2: ''
-  });
+  const [response, setResponse] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (responses.question1.trim() && responses.question2.trim()) {
-      const notes = `What's keeping me awake at night:\n${responses.question1}\n\nWhere I'm flirting with disaster:\n${responses.question2}`;
-      const title = `Decision needed: ${responses.question1.split('.')[0].substring(0, 50)}${responses.question1.length > 50 ? '...' : ''}`;
+    if (response.trim()) {
+      const notes = response;
+      const title = `${response.split('.')[0].substring(0, 50)}${response.length > 50 ? '...' : ''}`;
       
       onComplete({ title, notes });
     }
   };
 
-  const isValid = responses.question1.trim() && responses.question2.trim();
+  const isValid = response.trim();
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="space-y-4">
         <div>
           <label className="block text-sm font-mono text-tactical-accent mb-3">
-            What is keeping you awake at night?
+            What is keeping you awake at night OR where are you flirting with disaster?
           </label>
           <textarea
-            value={responses.question1}
-            onChange={(e) => setResponses(prev => ({ ...prev, question1: e.target.value }))}
-            className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-3 text-tactical-text focus:border-tactical-accent focus:outline-none h-24 resize-none"
-            placeholder="What concerns, worries, or unresolved issues are on your mind?"
+            value={response}
+            onChange={(e) => setResponse(e.target.value)}
+            className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-3 text-tactical-text focus:border-tactical-accent focus:outline-none h-32 resize-none"
+            placeholder="What concerns, worries, or risks are on your mind that need a decision?"
             autoFocus
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-mono text-tactical-accent mb-3">
-            Where are you flirting with disaster?
-          </label>
-          <textarea
-            value={responses.question2}
-            onChange={(e) => setResponses(prev => ({ ...prev, question2: e.target.value }))}
-            className="w-full bg-tactical-bg border border-tactical-border rounded px-3 py-3 text-tactical-text focus:border-tactical-accent focus:outline-none h-24 resize-none"
-            placeholder="What risks are you taking or avoiding that could lead to problems?"
           />
         </div>
       </div>
