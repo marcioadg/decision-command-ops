@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 interface User {
   name: string;
   username: string;
+  role?: 'user' | 'admin' | 'super-admin';
 }
 
 interface AuthContextType {
@@ -11,6 +12,7 @@ interface AuthContextType {
   login: (user: User) => void;
   logout: () => void;
   isLoading: boolean;
+  isSuperAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -38,8 +40,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     localStorage.removeItem('tactical_auth_user');
   };
 
+  const isSuperAdmin = () => {
+    return user?.role === 'super-admin';
+  };
+
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ user, login, logout, isLoading, isSuperAdmin }}>
       {children}
     </AuthContext.Provider>
   );

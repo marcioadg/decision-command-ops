@@ -17,7 +17,11 @@ const Login = () => {
 
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      if (user.role === 'super-admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     }
   }, [user, navigate]);
 
@@ -31,6 +35,22 @@ const Login = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
+    // Super-admin login
+    if (credentials.username === 'superadmin' && credentials.password === 'super-tactical-2024') {
+      login({ 
+        name: 'Super Administrator', 
+        username: 'superadmin', 
+        role: 'super-admin' 
+      });
+      toast({
+        title: "SUPER-ADMIN ACCESS GRANTED",
+        description: "Welcome to the Super-Admin Console",
+      });
+      navigate('/admin');
+      return;
+    }
+    
+    // Regular admin login
     if (credentials.username === 'admin' && credentials.password === 'tactical123') {
       login({ name: 'Commander', username: 'admin' });
       toast({
@@ -41,7 +61,7 @@ const Login = () => {
     } else {
       toast({
         title: "ACCESS DENIED",
-        description: "Invalid credentials. Try admin/tactical123",
+        description: "Invalid credentials. Try admin/tactical123 or superadmin/super-tactical-2024",
         variant: "destructive",
       });
     }
