@@ -17,12 +17,13 @@ export const useDecisions = () => {
   const { toast } = useToast();
 
   // Set up real-time subscription
-  const { isRealTimeConnected } = useDecisionRealtime({ user, setDecisions });
+  const { isRealTimeConnected, pauseRealtimeForDecision } = useDecisionRealtime({ user, setDecisions });
 
   // Set up CRUD operations
   const { createDecision, updateDecision, deleteDecision } = useDecisionCRUD({
     isRealTimeConnected,
-    setDecisions
+    setDecisions,
+    pauseRealtimeForDecision
   });
 
   const loadDecisions = useCallback(async (showToast = true) => {
@@ -40,7 +41,11 @@ export const useDecisions = () => {
       setError(null);
       
       const data = await decisionService.getDecisions();
-      console.log('Loaded decisions:', data.length);
+      console.log('Loaded decisions with preAnalysis data:', data.map(d => ({ 
+        id: d.id, 
+        title: d.title, 
+        preAnalysis: d.preAnalysis 
+      })));
       
       setDecisions(data);
       setRetryCount(0);

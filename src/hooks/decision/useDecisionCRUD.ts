@@ -7,9 +7,10 @@ import { useToast } from '@/hooks/use-toast';
 interface UseDecisionCRUDProps {
   isRealTimeConnected: boolean;
   setDecisions: React.Dispatch<React.SetStateAction<Decision[]>>;
+  pauseRealtimeForDecision?: (decisionId: string, duration?: number) => void;
 }
 
-export const useDecisionCRUD = ({ isRealTimeConnected, setDecisions }: UseDecisionCRUDProps) => {
+export const useDecisionCRUD = ({ isRealTimeConnected, setDecisions, pauseRealtimeForDecision }: UseDecisionCRUDProps) => {
   const { toast } = useToast();
 
   const createDecision = useCallback(async (decision: Omit<Decision, 'id' | 'createdAt'>) => {
@@ -40,8 +41,15 @@ export const useDecisionCRUD = ({ isRealTimeConnected, setDecisions }: UseDecisi
 
   const updateDecision = useCallback(async (decision: Decision) => {
     try {
-      console.log('Updating decision:', decision.id);
+      console.log('Updating decision:', decision.id, 'with preAnalysis:', decision.preAnalysis);
+      
+      // Pause real-time updates for this decision to prevent conflicts
+      if (pauseRealtimeForDecision) {
+        pauseRealtimeForDecision(decision.id, 3000);
+      }
+      
       const updatedDecision = await decisionService.updateDecision(decision);
+      console.log('Decision updated successfully, DB returned:', updatedDecision.preAnalysis);
       
       if (!isRealTimeConnected) {
         setDecisions(prev => 
@@ -60,7 +68,7 @@ export const useDecisionCRUD = ({ isRealTimeConnected, setDecisions }: UseDecisi
       });
       throw err;
     }
-  }, [toast, isRealTimeConnected, setDecisions]);
+  }, [toast, isRealTimeConnected, setDecisions, pauseRealtimeForDecision]);
 
   const deleteDecision = useCallback(async (id: string) => {
     try {

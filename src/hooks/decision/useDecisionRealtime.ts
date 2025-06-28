@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { Decision } from '@/types/Decision';
 import { supabase } from '@/integrations/supabase/client';
 import { convertDatabaseRecordToDecision } from './decisionRealtimeUtils';
@@ -11,6 +11,21 @@ interface UseDecisionRealtimeProps {
 
 export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeProps) => {
   const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
+  const [pausedDecisionIds, setPausedDecisionIds] = useState<Set<string>>(new Set());
+
+  const pauseRealtimeForDecision = useCallback((decisionId: string, duration = 2000) => {
+    console.log(`Pausing real-time updates for decision ${decisionId} for ${duration}ms`);
+    setPausedDecisionIds(prev => new Set(prev).add(decisionId));
+    
+    setTimeout(() => {
+      console.log(`Resuming real-time updates for decision ${decisionId}`);
+      setPausedDecisionIds(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(decisionId);
+        return newSet;
+      });
+    }, duration);
+  }, []);
 
   useEffect(() => {
     if (!user) return;
@@ -32,6 +47,13 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
           
           const { eventType, new: newRecord, old: oldRecord } = payload;
           
+          // Check if updates are paused for this decision
+          const recordId = newRecord?.id || oldRecord?.id;
+          if (recordId && pausedDecisionIds.has(recordId)) {
+            console.log(`Ignoring real-time update for paused decision ${recordId}`);
+            return;
+          }
+          
           setDecisions(prev => {
             switch (eventType) {
               case 'INSERT':
@@ -50,7 +72,12 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
                   console.log('Updating decision from real-time:', newRecord.id);
                   return prev.map(decision => {
                     if (decision.id === newRecord.id) {
-                      return convertDatabaseRecordToDecision(newRecord);
+                      const updatedDecision = convertDatabaseRecordToDecision(newRecord);
+                      console.log('Real-time update applied:', {
+                        old: decision.preAnalysis,
+                        new: updatedDecision.preAnalysis
+                      });
+                      return updatedDecision;
                     }
                     return decision;
                   });
@@ -85,7 +112,10 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       supabase.removeChannel(channel);
       setIsRealTimeConnected(false);
     };
-  }, [user, setDecisions]);
+  }, [user, setDecisions, pausedDecisionIds]);
 
-  return { isRealTimeConnected };
+  return { 
+    isRealTimeConnected,
+    pauseRealtimeForDecision
+  };
 };

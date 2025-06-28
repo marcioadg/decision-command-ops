@@ -1,3 +1,4 @@
+
 import { useEffect, useRef, useState } from 'react';
 
 interface UseAutoSaveOptions<T> {
@@ -12,11 +13,13 @@ export interface AutoSaveStatus {
   error?: string;
 }
 
-export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptions<T>) => {
+// Simplified auto-save that's less aggressive to prevent conflicts
+export const useAutoSave = <T,>({ data, onSave, delay = 2000 }: UseAutoSaveOptions<T>) => {
   const timeoutRef = useRef<NodeJS.Timeout>();
   const previousDataRef = useRef<T>(data);
   const [saveStatus, setSaveStatus] = useState<AutoSaveStatus>({ status: 'idle' });
   const isInitialMount = useRef(true);
+  const isSaving = useRef(false);
 
   useEffect(() => {
     console.log('useAutoSave: Effect triggered with data:', data);
@@ -25,6 +28,12 @@ export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptio
     if (isInitialMount.current) {
       isInitialMount.current = false;
       previousDataRef.current = data;
+      return;
+    }
+    
+    // Skip if already saving
+    if (isSaving.current) {
+      console.log('useAutoSave: Already saving, skipping');
       return;
     }
     
@@ -39,16 +48,13 @@ export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptio
       const currentDataString = JSON.stringify(data);
       const previousDataString = JSON.stringify(previousDataRef.current);
       
-      console.log('useAutoSave: Comparing data strings:');
-      console.log('  Current:', currentDataString);
-      console.log('  Previous:', previousDataString);
-      
       if (currentDataString !== previousDataString) {
         console.log('useAutoSave: Data changed, setting timeout for auto-save');
         setSaveStatus({ status: 'saving' });
         
         timeoutRef.current = setTimeout(async () => {
           try {
+            isSaving.current = true;
             console.log('useAutoSave: Executing auto-save with data:', data);
             await onSave(data);
             previousDataRef.current = JSON.parse(JSON.stringify(data)); // Deep clone to avoid reference issues
@@ -73,6 +79,8 @@ export const useAutoSave = <T,>({ data, onSave, delay = 1000 }: UseAutoSaveOptio
             setTimeout(() => {
               setSaveStatus(prev => ({ ...prev, status: 'idle', error: undefined }));
             }, 5000);
+          } finally {
+            isSaving.current = false;
           }
         }, delay);
       } else {
