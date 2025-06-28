@@ -80,7 +80,7 @@ export const StageColumn = ({
             {showArchived && <span className="ml-1 text-tactical-accent">ARCHIVED</span>}
           </div>
         </div>
-        <p className="text-xs text-tactical-text/60 font-mono line-clamp-2">
+        <p className="text-xs text-tactical-text/60 font-mono line-clamp-2 h-8 flex items-start">
           {stage.description}
         </p>
       </div>
