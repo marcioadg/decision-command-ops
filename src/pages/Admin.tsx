@@ -1,18 +1,24 @@
 
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AdminStats } from '@/components/admin/AdminStats';
 import { CompanyManager } from '@/components/admin/CompanyManager';
 import { UserManager } from '@/components/admin/UserManager';
-import { Shield, LogOut, Database } from 'lucide-react';
+import { Shield, LogOut, Database, LayoutDashboard } from 'lucide-react';
 
 const Admin = () => {
   const { user, profile, signOut } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     signOut();
+  };
+
+  const handleDashboard = () => {
+    navigate('/dashboard');
   };
 
   // Check if user has admin access
@@ -44,14 +50,24 @@ const Admin = () => {
                 </p>
               </div>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="border-red-800 text-red-400 hover:bg-red-900/20 font-mono"
-            >
-              <LogOut className="h-4 w-4 mr-2" />
-              LOGOUT
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleDashboard}
+                variant="outline"
+                className="border-red-800 text-red-400 hover:bg-red-900/20 font-mono"
+              >
+                <LayoutDashboard className="h-4 w-4 mr-2" />
+                DASHBOARD
+              </Button>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="border-red-800 text-red-400 hover:bg-red-900/20 font-mono"
+              >
+                <LogOut className="h-4 w-4 mr-2" />
+                LOGOUT
+              </Button>
+            </div>
           </div>
         </div>
       </div>
