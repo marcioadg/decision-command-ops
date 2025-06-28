@@ -6,6 +6,7 @@ import { DecisionReflectionSection } from './DecisionReflectionSection';
 import { DecisionTimestamps } from './DecisionTimestamps';
 import { UnsavedChangesDialog } from './UnsavedChangesDialog';
 import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { deepCloneDecision } from '@/lib/decisionUtils';
 import { CheckCircle, AlertCircle, Loader2, Save } from 'lucide-react';
 
 interface DecisionDetailModalProps {
@@ -43,7 +44,7 @@ export const DecisionDetailModal = ({
   // Initialize decision data when modal opens
   useEffect(() => {
     if (isOpen && decision) {
-      const decisionCopy = JSON.parse(JSON.stringify(decision));
+      const decisionCopy = deepCloneDecision(decision);
       setCurrentDecision(decisionCopy);
       setOriginalDecision(decisionCopy);
       setSaveStatus({ status: 'idle' });
@@ -81,7 +82,7 @@ export const DecisionDetailModal = ({
           currentTime: currentTimestamp,
           timeSinceLastSave
         });
-        const updatedDecision = JSON.parse(JSON.stringify(incomingDecision));
+        const updatedDecision = deepCloneDecision(incomingDecision);
         setCurrentDecision(updatedDecision);
         setOriginalDecision(updatedDecision);
       } else {
@@ -130,7 +131,7 @@ export const DecisionDetailModal = ({
       await onUpdate(updatedDecision);
       
       // Update original decision to new saved state and track save time
-      setOriginalDecision(JSON.parse(JSON.stringify(updatedDecision)));
+      setOriginalDecision(deepCloneDecision(updatedDecision));
       setLastSaveTime(Date.now());
       resetChanges();
       
