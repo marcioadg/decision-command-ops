@@ -18,10 +18,13 @@ const Index = () => {
   const {
     decisions,
     loading,
+    error,
     createDecision,
     updateDecision,
     deleteDecision,
-    migrateFromLocalStorage
+    migrateFromLocalStorage,
+    refreshDecisions,
+    retryCount
   } = useDecisions();
 
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
@@ -99,12 +102,58 @@ const Index = () => {
     });
   };
 
+  const handleRetry = () => {
+    console.log('Manual retry requested');
+    refreshDecisions();
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tactical-accent mx-auto mb-4"></div>
           <p className="text-tactical-text font-mono">Loading tactical decisions...</p>
+          {retryCount > 0 && (
+            <p className="text-tactical-text/60 font-mono text-sm mt-2">
+              Retry attempt {retryCount}/3
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
+  // Show error screen with retry option
+  if (error && !loading) {
+    return (
+      <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center">
+        <div className="text-center max-w-md mx-auto p-6">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 bg-urgency-high/20 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-urgency-high text-2xl">⚠</span>
+            </div>
+            <h2 className="text-xl font-bold text-tactical-text font-mono mb-2">
+              CONNECTION ERROR
+            </h2>
+            <p className="text-tactical-text/80 font-mono text-sm mb-4">
+              {error}
+            </p>
+            <div className="space-y-3">
+              <Button
+                onClick={handleRetry}
+                className="bg-tactical-accent hover:bg-tactical-accent/80 text-tactical-bg font-mono"
+              >
+                RETRY CONNECTION
+              </Button>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="font-mono border-tactical-border hover:bg-tactical-surface"
+              >
+                LOGOUT
+              </Button>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -126,6 +175,11 @@ const Index = () => {
               <Database className="w-4 h-4 mr-1 inline" />
               DATABASE MODE
             </div>
+            {error && (
+              <div className="hud-metric bg-urgency-high/20 text-urgency-high">
+                CONNECTION ISSUES
+              </div>
+            )}
           </div>
           
           <div className="flex items-center space-x-2">
