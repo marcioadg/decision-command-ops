@@ -1,5 +1,5 @@
-
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -13,8 +13,9 @@ interface LoginModalProps {
 }
 
 export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
-  const { signIn, signUp } = useAuth();
+  const { signIn, signUp, profile } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   
   const [signInForm, setSignInForm] = useState({
     email: '',
@@ -50,6 +51,13 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           description: "Welcome to the Tactical Decision Pipeline",
         });
         onClose();
+        
+        // Navigate to dashboard or admin based on user role
+        if (profile?.role === 'admin') {
+          navigate('/admin');
+        } else {
+          navigate('/dashboard');
+        }
       }
     } catch (error) {
       toast({
@@ -111,6 +119,8 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           password: '',
           confirmPassword: ''
         });
+        onClose();
+        // Note: After email verification, user will be redirected to dashboard automatically
       }
     } catch (error) {
       toast({
