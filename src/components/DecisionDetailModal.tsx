@@ -1,13 +1,13 @@
 
 import { useState, useEffect } from 'react';
 import { Decision } from '@/types/Decision';
-import { DecisionModalHeader } from './DecisionModalHeader';
 import { DecisionForm } from './DecisionForm';
 import { DecisionPreAnalysisSection } from './DecisionPreAnalysisSection';
 import { DecisionReflectionSection } from './DecisionReflectionSection';
 import { DecisionTimestamps } from './DecisionTimestamps';
-import { CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import { useCoordinatedAutoSave } from '@/hooks/useCoordinatedAutoSave';
+import { UnsavedChangesDialog } from './UnsavedChangesDialog';
+import { useUnsavedChanges } from '@/hooks/useUnsavedChanges';
+import { CheckCircle, AlertCircle, Loader2, Save } from 'lucide-react';
 
 interface DecisionDetailModalProps {
   decision: Decision | null;
@@ -17,6 +17,11 @@ interface DecisionDetailModalProps {
   pauseRealtimeForDecision?: (decisionId: string, duration?: number) => void;
 }
 
+interface SaveStatus {
+  status: 'idle' | 'saving' | 'saved' | 'error';
+  error?: string;
+}
+
 export const DecisionDetailModal = ({ 
   decision, 
   isOpen, 
@@ -24,71 +29,104 @@ export const DecisionDetailModal = ({
   onUpdate, 
   pauseRealtimeForDecision 
 }: DecisionDetailModalProps) => {
-  // FIXED: All hooks must be called at the top level, unconditionally
-  const [inputBlocked, setInputBlocked] = useState(false);
+  const [currentDecision, setCurrentDecision] = useState<Decision | null>(null);
+  const [originalDecision, setOriginalDecision] = useState<Decision | null>(null);
+  const [saveStatus, setSaveStatus] = useState<SaveStatus>({ status: 'idle' });
+  const [showUnsavedDialog, setShowUnsavedDialog] = useState(false);
 
-  // Set up coordinated auto-save - always call this hook
-  const { batchedSave, saveStatus } = useCoordinatedAutoSave({
-    decision,
-    onSave: async (updates) => {
-      console.log('DecisionDetailModal: onSave called with updates:', updates);
-      
-      if (!decision) {
-        console.log('DecisionDetailModal: No decision available for save');
-        return;
-      }
-      
-      const updatedDecision: Decision = {
-        ...decision,
-        ...updates,
-        updatedAt: new Date()
-      };
-      
-      console.log('DecisionDetailModal: Calling onUpdate with:', updatedDecision);
-      await onUpdate(updatedDecision);
-    },
-    pauseRealtimeForDecision
+  const { hasUnsavedChanges, resetChanges } = useUnsavedChanges({
+    originalDecision,
+    currentDecision
   });
 
-  // Pause real-time updates for the entire modal session
+  // Initialize decision data when modal opens
+  useEffect(() => {
+    if (isOpen && decision) {
+      const decisionCopy = JSON.parse(JSON.stringify(decision));
+      setCurrentDecision(decisionCopy);
+      setOriginalDecision(decisionCopy);
+      setSaveStatus({ status: 'idle' });
+      console.log('DecisionDetailModal: Initialized with decision:', decision.id);
+    }
+  }, [isOpen, decision]);
+
+  // Pause real-time updates when modal is open
   useEffect(() => {
     if (isOpen && decision && pauseRealtimeForDecision) {
       console.log('DecisionDetailModal: Pausing real-time updates for editing session');
-      pauseRealtimeForDecision(decision.id, 15000);
+      pauseRealtimeForDecision(decision.id, 30000); // Pause for 30 seconds
     }
   }, [decision?.id, pauseRealtimeForDecision, isOpen]);
 
-  // Debug logging for modal state
-  useEffect(() => {
-    console.log('DecisionDetailModal: State debug', {
-      isOpen,
-      decisionId: decision?.id,
-      saveStatus: saveStatus.status,
-      inputBlocked
-    });
-  }, [isOpen, decision?.id, saveStatus.status, inputBlocked]);
-
-  // Now we can safely return early after all hooks have been called
-  if (!isOpen || !decision) {
-    console.log('DecisionDetailModal: Not rendering - isOpen:', isOpen, 'decision:', !!decision);
+  if (!isOpen || !decision || !currentDecision) {
     return null;
   }
 
-  const handleUpdate = async (updates: Partial<Decision>) => {
-    console.log('DecisionDetailModal: handleUpdate called with:', updates);
-    
-    // Temporarily block inputs during save
-    setInputBlocked(true);
+  const handleFieldUpdate = (updates: Partial<Decision>) => {
+    console.log('DecisionDetailModal: Field update:', updates);
+    setCurrentDecision(prev => prev ? { ...prev, ...updates } : null);
+  };
+
+  const handleSave = async () => {
+    if (!currentDecision || !hasUnsavedChanges) return;
+
+    setSaveStatus({ status: 'saving' });
     
     try {
-      await batchedSave(updates);
-      console.log('DecisionDetailModal: batchedSave completed successfully');
+      const updatedDecision: Decision = {
+        ...currentDecision,
+        updatedAt: new Date()
+      };
+      
+      console.log('DecisionDetailModal: Saving decision:', updatedDecision);
+      await onUpdate(updatedDecision);
+      
+      // Update original decision to new saved state
+      setOriginalDecision(JSON.parse(JSON.stringify(updatedDecision)));
+      resetChanges();
+      
+      setSaveStatus({ status: 'saved' });
+      
+      // Reset to idle after showing saved status
+      setTimeout(() => {
+        setSaveStatus({ status: 'idle' });
+      }, 2000);
+      
     } catch (error) {
-      console.error('DecisionDetailModal: Error in handleUpdate:', error);
-    } finally {
-      // Re-enable inputs after save attempt
-      setTimeout(() => setInputBlocked(false), 100);
+      console.error('DecisionDetailModal: Save failed:', error);
+      setSaveStatus({ 
+        status: 'error', 
+        error: error instanceof Error ? error.message : 'Save failed' 
+      });
+      
+      // Reset error status after 5 seconds
+      setTimeout(() => {
+        setSaveStatus({ status: 'idle', error: undefined });
+      }, 5000);
     }
+  };
+
+  const handleClose = () => {
+    if (hasUnsavedChanges) {
+      setShowUnsavedDialog(true);
+    } else {
+      onClose();
+    }
+  };
+
+  const handleSaveAndClose = async () => {
+    await handleSave();
+    setShowUnsavedDialog(false);
+    onClose();
+  };
+
+  const handleDiscardChanges = () => {
+    setShowUnsavedDialog(false);
+    onClose();
+  };
+
+  const handleCancelClose = () => {
+    setShowUnsavedDialog(false);
   };
 
   const SaveStatusIndicator = () => {
@@ -110,13 +148,11 @@ export const DecisionDetailModal = ({
       );
     }
     
-    if (saveStatus.status === 'saved' && saveStatus.lastSaved) {
+    if (saveStatus.status === 'saved') {
       return (
         <div className="flex items-center space-x-2 text-green-400">
           <CheckCircle className="w-4 h-4" />
-          <span className="text-sm font-mono">
-            Saved {saveStatus.lastSaved.toLocaleTimeString()}
-          </span>
+          <span className="text-sm font-mono">Saved successfully</span>
         </div>
       );
     }
@@ -125,54 +161,74 @@ export const DecisionDetailModal = ({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-tactical-surface border border-tactical-border rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
-        {/* Header with save status */}
-        <div className="flex items-center justify-between p-6 border-b border-tactical-border">
-          <h2 className="text-xl font-bold text-tactical-accent font-tactical">
-            DECISION DETAILS
-          </h2>
-          <div className="flex items-center space-x-4">
-            <SaveStatusIndicator />
-            <button
-              onClick={onClose}
-              className="text-tactical-text/60 hover:text-tactical-text text-2xl font-bold"
-            >
-              ×
-            </button>
+    <>
+      <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="bg-tactical-surface border border-tactical-border rounded-lg w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          {/* Header with save button and status */}
+          <div className="flex items-center justify-between p-6 border-b border-tactical-border">
+            <h2 className="text-xl font-bold text-tactical-accent font-tactical">
+              DECISION DETAILS
+            </h2>
+            <div className="flex items-center space-x-4">
+              <SaveStatusIndicator />
+              {hasUnsavedChanges && (
+                <span className="text-xs font-mono text-yellow-400 bg-yellow-400/10 px-2 py-1 rounded border border-yellow-400/30">
+                  UNSAVED CHANGES
+                </span>
+              )}
+              <button
+                onClick={handleSave}
+                disabled={!hasUnsavedChanges || saveStatus.status === 'saving'}
+                className="flex items-center space-x-2 bg-tactical-accent text-tactical-bg px-4 py-2 rounded font-mono text-sm font-semibold hover:bg-tactical-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <Save className="w-4 h-4" />
+                <span>SAVE</span>
+              </button>
+              <button
+                onClick={handleClose}
+                className="text-tactical-text/60 hover:text-tactical-text text-2xl font-bold"
+              >
+                ×
+              </button>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="p-6 space-y-6">
+            {/* Decision Form */}
+            <DecisionForm
+              decision={currentDecision}
+              editMode={true}
+              onUpdate={handleFieldUpdate}
+            />
+
+            {/* Pre-Decision Analysis Section */}
+            <DecisionPreAnalysisSection
+              decision={currentDecision}
+              editMode={true}
+              onUpdate={handleFieldUpdate}
+            />
+
+            {/* Reflection Section */}
+            <DecisionReflectionSection
+              decision={currentDecision}
+              editMode={true}
+              onUpdate={handleFieldUpdate}
+            />
+
+            {/* Timestamps */}
+            <DecisionTimestamps decision={currentDecision} />
           </div>
         </div>
-
-        {/* Content */}
-        <div className="p-6 space-y-6">
-          {/* Decision Form - always in edit mode */}
-          <DecisionForm
-            decision={decision}
-            editMode={true}
-            onUpdate={handleUpdate}
-            disabled={inputBlocked}
-          />
-
-          {/* Pre-Decision Analysis Section */}
-          <DecisionPreAnalysisSection
-            decision={decision}
-            editMode={true}
-            onUpdate={handleUpdate}
-            disabled={inputBlocked}
-          />
-
-          {/* Reflection Section */}
-          <DecisionReflectionSection
-            decision={decision}
-            editMode={true}
-            onUpdate={handleUpdate}
-            disabled={inputBlocked}
-          />
-
-          {/* Timestamps */}
-          <DecisionTimestamps decision={decision} />
-        </div>
       </div>
-    </div>
+
+      {/* Unsaved Changes Dialog */}
+      <UnsavedChangesDialog
+        isOpen={showUnsavedDialog}
+        onSaveAndClose={handleSaveAndClose}
+        onDiscardChanges={handleDiscardChanges}
+        onCancel={handleCancelClose}
+      />
+    </>
   );
 };

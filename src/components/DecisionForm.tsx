@@ -5,10 +5,9 @@ interface DecisionFormProps {
   decision: Decision;
   editMode: boolean;
   onUpdate: (updatedDecision: Partial<Decision>) => void;
-  disabled?: boolean;
 }
 
-export const DecisionForm = ({ decision, editMode, onUpdate, disabled = false }: DecisionFormProps) => {
+export const DecisionForm = ({ decision, editMode, onUpdate }: DecisionFormProps) => {
   const categories: DecisionCategory[] = ['People', 'Capital', 'Strategy', 'Product', 'Timing', 'Personal'];
   const priorities: DecisionPriority[] = ['high', 'medium', 'low'];
   
@@ -17,11 +16,8 @@ export const DecisionForm = ({ decision, editMode, onUpdate, disabled = false }:
 
   // Direct updates with logging
   const handleFieldUpdate = (field: keyof Decision, value: any) => {
-    console.log('DecisionForm: Field update:', field, value, 'disabled:', disabled);
-    
-    if (!disabled) {
-      onUpdate({ [field]: value });
-    }
+    console.log('DecisionForm: Field update:', field, value);
+    onUpdate({ [field]: value });
   };
 
   return (
@@ -33,8 +29,7 @@ export const DecisionForm = ({ decision, editMode, onUpdate, disabled = false }:
           type="text"
           value={decision.title || ''}
           onChange={(e) => handleFieldUpdate('title', e.target.value)}
-          disabled={disabled}
-          className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none text-lg font-semibold disabled:opacity-50"
+          className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none text-lg font-semibold"
           placeholder="Enter decision title..."
         />
       </div>
@@ -46,8 +41,7 @@ export const DecisionForm = ({ decision, editMode, onUpdate, disabled = false }:
           <select
             value={decision.category || ''}
             onChange={(e) => handleFieldUpdate('category', e.target.value as DecisionCategory)}
-            disabled={disabled}
-            className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none disabled:opacity-50"
+            className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none"
           >
             {categories.map(cat => (
               <option key={cat} value={cat}>{cat}</option>
@@ -60,8 +54,7 @@ export const DecisionForm = ({ decision, editMode, onUpdate, disabled = false }:
           <select
             value={decision.priority || ''}
             onChange={(e) => handleFieldUpdate('priority', e.target.value as DecisionPriority)}
-            disabled={disabled}
-            className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none disabled:opacity-50"
+            className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none"
           >
             {priorities.map(priority => (
               <option key={priority} value={priority}>{priority.toUpperCase()}</option>
@@ -74,8 +67,7 @@ export const DecisionForm = ({ decision, editMode, onUpdate, disabled = false }:
           <select
             value={decision.confidence || 50}
             onChange={(e) => handleFieldUpdate('confidence', parseInt(e.target.value))}
-            disabled={disabled}
-            className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none disabled:opacity-50"
+            className="w-full bg-transparent border-0 border-b border-tactical-border/50 focus:border-tactical-accent rounded-none px-0 py-2 text-tactical-text focus:outline-none"
           >
             {confidenceOptions.map(percentage => (
               <option key={percentage} value={percentage}>{percentage}%</option>
@@ -90,8 +82,7 @@ export const DecisionForm = ({ decision, editMode, onUpdate, disabled = false }:
         <textarea
           value={decision.notes || ''}
           onChange={(e) => handleFieldUpdate('notes', e.target.value)}
-          disabled={disabled}
-          className="w-full bg-transparent border border-tactical-border/50 focus:border-tactical-accent rounded px-3 py-2 text-tactical-text focus:outline-none h-32 resize-none disabled:opacity-50"
+          className="w-full bg-transparent border border-tactical-border/50 focus:border-tactical-accent rounded px-3 py-2 text-tactical-text focus:outline-none h-32 resize-none"
           placeholder="Additional context and details..."
         />
       </div>

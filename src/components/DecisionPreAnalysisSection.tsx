@@ -1,16 +1,14 @@
 
 import { Decision, PreAnalysis } from '@/types/Decision';
 import { Textarea } from '@/components/ui/textarea';
-import { useState } from 'react';
 
 interface DecisionPreAnalysisSectionProps {
   decision: Decision;
   editMode: boolean;
   onUpdate: (updates: Partial<Decision>) => void;
-  disabled?: boolean;
 }
 
-export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate, disabled = false }: DecisionPreAnalysisSectionProps) => {
+export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: DecisionPreAnalysisSectionProps) => {
   // Only show for active stages (not decided)
   const shouldShow = decision.stage !== 'decided';
   
@@ -18,18 +16,13 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate, disab
     return null;
   }
 
-  // FIXED: Use decision values directly instead of local state to prevent loops
+  // Use decision values directly instead of local state to prevent loops
   const currentPreAnalysis = decision.preAnalysis || {};
   
   const handleInputChange = (field: keyof PreAnalysis, value: string) => {
-    console.log('DecisionPreAnalysisSection: Input change for field:', field, 'value length:', value.length, 'disabled:', disabled);
+    console.log('DecisionPreAnalysisSection: Input change for field:', field, 'value length:', value.length);
     
-    if (disabled) {
-      console.log('DecisionPreAnalysisSection: Input blocked due to disabled state');
-      return;
-    }
-    
-    // Update immediately without debouncing - let the parent handle batching
+    // Update immediately - parent will handle change tracking
     const updatedPreAnalysis = {
       ...currentPreAnalysis,
       [field]: value
@@ -81,8 +74,7 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate, disab
                 value={question.value}
                 onChange={(e) => handleInputChange(question.key, e.target.value)}
                 placeholder={question.placeholder}
-                disabled={disabled}
-                className="min-h-[80px] bg-tactical-surface border-tactical-border text-tactical-text font-mono text-sm resize-none focus:border-tactical-accent disabled:opacity-50"
+                className="min-h-[80px] bg-tactical-surface border-tactical-border text-tactical-text font-mono text-sm resize-none focus:border-tactical-accent"
                 rows={3}
               />
             ) : (
