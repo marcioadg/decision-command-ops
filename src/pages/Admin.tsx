@@ -9,11 +9,23 @@ import { UserManager } from '@/components/admin/UserManager';
 import { Shield, LogOut, Database } from 'lucide-react';
 
 const Admin = () => {
-  const { user, logout } = useAuth();
+  const { user, profile, signOut } = useAuth();
 
   const handleLogout = () => {
-    logout();
+    signOut();
   };
+
+  // Check if user has admin access
+  if (!profile || (profile.role !== 'admin' && profile.role !== 'company_admin')) {
+    return (
+      <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-red-500 font-mono mb-4">ACCESS DENIED</h1>
+          <p className="text-tactical-text font-mono">Insufficient privileges for admin console</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-tactical-bg tactical-grid">
@@ -28,7 +40,7 @@ const Admin = () => {
                   ADMIN CONSOLE
                 </h1>
                 <p className="text-sm text-tactical-text/60 font-mono">
-                  ADMINISTRATIVE ACCESS • {user?.name.toUpperCase()}
+                  ADMINISTRATIVE ACCESS • {profile.name.toUpperCase()} • {profile.role.toUpperCase()}
                 </p>
               </div>
             </div>
