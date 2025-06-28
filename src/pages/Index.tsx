@@ -1,13 +1,12 @@
 
 import { useState, useEffect } from 'react';
-import { DecisionPipeline } from '@/components/DecisionPipeline';
 import { DecisionDetailModal } from '@/components/DecisionDetailModal';
 import { QuickAddModal } from '@/components/QuickAddModal';
-import { StatusBar } from '@/components/StatusBar';
-import { NotificationBell } from '@/components/NotificationBell';
+import { IndexHeader } from '@/components/IndexHeader';
+import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
+import { IndexErrorScreen } from '@/components/IndexErrorScreen';
+import { IndexMainContent } from '@/components/IndexMainContent';
 import { Decision } from '@/types/Decision';
-import { Button } from '@/components/ui/button';
-import { Plus, Archive, LogOut, Database } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useDecisions } from '@/hooks/useDecisions';
 import { soundSystem } from '@/utils/soundSystem';
@@ -22,7 +21,6 @@ const Index = () => {
     error,
     createDecision,
     updateDecision,
-    deleteDecision,
     migrateFromLocalStorage,
     refreshDecisions,
     retryCount
@@ -108,147 +106,70 @@ const Index = () => {
     refreshDecisions();
   };
 
+  const handleToggleArchived = () => {
+    setShowArchived(!showArchived);
+  };
+
+  const handleQuickAddClick = () => {
+    setIsQuickAddOpen(true);
+  };
+
+  const handleCloseDetailModal = () => {
+    setIsDetailModalOpen(false);
+    setSelectedDecision(null);
+  };
+
+  const handleCloseQuickAdd = () => {
+    setIsQuickAddOpen(false);
+  };
+
   if (loading) {
-    return (
-      <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-tactical-accent mx-auto mb-4"></div>
-          <p className="text-tactical-text font-mono">Loading tactical decisions...</p>
-          {retryCount > 0 && (
-            <p className="text-tactical-text/60 font-mono text-sm mt-2">
-              Retry attempt {retryCount}/3
-            </p>
-          )}
-        </div>
-      </div>
-    );
+    return <IndexLoadingScreen retryCount={retryCount} />;
   }
 
   // Show error screen with retry option
   if (error && !loading) {
     return (
-      <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-urgency-high/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-urgency-high text-2xl">⚠</span>
-            </div>
-            <h2 className="text-xl font-bold text-tactical-text font-mono mb-2">
-              CONNECTION ERROR
-            </h2>
-            <p className="text-tactical-text/80 font-mono text-sm mb-4">
-              {error}
-            </p>
-            <div className="space-y-3">
-              <Button
-                onClick={handleRetry}
-                className="bg-tactical-accent hover:bg-tactical-accent/80 text-tactical-bg font-mono"
-              >
-                RETRY CONNECTION
-              </Button>
-              <Button
-                onClick={handleLogout}
-                variant="outline"
-                className="font-mono border-tactical-border hover:bg-tactical-surface"
-              >
-                LOGOUT
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
+      <IndexErrorScreen
+        error={error}
+        onRetry={handleRetry}
+        onLogout={handleLogout}
+      />
     );
   }
 
   return (
     <div className="min-h-screen bg-tactical-bg tactical-grid">
-      {/* Header */}
-      <header className="border-b border-tactical-border bg-tactical-surface/50 backdrop-blur-sm">
-        <div className="flex items-center justify-between p-4">
-          <div className="flex items-center space-x-4">
-            <h1 className="text-xl font-bold text-tactical-accent font-mono tracking-wider">
-              TACTICAL DECISION PIPELINE
-            </h1>
-            <div className="hud-metric">
-              OPERATOR: {profile?.name || 'Unknown'}
-            </div>
-            <div className="hud-metric">
-              <Database className="w-4 h-4 mr-1 inline" />
-              DATABASE MODE
-            </div>
-            {error && (
-              <div className="hud-metric bg-urgency-high/20 text-urgency-high">
-                CONNECTION ISSUES
-              </div>
-            )}
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <NotificationBell
-              decisions={decisions}
-              onDecisionClick={handleDecisionClick}
-            />
-            
-            <Button
-              onClick={() => setIsQuickAddOpen(true)}
-              className="bg-tactical-accent hover:bg-tactical-accent/80 text-tactical-bg font-mono text-xs"
-              size="sm"
-            >
-              <Plus className="w-4 h-4 mr-1" />
-              QUICK ADD
-            </Button>
-            
-            <Button
-              onClick={() => setShowArchived(!showArchived)}
-              variant={showArchived ? "default" : "outline"}
-              className="font-mono text-xs"
-              size="sm"
-            >
-              <Archive className="w-4 h-4 mr-1" />
-              {showArchived ? 'HIDE ARCHIVED' : 'SHOW ARCHIVED'}
-            </Button>
+      <IndexHeader
+        profileName={profile?.name}
+        decisions={decisions}
+        showArchived={showArchived}
+        error={error}
+        onDecisionClick={handleDecisionClick}
+        onQuickAddClick={handleQuickAddClick}
+        onToggleArchived={handleToggleArchived}
+        onLogout={handleLogout}
+      />
 
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="font-mono text-xs border-tactical-border hover:bg-tactical-surface"
-              size="sm"
-            >
-              <LogOut className="w-4 h-4 mr-1" />
-              LOGOUT
-            </Button>
-          </div>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 p-4">
-        <DecisionPipeline
-          decisions={decisions}
-          onDecisionUpdate={handleDecisionUpdate}
-          onDecisionClick={handleDecisionClick}
-          onArchive={handleArchive}
-          showArchived={showArchived}
-        />
-      </main>
-
-      {/* Status Bar */}
-      <StatusBar decisions={decisions} />
+      <IndexMainContent
+        decisions={decisions}
+        showArchived={showArchived}
+        onDecisionUpdate={handleDecisionUpdate}
+        onDecisionClick={handleDecisionClick}
+        onArchive={handleArchive}
+      />
 
       {/* Modals */}
       <DecisionDetailModal
         decision={selectedDecision}
         isOpen={isDetailModalOpen}
-        onClose={() => {
-          setIsDetailModalOpen(false);
-          setSelectedDecision(null);
-        }}
+        onClose={handleCloseDetailModal}
         onUpdate={handleDecisionUpdate}
       />
 
       <QuickAddModal
         isOpen={isQuickAddOpen}
-        onClose={() => setIsQuickAddOpen(false)}
+        onClose={handleCloseQuickAdd}
         onAdd={handleQuickAdd}
       />
     </div>
