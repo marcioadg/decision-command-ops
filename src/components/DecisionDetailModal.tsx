@@ -6,6 +6,7 @@ import { DecisionForm } from './DecisionForm';
 import { DecisionPreAnalysisSection } from './DecisionPreAnalysisSection';
 import { DecisionReflectionSection } from './DecisionReflectionSection';
 import { DecisionTimestamps } from './DecisionTimestamps';
+import { DecisionModalFooter } from './DecisionModalFooter';
 
 interface DecisionDetailModalProps {
   decision: Decision | null;
@@ -94,22 +95,11 @@ export const DecisionDetailModal = ({ decision, isOpen, onClose, onUpdate }: Dec
         </div>
 
         {/* Footer */}
-        {editMode && (
-          <div className="flex space-x-3 p-6 border-t border-tactical-border">
-            <button
-              onClick={handleCancel}
-              className="flex-1 bg-tactical-surface border border-tactical-border text-tactical-text py-2 rounded font-mono text-sm hover:bg-tactical-border/50 transition-colors"
-            >
-              CANCEL
-            </button>
-            <button
-              onClick={handleSave}
-              className="flex-1 bg-tactical-accent text-tactical-bg py-2 rounded font-mono text-sm font-semibold hover:bg-tactical-accent/90 transition-colors"
-            >
-              SAVE CHANGES
-            </button>
-          </div>
-        )}
+        <DecisionModalFooter
+          editMode={editMode}
+          onSave={handleSave}
+          onCancel={handleCancel}
+        />
       </div>
     </div>
   );
