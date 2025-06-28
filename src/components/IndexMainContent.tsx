@@ -5,7 +5,7 @@ import { Decision, DecisionStage } from '@/types/Decision';
 interface IndexMainContentProps {
   decisions: Decision[];
   showArchived: boolean;
-  onDecisionUpdate: (decision: Decision) => void;
+  onDecisionUpdate: (decision: Decision) => Promise<void>;
   onDecisionClick: (decision: Decision) => void;
   onArchive: (decision: Decision) => void;
   onQuickAdd?: (stage: DecisionStage) => void;

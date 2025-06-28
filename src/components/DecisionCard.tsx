@@ -12,9 +12,10 @@ interface DecisionCardProps {
   onDragEnd: () => void;
   onClick: (decision: Decision) => void;
   onArchive?: (decision: Decision) => void;
+  className?: string;
 }
 
-export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArchive }: DecisionCardProps) => {
+export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArchive, className = "" }: DecisionCardProps) => {
   const handleClick = (e: React.MouseEvent) => {
     // Don't trigger click if we're starting a drag
     if (e.detail === 1) {
@@ -37,7 +38,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
       onDragStart={handleDragStart}
       onDragEnd={onDragEnd}
       onClick={handleClick}
-      className="tactical-card cursor-pointer hover:scale-[1.02] animate-slide-in transition-all duration-200 relative group"
+      className={`tactical-card cursor-pointer hover:scale-[1.02] animate-slide-in transition-all duration-200 relative group ${className}`}
     >
       {/* Archive Button - Top-left */}
       <DecisionCardActions decision={decision} onArchive={onArchive} />
