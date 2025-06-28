@@ -10,10 +10,9 @@ import { LoginModal } from '@/components/LoginModal';
 const Home = () => {
   const navigate = useNavigate();
   const { user, profile, isLoading } = useAuth();
-  const [showDemo, setShowDemo] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
-  const handleStartTrial = () => {
+  const handleGetStarted = () => {
     if (user) {
       navigate(profile?.role === 'admin' ? '/admin' : '/dashboard');
     } else {
@@ -74,7 +73,7 @@ const Home = () => {
                   size="sm"
                 >
                   <User className="w-4 h-4 mr-2" />
-                  SIGN UP
+                  SIGN UP FREE
                 </Button>
               </>
             )}
@@ -89,7 +88,7 @@ const Home = () => {
         <div className="relative z-10 max-w-6xl mx-auto px-4 text-center">
           <div className="mb-6">
             <span className="inline-block px-4 py-2 bg-tactical-accent/10 border border-tactical-accent/20 rounded-full text-tactical-accent font-mono text-sm mb-4">
-              🎯 TRUSTED BY 10,000+ DECISION MAKERS
+              🎯 100% FREE - NO CREDIT CARD REQUIRED
             </span>
           </div>
           
@@ -105,36 +104,31 @@ const Home = () => {
           
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-12">
             <Button 
-              onClick={handleStartTrial}
+              onClick={handleGetStarted}
               size="lg" 
               className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-bold px-8 py-4 text-lg"
             >
-              {user ? 'GO TO DASHBOARD' : 'START FREE TRIAL'}
+              {user ? 'GO TO DASHBOARD' : 'GET STARTED FREE'}
               <ArrowRight className="ml-2 w-5 h-5" />
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="lg"
-              onClick={() => setShowDemo(true)}
-              className="border-tactical-accent/50 text-tactical-accent hover:bg-tactical-accent/10 px-8 py-4 text-lg"
-            >
-              <Play className="mr-2 w-5 h-5" />
-              WATCH 2-MIN DEMO
             </Button>
           </div>
 
-          {!user && (
-            <div className="text-tactical-text/70 text-sm mb-8">
-              Already have an account?{' '}
-              <button 
-                onClick={handleSignIn}
-                className="text-tactical-accent hover:text-tactical-accent/80 underline font-bold"
-              >
-                Sign in here
-              </button>
+          <div className="text-tactical-text/70 text-sm mb-8">
+            <div className="mb-2">
+              <strong className="text-tactical-accent">Always Free Forever</strong> • No Credit Card Required
             </div>
-          )}
+            {!user && (
+              <div>
+                Already have an account?{' '}
+                <button 
+                  onClick={handleSignIn}
+                  className="text-tactical-accent hover:text-tactical-accent/80 underline font-bold"
+                >
+                  Sign in here
+                </button>
+              </div>
+            )}
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
             <Card className="bg-tactical-surface/50 border-tactical-border backdrop-blur-sm">
@@ -254,7 +248,7 @@ const Home = () => {
                 rating: 5
               },
               {
-                quote: "Our team went from decision chaos to tactical precision. ROI was clear within the first month.",
+                quote: "Our team went from decision chaos to tactical precision. Best part? It's completely free to get started.",
                 author: "Jennifer Walsh",
                 title: "Director of Operations",
                 rating: 5
@@ -287,16 +281,16 @@ const Home = () => {
           </h2>
           
           <p className="text-xl text-tactical-text/80 mb-8">
-            Join 1,000+ leaders who transformed their decision process this month
+            Join thousands of leaders who transformed their decision process - completely free
           </p>
           
           <div className="flex flex-col md:flex-row gap-4 justify-center items-center mb-8">
             <Button 
-              onClick={handleStartTrial}
+              onClick={handleGetStarted}
               size="lg" 
               className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-bold px-8 py-4 text-lg"
             >
-              {user ? 'GO TO DASHBOARD' : 'START FREE TRIAL - NO CREDIT CARD'}
+              {user ? 'GO TO DASHBOARD' : 'GET STARTED FREE - NO CREDIT CARD'}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </div>
@@ -304,7 +298,7 @@ const Home = () => {
           <div className="flex items-center justify-center gap-6 text-tactical-text/70 text-sm">
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-tactical-accent" />
-              30-day money-back guarantee
+              Always free forever
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-tactical-accent" />
@@ -312,7 +306,7 @@ const Home = () => {
             </div>
             <div className="flex items-center gap-2">
               <CheckCircle className="w-4 h-4 text-tactical-accent" />
-              Cancel anytime
+              No credit card required
             </div>
           </div>
         </div>
