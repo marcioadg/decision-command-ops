@@ -44,7 +44,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
       {/* Reflection Indicator and Preview */}
       <DecisionCardReflectionStatus decision={decision} />
 
-      {/* Title and Category */}
+      {/* Title */}
       <DecisionCardHeader title={decision.title} category={decision.category} />
 
       {/* Metrics */}
@@ -52,6 +52,7 @@ export const DecisionCard = ({ decision, onDragStart, onDragEnd, onClick, onArch
         urgency={decision.urgency}
         confidence={decision.confidence}
         impact={decision.impact}
+        category={decision.category}
       />
 
       {/* Notes Preview */}
