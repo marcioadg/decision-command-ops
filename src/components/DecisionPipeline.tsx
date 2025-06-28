@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
@@ -88,8 +89,8 @@ export const DecisionPipeline = ({
       
       console.log('DecisionPipeline: Database update successful for decision:', decisionId);
       
-      // With real-time updates, optimistic updates will be cleaned up automatically
-      // when the real-time event confirms the change
+      // With the new immediate sync system, updates will appear instantly
+      // Real-time subscription will confirm the changes or handle any conflicts
       
       // Play celebration sound for "decided" stage
       if (stage === 'decided') {

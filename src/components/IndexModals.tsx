@@ -17,7 +17,7 @@ interface IndexModalsProps {
   onDecisionUpdate: (decision: Decision) => Promise<void>;
   onQuickAdd: (decision: Omit<Decision, 'id' | 'createdAt'>) => Promise<void>;
   onJournalComplete: (data: { title: string; notes: string }) => void;
-  pauseRealtimeForDecision?: (decisionId: string, duration?: number) => void;
+  onImmediateDecisionUpdate?: (decision: Decision) => void;
 }
 
 export const IndexModals = ({
@@ -33,7 +33,7 @@ export const IndexModals = ({
   onDecisionUpdate,
   onQuickAdd,
   onJournalComplete,
-  pauseRealtimeForDecision
+  onImmediateDecisionUpdate
 }: IndexModalsProps) => {
   return (
     <>
@@ -42,7 +42,7 @@ export const IndexModals = ({
         isOpen={isDetailModalOpen}
         onClose={onCloseDetailModal}
         onUpdate={onDecisionUpdate}
-        pauseRealtimeForDecision={pauseRealtimeForDecision}
+        onImmediateUpdate={onImmediateDecisionUpdate}
       />
 
       <QuickAddModal

@@ -10,22 +10,36 @@ import { useDecisions } from '@/hooks/useDecisions';
 import { useIndexState } from '@/hooks/useIndexState';
 import { useIndexActions } from '@/hooks/useIndexActions';
 import { useIndexMigration } from '@/hooks/useIndexMigration';
+import { useImmediateDecisionSync } from '@/hooks/useImmediateDecisionSync';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 
 const Index = () => {
   const { profile } = useAuth();
   const isMobile = useIsMobile();
   
-  // FIXED: Only call useDecisions once and get all needed functions
+  // Get decisions hook with all needed functions
+  const decisionsHook = useDecisions();
   const {
     decisions,
     loading,
     error,
     retryCount,
-    isRealTimeConnected,
-    pauseRealtimeForDecision
-  } = useDecisions();
+    isRealTimeConnected
+  } = decisionsHook;
+
+  // Create local state setter for immediate updates
+  const [localDecisions, setLocalDecisions] = useState(decisions);
+  
+  // Sync local decisions with hook decisions
+  useEffect(() => {
+    setLocalDecisions(decisions);
+  }, [decisions]);
+
+  // Set up immediate decision sync
+  const { applyImmediateUpdate } = useImmediateDecisionSync({ 
+    setDecisions: setLocalDecisions 
+  });
 
   const {
     selectedDecision,
@@ -59,10 +73,9 @@ const Index = () => {
   // Check for localStorage data and offer migration on first load
   useIndexMigration(hasMigrated, setHasMigrated);
 
-  // FIXED: Add cleanup effect to prevent memory leaks
+  // Add cleanup effect to prevent memory leaks
   useEffect(() => {
     return () => {
-      // Cleanup any pending operations
       console.log('Index: Component unmounting, cleaning up');
     };
   }, []);
@@ -71,7 +84,7 @@ const Index = () => {
   console.log('Index: Modal state debug', {
     selectedDecision: selectedDecision?.id,
     isDetailModalOpen,
-    decisionsCount: decisions.length
+    decisionsCount: localDecisions.length
   });
 
   if (loading) {
@@ -94,7 +107,7 @@ const Index = () => {
       {isMobile ? (
         <MobileHeader
           profileName={profile?.name}
-          decisions={decisions}
+          decisions={localDecisions}
           showArchived={showArchived}
           error={error}
           onDecisionClick={handleDecisionClick}
@@ -106,7 +119,7 @@ const Index = () => {
       ) : (
         <IndexHeader
           profileName={profile?.name}
-          decisions={decisions}
+          decisions={localDecisions}
           showArchived={showArchived}
           error={error}
           onDecisionClick={handleDecisionClick}
@@ -118,7 +131,7 @@ const Index = () => {
       )}
 
       <IndexMainContent
-        decisions={decisions}
+        decisions={localDecisions}
         showArchived={showArchived}
         onDecisionUpdate={handleDecisionUpdate}
         onDecisionClick={handleDecisionClick}
@@ -140,7 +153,7 @@ const Index = () => {
         onDecisionUpdate={handleDecisionUpdate}
         onQuickAdd={handleQuickAdd}
         onJournalComplete={handleJournalComplete}
-        pauseRealtimeForDecision={pauseRealtimeForDecision}
+        onImmediateDecisionUpdate={applyImmediateUpdate}
       />
     </div>
   );

@@ -14,7 +14,7 @@ interface DecisionDetailModalProps {
   isOpen: boolean;
   onClose: () => void;
   onUpdate: (decision: Decision) => Promise<void>;
-  pauseRealtimeForDecision?: (decisionId: string, duration?: number) => void;
+  onImmediateUpdate?: (decision: Decision) => void;
 }
 
 interface SaveStatus {
@@ -26,8 +26,8 @@ export const DecisionDetailModal = ({
   decision, 
   isOpen, 
   onClose, 
-  onUpdate, 
-  pauseRealtimeForDecision 
+  onUpdate,
+  onImmediateUpdate
 }: DecisionDetailModalProps) => {
   const [currentDecision, setCurrentDecision] = useState<Decision | null>(null);
   const [originalDecision, setOriginalDecision] = useState<Decision | null>(null);
@@ -50,13 +50,23 @@ export const DecisionDetailModal = ({
     }
   }, [isOpen, decision]);
 
-  // Pause real-time updates when modal is open
+  // Handle incoming real-time updates while modal is open
   useEffect(() => {
-    if (isOpen && decision && pauseRealtimeForDecision) {
-      console.log('DecisionDetailModal: Pausing real-time updates for editing session');
-      pauseRealtimeForDecision(decision.id, 30000); // Pause for 30 seconds
+    if (isOpen && decision && currentDecision) {
+      // Only update if the incoming decision is different and we don't have unsaved changes
+      const incomingDecisionString = JSON.stringify(decision);
+      const currentDecisionString = JSON.stringify(currentDecision);
+      
+      if (incomingDecisionString !== currentDecisionString && !hasUnsavedChanges) {
+        console.log('DecisionDetailModal: Syncing with real-time update');
+        const updatedDecision = JSON.parse(JSON.stringify(decision));
+        setCurrentDecision(updatedDecision);
+        setOriginalDecision(updatedDecision);
+      } else if (hasUnsavedChanges) {
+        console.log('DecisionDetailModal: Ignoring real-time update due to unsaved changes');
+      }
     }
-  }, [decision?.id, pauseRealtimeForDecision, isOpen]);
+  }, [decision, hasUnsavedChanges, isOpen]);
 
   if (!isOpen || !decision || !currentDecision) {
     return null;
@@ -79,6 +89,14 @@ export const DecisionDetailModal = ({
       };
       
       console.log('DecisionDetailModal: Saving decision:', updatedDecision);
+      
+      // Immediate local state update for instant UI feedback
+      if (onImmediateUpdate) {
+        console.log('DecisionDetailModal: Applying immediate update to global state');
+        onImmediateUpdate(updatedDecision);
+      }
+      
+      // Perform the actual database update
       await onUpdate(updatedDecision);
       
       // Update original decision to new saved state
@@ -86,6 +104,7 @@ export const DecisionDetailModal = ({
       resetChanges();
       
       setSaveStatus({ status: 'saved' });
+      console.log('DecisionDetailModal: Save completed successfully');
       
       // Reset to idle after showing saved status
       setTimeout(() => {
@@ -94,6 +113,13 @@ export const DecisionDetailModal = ({
       
     } catch (error) {
       console.error('DecisionDetailModal: Save failed:', error);
+      
+      // Revert the immediate update if database save failed
+      if (onImmediateUpdate && originalDecision) {
+        console.log('DecisionDetailModal: Reverting immediate update due to save failure');
+        onImmediateUpdate(originalDecision);
+      }
+      
       setSaveStatus({ 
         status: 'error', 
         error: error instanceof Error ? error.message : 'Save failed' 
