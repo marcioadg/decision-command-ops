@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Decision } from '@/types/Decision';
 import { decisionService } from '@/services/decisionService';
@@ -18,11 +19,27 @@ export const useDecisions = () => {
   // Set up real-time subscription
   const { isRealTimeConnected, pauseRealtimeForDecision } = useDecisionRealtime({ user, setDecisions });
 
-  // Set up CRUD operations
+  // Callback for immediate UI updates
+  const handleImmediateUpdate = useCallback((decision: Decision) => {
+    console.log('useDecisions: Handling immediate update for decision:', decision.id);
+    setDecisions(prev => {
+      const exists = prev.find(d => d.id === decision.id);
+      if (exists) {
+        // Update existing decision
+        return prev.map(d => d.id === decision.id ? decision : d);
+      } else {
+        // Add new decision
+        return [decision, ...prev];
+      }
+    });
+  }, []);
+
+  // Set up CRUD operations with immediate update callback
   const { createDecision, updateDecision, deleteDecision } = useDecisionCRUD({
     isRealTimeConnected,
     setDecisions,
-    pauseRealtimeForDecision
+    pauseRealtimeForDecision,
+    onImmediateUpdate: handleImmediateUpdate
   });
 
   const loadDecisions = useCallback(async (showToast = true) => {
@@ -116,6 +133,7 @@ export const useDecisions = () => {
     refreshDecisions: () => loadDecisions(true),
     retryCount,
     isRealTimeConnected,
-    pauseRealtimeForDecision
+    pauseRealtimeForDecision,
+    onImmediateUpdate: handleImmediateUpdate
   };
 };

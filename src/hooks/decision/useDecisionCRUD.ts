@@ -8,18 +8,53 @@ interface UseDecisionCRUDProps {
   isRealTimeConnected: boolean;
   setDecisions: React.Dispatch<React.SetStateAction<Decision[]>>;
   pauseRealtimeForDecision?: (decisionId: string, duration?: number) => void;
+  onImmediateUpdate?: (decision: Decision) => void;
 }
 
-export const useDecisionCRUD = ({ isRealTimeConnected, setDecisions, pauseRealtimeForDecision }: UseDecisionCRUDProps) => {
+export const useDecisionCRUD = ({ 
+  isRealTimeConnected, 
+  setDecisions, 
+  pauseRealtimeForDecision,
+  onImmediateUpdate 
+}: UseDecisionCRUDProps) => {
   const { toast } = useToast();
 
   const createDecision = useCallback(async (decision: Omit<Decision, 'id' | 'createdAt'>) => {
     try {
       console.log('Creating decision:', decision.title);
+      
+      // Create optimistic decision for immediate UI update
+      const optimisticDecision: Decision = {
+        ...decision,
+        id: `temp-${Date.now()}`, // Temporary ID
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+
+      // Apply immediate update for optimistic UI
+      if (onImmediateUpdate) {
+        console.log('Applying immediate optimistic update for new decision');
+        onImmediateUpdate(optimisticDecision);
+      }
+
+      // If not connected to real-time, update local state immediately
+      if (!isRealTimeConnected) {
+        setDecisions(prev => [optimisticDecision, ...prev]);
+      }
+      
       const newDecision = await decisionService.createDecision(decision);
       
+      // Replace optimistic decision with real one
+      if (onImmediateUpdate) {
+        console.log('Replacing optimistic decision with real decision');
+        onImmediateUpdate(newDecision);
+      }
+
+      // Update local state with real decision if not using real-time
       if (!isRealTimeConnected) {
-        setDecisions(prev => [newDecision, ...prev]);
+        setDecisions(prev => prev.map(d => 
+          d.id === optimisticDecision.id ? newDecision : d
+        ));
       }
       
       toast({
@@ -37,11 +72,17 @@ export const useDecisionCRUD = ({ isRealTimeConnected, setDecisions, pauseRealti
       });
       throw err;
     }
-  }, [toast, isRealTimeConnected, setDecisions]);
+  }, [toast, isRealTimeConnected, setDecisions, onImmediateUpdate]);
 
   const updateDecision = useCallback(async (decision: Decision) => {
     try {
       console.log('Updating decision:', decision.id, 'with preAnalysis:', decision.preAnalysis);
+      
+      // Apply immediate update for optimistic UI
+      if (onImmediateUpdate) {
+        console.log('Applying immediate optimistic update for decision update');
+        onImmediateUpdate(decision);
+      }
       
       // Pause real-time updates for this decision to prevent conflicts
       if (pauseRealtimeForDecision) {
@@ -68,7 +109,7 @@ export const useDecisionCRUD = ({ isRealTimeConnected, setDecisions, pauseRealti
       });
       throw err;
     }
-  }, [toast, isRealTimeConnected, setDecisions, pauseRealtimeForDecision]);
+  }, [toast, isRealTimeConnected, setDecisions, pauseRealtimeForDecision, onImmediateUpdate]);
 
   const deleteDecision = useCallback(async (id: string) => {
     try {
