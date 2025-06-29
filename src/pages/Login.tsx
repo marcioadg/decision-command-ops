@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -27,10 +28,19 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    console.log('Login page: Auth state changed - user:', user?.email, 'profile:', profile?.name, 'onboarding_completed:', profile?.onboarding_completed);
+    
     if (user && profile) {
+      console.log('Login page: User authenticated, checking role and onboarding status');
+      
       if (profile.role === 'admin') {
+        console.log('Login page: Admin user, redirecting to /admin');
         navigate('/admin');
+      } else if (!profile.onboarding_completed) {
+        console.log('Login page: User needs onboarding, redirecting to /onboarding');
+        navigate('/onboarding');
       } else {
+        console.log('Login page: Regular user with completed onboarding, redirecting to /dashboard');
         navigate('/dashboard');
       }
     }
@@ -106,16 +116,22 @@ const Login = () => {
           variant: "destructive",
         });
       } else {
-        console.log('Signup successful, will redirect to onboarding via ProtectedRoute');
+        console.log('Signup successful - user should be immediately authenticated');
         toast({
           title: "Account Created",
           description: "Welcome aboard! Starting your tactical onboarding...",
         });
         
-        // TODO: EMAIL VERIFICATION - Uncomment when ready to enable email verification
-        // navigate(`/verify-email?email=${encodeURIComponent(signUpForm.email)}`);
+        // Clear the form
+        setSignUpForm({
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
+        });
         
-        // The ProtectedRoute will automatically detect new users need onboarding and redirect them
+        // The useEffect above will handle redirection based on auth state
+        // No manual navigation needed - auth state will update automatically
       }
     } catch (error) {
       console.error('Signup catch error:', error);
