@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -26,6 +25,21 @@ interface DecisionForm {
   category: DecisionCategory | '';
   confidence: number;
 }
+
+const getPersonalityMessage = (profileType: string): string => {
+  switch (profileType) {
+    case 'Strategic Operator':
+      return 'You value clarity and speed. Let\'s set up your cockpit.';
+    case 'Analytical Leader':
+      return 'You build consensus through analysis. Let\'s organize your decisions.';
+    case 'Intuitive Commander':
+      return 'You trust instincts and move fast. Let\'s capture your priorities.';
+    case 'Thoughtful Facilitator':
+      return 'You blend wisdom with team input. Let\'s structure your thoughts.';
+    default:
+      return 'Let\'s organize your decision-making process.';
+  }
+};
 
 export const DecisionCapture = () => {
   const { nextStep, prevStep, personalityProfile, setDecisions } = useOnboarding();
@@ -77,7 +91,7 @@ export const DecisionCapture = () => {
                 You're a {personalityProfile.profileType}
               </p>
               <p className="text-tactical-text/70 text-xs md:text-sm mt-1">
-                You value clarity and speed. Let's set up your cockpit.
+                {getPersonalityMessage(personalityProfile.profileType)}
               </p>
             </div>
           )}
