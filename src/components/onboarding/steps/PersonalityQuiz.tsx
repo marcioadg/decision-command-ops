@@ -16,20 +16,20 @@ const questions = [
     question: 'Decision Speed:',
     options: [
       { value: 'fast', label: 'RAPID' },
-      { value: 'deliberate', label: 'TACTICAL' }
+      { value: 'deliberate', label: 'METHODICAL' }
     ]
   },
   {
     id: 'approach',
     question: 'Primary Intel:',
     options: [
-      { value: 'data', label: 'INTEL' },
+      { value: 'data', label: 'DATA' },
       { value: 'gut', label: 'INSTINCT' }
     ]
   },
   {
     id: 'style',
-    question: 'Command Style:',
+    question: 'Decision Style:',
     options: [
       { value: 'collaborative', label: 'TEAM' },
       { value: 'solo', label: 'SOLO' }
