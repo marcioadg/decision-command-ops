@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { Decision } from '@/types/Decision';
 import { decisionService } from '@/services/decisionService';
 import { useAuth } from '@/hooks/useAuth';
@@ -14,6 +15,10 @@ export const useDecisions = () => {
   const [retryCount, setRetryCount] = useState(0);
   const { user } = useAuth();
   const { toast } = useToast();
+  
+  // Prevent multiple simultaneous fetches
+  const loadingRef = useRef(false);
+  const userIdRef = useRef<string | null>(null);
 
   // Set up real-time subscription
   const { isRealTimeConnected, pauseRealtimeForDecision, retryConnection } = useDecisionRealtime({ user, setDecisions });
@@ -42,6 +47,12 @@ export const useDecisions = () => {
   });
 
   const loadDecisions = useCallback(async (showToast = true) => {
+    // Prevent multiple simultaneous loads
+    if (loadingRef.current) {
+      console.log('useDecisions: Load already in progress, skipping');
+      return;
+    }
+
     if (!user) {
       console.log('No user found, clearing decisions');
       setDecisions([]);
@@ -50,17 +61,23 @@ export const useDecisions = () => {
       return;
     }
 
+    // Check if user changed - if so, reset everything
+    if (userIdRef.current && userIdRef.current !== user.id) {
+      console.log('User changed, resetting decisions state');
+      setDecisions([]);
+      setError(null);
+      setRetryCount(0);
+    }
+    userIdRef.current = user.id;
+
     try {
       console.log('Loading decisions for user:', user.id);
+      loadingRef.current = true;
       setLoading(true);
       setError(null);
       
       const data = await decisionService.getDecisions();
-      console.log('Loaded decisions with preAnalysis data:', data.map(d => ({ 
-        id: d.id, 
-        title: d.title, 
-        preAnalysis: d.preAnalysis 
-      })));
+      console.log('Loaded decisions:', data.length);
       
       setDecisions(data);
       setRetryCount(0);
@@ -87,8 +104,9 @@ export const useDecisions = () => {
       }
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
-  }, [user, toast]);
+  }, [user?.id, toast]); // Only depend on user.id to prevent multiple loads
 
   // Set up auto-retry logic
   useDecisionRetry({ error, retryCount, loadDecisions });
@@ -117,9 +135,13 @@ export const useDecisions = () => {
     }
   }, [toast, loadDecisions]);
 
+  // Load decisions when user changes (but not on every render)
   useEffect(() => {
-    loadDecisions();
-  }, [loadDecisions]);
+    if (user?.id && user.id !== userIdRef.current) {
+      console.log('useDecisions: User authenticated, loading decisions');
+      loadDecisions();
+    }
+  }, [user?.id]); // Only depend on user.id
 
   return {
     decisions,

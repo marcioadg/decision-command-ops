@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Decision } from '@/types/Decision';
@@ -21,38 +22,35 @@ export const useIndexEffects = ({
   setLocalDecisions,
   triggerFirstLoginJournal
 }: UseIndexEffectsProps) => {
-  // FIXED: Remove the conflicting useEffect that was overwriting localDecisions
-  // Instead, only sync when decisions array changes meaningfully (length changes or initial load)
+  
+  // Sync decisions with improved logic to prevent unnecessary updates
   useEffect(() => {
-    // Only sync if this looks like an initial load or major change (different length)
-    if (localDecisions.length === 0 || localDecisions.length !== decisions.length) {
-      console.log('Index: Syncing with hook decisions - initial load or length change:', {
+    // Only sync if there's a meaningful difference
+    const shouldSync = localDecisions.length === 0 || 
+                      localDecisions.length !== decisions.length ||
+                      decisions.some(hookDecision => {
+                        const localDecision = localDecisions.find(d => d.id === hookDecision.id);
+                        if (!localDecision) return true;
+                        
+                        // Check if hook decision is newer
+                        const hookTime = new Date(hookDecision.updatedAt || hookDecision.createdAt).getTime();
+                        const localTime = new Date(localDecision.updatedAt || localDecision.createdAt).getTime();
+                        
+                        return hookTime > localTime;
+                      });
+
+    if (shouldSync) {
+      console.log('Index: Syncing with hook decisions:', {
         localCount: localDecisions.length,
-        hookCount: decisions.length
+        hookCount: decisions.length,
+        reason: localDecisions.length === 0 ? 'initial' : 
+                localDecisions.length !== decisions.length ? 'length_change' : 'newer_data'
       });
       setLocalDecisions(decisions);
     } else {
-      // For same-length updates, merge intelligently to preserve local changes
-      console.log('Index: Smart merging decisions to preserve local changes');
-      setLocalDecisions(prevLocal => {
-        return prevLocal.map(localDecision => {
-          const hookDecision = decisions.find(d => d.id === localDecision.id);
-          if (!hookDecision) return localDecision;
-          
-          // If hook decision has a newer timestamp, use it; otherwise keep local
-          const hookTime = new Date(hookDecision.updatedAt || hookDecision.createdAt).getTime();
-          const localTime = new Date(localDecision.updatedAt || localDecision.createdAt).getTime();
-          
-          if (hookTime > localTime) {
-            console.log('Index: Using newer hook decision for:', localDecision.id);
-            return hookDecision;
-          }
-          
-          return localDecision;
-        });
-      });
+      console.log('Index: No sync needed - local decisions are up to date');
     }
-  }, [decisions.length]); // Only depend on length to avoid constant re-syncing
+  }, [decisions, setLocalDecisions]); // Depend on the actual decisions array
 
   // Check for first login detection - trigger journal if user just authenticated and hasn't seen it
   useEffect(() => {
@@ -65,7 +63,7 @@ export const useIndexEffects = ({
         triggerFirstLoginJournal();
       }
     }
-  }, [profile, loading, error, triggerFirstLoginJournal]);
+  }, [profile?.id, loading, error, triggerFirstLoginJournal]); // Use profile.id for stability
 
   // Add cleanup effect to prevent memory leaks
   useEffect(() => {

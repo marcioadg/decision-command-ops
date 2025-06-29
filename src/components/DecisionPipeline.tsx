@@ -4,6 +4,7 @@ import { Decision, DecisionStage } from '@/types/Decision';
 import { DecisionCard } from './DecisionCard';
 import { StageColumn } from './StageColumn';
 import { ConnectionStatus } from './ConnectionStatus';
+import { ConnectionStatusMonitor } from './ConnectionStatusMonitor';
 import { soundSystem } from '@/utils/soundSystem';
 import { useOptimisticDecisions } from '@/hooks/useOptimisticDecisions';
 import { useToast } from '@/hooks/use-toast';
@@ -143,8 +144,11 @@ export const DecisionPipeline = ({
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4">
-      {/* Real-time connection status indicator */}
-      <div className="flex items-center justify-end mb-2">
+      {/* Real-time connection status indicator with improved monitoring */}
+      <div className="flex items-center justify-between mb-2">
+        <ConnectionStatusMonitor 
+          isRealTimeConnected={isRealTimeConnected}
+        />
         <ConnectionStatus 
           isConnected={isRealTimeConnected} 
           onRetry={onRetryConnection}

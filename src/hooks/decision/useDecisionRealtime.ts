@@ -19,6 +19,8 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const isConnectingRef = useRef(false);
   const circuitBreakerRef = useRef(false);
+  const lastConnectionAttemptRef = useRef(0);
+  const connectionHealthRef = useRef(true);
 
   const pauseRealtimeForDecision = useCallback((decisionId: string, duration = 2000) => {
     console.log(`Pausing real-time updates for decision ${decisionId} for ${duration}ms`);
@@ -45,6 +47,7 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       reconnectTimeoutRef.current = null;
     }
     isConnectingRef.current = false;
+    setIsRealTimeConnected(false);
   }, []);
 
   const setupRealtimeConnection = useCallback(() => {
@@ -54,7 +57,7 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       return;
     }
 
-    if (!user) {
+    if (!user?.id) {
       console.log('No user available for real-time connection');
       setIsRealTimeConnected(false);
       return;
@@ -65,6 +68,14 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       console.log('Connection attempt already in progress');
       return;
     }
+
+    // Debounce connection attempts (min 500ms between attempts)
+    const now = Date.now();
+    if (now - lastConnectionAttemptRef.current < 500) {
+      console.log('Connection attempt too soon, debouncing');
+      return;
+    }
+    lastConnectionAttemptRef.current = now;
 
     // Clean up any existing connection
     cleanupConnection();
@@ -98,6 +109,9 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
             console.log(`Ignoring real-time update for paused decision ${recordId}`);
             return;
           }
+          
+          // Mark connection as healthy when receiving data
+          connectionHealthRef.current = true;
           
           setDecisions(prev => {
             switch (eventType) {
@@ -152,18 +166,27 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
             setIsRealTimeConnected(true);
             connectionAttemptsRef.current = 0;
             circuitBreakerRef.current = false;
+            connectionHealthRef.current = true;
             break;
             
           case 'CHANNEL_ERROR':
-          case 'TIMED_OUT':
-            console.error(`Real-time connection ${status.toLowerCase()} - will attempt reconnection`);
+            console.error('Real-time connection channel_error - will attempt reconnection');
             setIsRealTimeConnected(false);
+            connectionHealthRef.current = false;
+            scheduleReconnection();
+            break;
+            
+          case 'TIMED_OUT':
+            console.error('Real-time connection timed_out - will attempt reconnection');
+            setIsRealTimeConnected(false);
+            connectionHealthRef.current = false;
             scheduleReconnection();
             break;
             
           case 'CLOSED':
             console.log('Real-time connection closed');
             setIsRealTimeConnected(false);
+            // Don't automatically reconnect on CLOSED - it might be intentional
             break;
             
           default:
@@ -173,7 +196,7 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       });
 
     channelRef.current = channel;
-  }, [user, setDecisions, pausedDecisionIds, cleanupConnection]);
+  }, [user?.id, cleanupConnection]); // Stable dependencies
 
   const scheduleReconnection = useCallback(() => {
     connectionAttemptsRef.current += 1;
@@ -185,8 +208,12 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       return;
     }
 
-    const delay = Math.min(1000 * Math.pow(2, connectionAttemptsRef.current - 1), 30000);
-    console.log(`Scheduling real-time reconnection in ${delay}ms (attempt ${connectionAttemptsRef.current}/5)`);
+    // Exponential backoff with jitter
+    const baseDelay = 1000 * Math.pow(2, connectionAttemptsRef.current - 1);
+    const jitter = Math.random() * 1000; // Add randomness to prevent thundering herd
+    const delay = Math.min(baseDelay + jitter, 30000);
+    
+    console.log(`Scheduling real-time reconnection in ${Math.round(delay)}ms (attempt ${connectionAttemptsRef.current}/5)`);
     
     // Clear any existing timeout to prevent multiple schedules
     if (reconnectTimeoutRef.current) {
@@ -203,6 +230,7 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
     console.log('Manual retry of real-time connection requested');
     connectionAttemptsRef.current = 0;
     circuitBreakerRef.current = false;
+    connectionHealthRef.current = true;
     cleanupConnection();
     
     // Add small delay to prevent immediate retry loops
@@ -217,15 +245,29 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       setupRealtimeConnection();
     } else {
       cleanupConnection();
-      setIsRealTimeConnected(false);
     }
     
     return () => {
       console.log('Cleaning up real-time subscription');
       cleanupConnection();
-      setIsRealTimeConnected(false);
     };
-  }, [user?.id]); // CRITICAL: Only depend on user.id, not the functions
+  }, [user?.id]); // CRITICAL: Only depend on user.id
+
+  // Health check - periodically verify connection is working
+  useEffect(() => {
+    if (!isRealTimeConnected) return;
+
+    const healthCheckInterval = setInterval(() => {
+      if (!connectionHealthRef.current && isRealTimeConnected) {
+        console.log('Real-time connection appears unhealthy, triggering reconnection');
+        retryConnection();
+      }
+      // Reset health flag - it will be set to true when we receive data
+      connectionHealthRef.current = false;
+    }, 30000); // Check every 30 seconds
+
+    return () => clearInterval(healthCheckInterval);
+  }, [isRealTimeConnected, retryConnection]);
 
   return { 
     isRealTimeConnected,
