@@ -44,10 +44,16 @@ export const useIndexActions = () => {
         updatedAt: new Date()
       };
       
-      console.log('useIndexActions: Archiving decision with optimistic update');
-      await updateDecision(updatedDecision);
+      console.log('useIndexActions: Archiving decision with database update');
       
-      // Explicitly refresh decisions to ensure UI consistency
+      // Wait for the database update to complete fully
+      await updateDecision(updatedDecision);
+      console.log('useIndexActions: Archive database update completed');
+      
+      // Add a small delay to ensure database transaction is committed
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
+      // Now refresh to ensure UI consistency
       console.log('useIndexActions: Refreshing decisions after archive');
       refreshDecisions();
       
