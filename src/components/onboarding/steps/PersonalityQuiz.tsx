@@ -13,35 +13,35 @@ interface QuizAnswers {
 const questions = [
   {
     id: 'decisionSpeed',
-    question: 'Under pressure, how do you typically make decisions?',
+    question: 'Decision Speed:',
     options: [
-      { value: 'fast', label: 'Quick and decisive - trust first instinct' },
-      { value: 'deliberate', label: 'Take time to analyze - thoroughness over speed' }
+      { value: 'fast', label: 'RAPID' },
+      { value: 'deliberate', label: 'TACTICAL' }
     ]
   },
   {
     id: 'approach',
-    question: 'What do you rely on most when making tough calls?',
+    question: 'Primary Intel:',
     options: [
-      { value: 'data', label: 'Data and analysis - numbers tell the story' },
-      { value: 'gut', label: 'Gut instinct - experience guides me' }
+      { value: 'data', label: 'INTEL' },
+      { value: 'gut', label: 'INSTINCT' }
     ]
   },
   {
     id: 'style',
-    question: 'How do you prefer to tackle major decisions?',
+    question: 'Command Style:',
     options: [
-      { value: 'collaborative', label: 'Collaborate - gather input from others' },
-      { value: 'solo', label: 'Solo - I process best on my own' }
+      { value: 'collaborative', label: 'TEAM' },
+      { value: 'solo', label: 'SOLO' }
     ]
   },
   {
     id: 'riskTolerance',
-    question: 'When facing uncertainty, you tend to:',
+    question: 'Risk Protocol:',
     options: [
-      { value: 'high', label: 'Embrace the unknown - big risks, big rewards' },
-      { value: 'medium', label: 'Calculated risks - measured approach' },
-      { value: 'low', label: 'Play it safe - minimize potential downsides' }
+      { value: 'high', label: 'AGGRESSIVE' },
+      { value: 'medium', label: 'CALCULATED' },
+      { value: 'low', label: 'CONSERVATIVE' }
     ]
   }
 ];
@@ -112,33 +112,40 @@ export const PersonalityQuiz = () => {
           Choose Your Command Style
         </h2>
         <p className="text-tactical-text/80">
-          How do you usually make decisions under pressure?
+          Select your operational preferences
         </p>
       </div>
 
-      <div className="space-y-6">
-        {questions.map((question, index) => (
-          <div key={question.id} className="bg-tactical-surface border border-tactical-border rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-tactical-text mb-4">
-              {index + 1}. {question.question}
-            </h3>
-            <div className="space-y-3">
-              {question.options.map((option) => (
-                <label key={option.value} className="flex items-center space-x-3 cursor-pointer">
-                  <input
-                    type="radio"
-                    name={question.id}
-                    value={option.value}
-                    checked={answers[question.id as keyof QuizAnswers] === option.value}
-                    onChange={(e) => handleAnswerChange(question.id as keyof QuizAnswers, e.target.value)}
-                    className="w-4 h-4 text-tactical-accent"
-                  />
-                  <span className="text-tactical-text">{option.label}</span>
-                </label>
-              ))}
+      <div className="bg-tactical-surface border border-tactical-border rounded-lg p-8">
+        <div className="space-y-6">
+          {questions.map((question, index) => (
+            <div key={question.id} className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <span className="text-tactical-accent font-mono text-sm w-6">
+                  {index + 1}.
+                </span>
+                <span className="text-tactical-text font-mono text-sm uppercase tracking-wider min-w-32">
+                  {question.question}
+                </span>
+              </div>
+              <div className="flex space-x-3">
+                {question.options.map((option) => (
+                  <button
+                    key={option.value}
+                    onClick={() => handleAnswerChange(question.id as keyof QuizAnswers, option.value)}
+                    className={`px-4 py-2 rounded border font-mono text-xs uppercase tracking-wider transition-all duration-200 ${
+                      answers[question.id as keyof QuizAnswers] === option.value
+                        ? 'bg-tactical-accent text-tactical-bg border-tactical-accent'
+                        : 'bg-tactical-bg text-tactical-text border-tactical-border hover:border-tactical-accent/50'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
             </div>
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
       <div className="flex justify-between pt-6">
