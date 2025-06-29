@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -24,6 +25,7 @@ interface DecisionForm {
   title: string;
   category: DecisionCategory | '';
   confidence: number;
+  skipped: boolean;
 }
 
 const getPersonalityMessage = (profileType: string): string => {
@@ -43,21 +45,50 @@ const getPersonalityMessage = (profileType: string): string => {
 
 export const DecisionCapture = () => {
   const { nextStep, prevStep, personalityProfile, setDecisions } = useOnboarding();
+  const [currentDecisionIndex, setCurrentDecisionIndex] = useState(0);
   const [decisionForms, setDecisionForms] = useState<DecisionForm[]>([
-    { title: '', category: '', confidence: 50 },
-    { title: '', category: '', confidence: 50 },
-    { title: '', category: '', confidence: 50 }
+    { title: '', category: '', confidence: 50, skipped: false },
+    { title: '', category: '', confidence: 50, skipped: false },
+    { title: '', category: '', confidence: 50, skipped: false }
   ]);
 
-  const updateDecision = (index: number, field: keyof DecisionForm, value: string | number) => {
+  const currentDecision = decisionForms[currentDecisionIndex];
+  const isFirstDecision = currentDecisionIndex === 0;
+  const isLastDecision = currentDecisionIndex === 2;
+  const canSkipCurrent = currentDecisionIndex > 0; // Can skip decision 2 and 3
+  
+  const updateCurrentDecision = (field: keyof DecisionForm, value: string | number | boolean) => {
     setDecisionForms(prev => prev.map((form, i) => 
-      i === index ? { ...form, [field]: value } : form
+      i === currentDecisionIndex ? { ...form, [field]: value } : form
     ));
   };
 
-  const handleNext = () => {
+  const handleNextDecision = () => {
+    if (!isLastDecision) {
+      setCurrentDecisionIndex(prev => prev + 1);
+    } else {
+      handleFinish();
+    }
+  };
+
+  const handlePrevDecision = () => {
+    if (currentDecisionIndex > 0) {
+      setCurrentDecisionIndex(prev => prev - 1);
+    }
+  };
+
+  const handleSkipDecision = () => {
+    if (canSkipCurrent) {
+      updateCurrentDecision('skipped', true);
+      updateCurrentDecision('title', '');
+      updateCurrentDecision('category', '');
+      handleNextDecision();
+    }
+  };
+
+  const handleFinish = () => {
     const validDecisions = decisionForms.filter(form => 
-      form.title.trim() && form.category
+      !form.skipped && form.title.trim() && form.category
     ).map(form => ({
       title: form.title,
       category: form.category as DecisionCategory,
@@ -71,9 +102,10 @@ export const DecisionCapture = () => {
     }
   };
 
-  const validDecisionsCount = decisionForms.filter(form => 
-    form.title.trim() && form.category
-  ).length;
+  const isCurrentDecisionValid = currentDecision.title.trim() && currentDecision.category && !currentDecision.skipped;
+  const completedDecisions = decisionForms.filter(form => !form.skipped && form.title.trim() && form.category).length;
+  const skippedDecisions = decisionForms.filter(form => form.skipped).length;
+  const hasAtLeastOneDecision = completedDecisions > 0;
 
   return (
     <div className="space-y-6 md:space-y-8 px-4 md:px-0">
@@ -98,81 +130,144 @@ export const DecisionCapture = () => {
         </div>
       </div>
 
-      <div className="bg-tactical-surface border border-tactical-border rounded-lg p-4 md:p-6">
-        {/* Always use mobile-first stacked layout */}
-        <div className="space-y-6">
-          {decisionForms.map((form, index) => (
-            <div key={index} className="border-b border-tactical-border/30 pb-6 last:border-b-0 last:pb-0">
-              <h3 className="text-tactical-accent font-mono text-sm uppercase tracking-wider mb-4">
-                Decision #{index + 1}
-              </h3>
-              
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-tactical-text font-mono text-xs uppercase tracking-wider mb-2">
-                    Decision Title
-                  </label>
-                  <Input
-                    value={form.title}
-                    onChange={(e) => updateDecision(index, 'title', e.target.value)}
-                    placeholder="e.g., Should we hire a new marketing manager?"
-                    className="bg-tactical-bg border-tactical-border min-h-[44px]"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-tactical-text font-mono text-xs uppercase tracking-wider mb-2">
-                      Category
-                    </label>
-                    <select
-                      value={form.category}
-                      onChange={(e) => updateDecision(index, 'category', e.target.value)}
-                      className="w-full p-3 bg-tactical-bg border border-tactical-border rounded-md text-tactical-text min-h-[44px]"
-                    >
-                      <option value="">Select category</option>
-                      {categories.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="block text-tactical-text font-mono text-xs uppercase tracking-wider mb-2">
-                      Confidence
-                    </label>
-                    <select
-                      value={form.confidence}
-                      onChange={(e) => updateDecision(index, 'confidence', parseInt(e.target.value))}
-                      className="w-full p-3 bg-tactical-bg border border-tactical-border rounded-md text-tactical-text min-h-[44px]"
-                    >
-                      {confidenceLevels.map(level => (
-                        <option key={level.value} value={level.value}>{level.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                </div>
-              </div>
-            </div>
-          ))}
+      {/* Progress Indicator */}
+      <div className="text-center">
+        <div className="bg-tactical-surface border border-tactical-border rounded-lg p-3 md:p-4">
+          <p className="text-tactical-accent font-mono text-sm uppercase tracking-wider mb-2">
+            Decision {currentDecisionIndex + 1} of 3
+          </p>
+          <div className="flex justify-center space-x-2">
+            {[0, 1, 2].map((index) => (
+              <div
+                key={index}
+                className={`w-3 h-3 rounded-full ${
+                  index === currentDecisionIndex
+                    ? 'bg-tactical-accent'
+                    : index < currentDecisionIndex
+                    ? decisionForms[index].skipped
+                      ? 'bg-tactical-text/30'
+                      : 'bg-tactical-accent/60'
+                    : 'bg-tactical-border'
+                }`}
+              />
+            ))}
+          </div>
+          <p className="text-tactical-text/60 text-xs mt-2">
+            {completedDecisions} completed • {skippedDecisions} skipped
+          </p>
         </div>
       </div>
 
-      <div className="text-center text-tactical-text/60 text-sm">
-        <p>Fill out at least 1 decision to continue • {validDecisionsCount}/3 completed</p>
+      {/* Current Decision Form */}
+      <div className="bg-tactical-surface border border-tactical-border rounded-lg p-4 md:p-6">
+        <h3 className="text-tactical-accent font-mono text-sm uppercase tracking-wider mb-4">
+          Decision #{currentDecisionIndex + 1}
+          {isFirstDecision && <span className="text-tactical-text/60 ml-2">(Required)</span>}
+        </h3>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-tactical-text font-mono text-xs uppercase tracking-wider mb-2">
+              Decision Title
+            </label>
+            <Input
+              value={currentDecision.title}
+              onChange={(e) => updateCurrentDecision('title', e.target.value)}
+              placeholder="e.g., Should we hire a new marketing manager?"
+              className="bg-tactical-bg border-tactical-border min-h-[44px]"
+            />
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-tactical-text font-mono text-xs uppercase tracking-wider mb-2">
+                Category
+              </label>
+              <select
+                value={currentDecision.category}
+                onChange={(e) => updateCurrentDecision('category', e.target.value)}
+                className="w-full p-3 bg-tactical-bg border border-tactical-border rounded-md text-tactical-text min-h-[44px]"
+              >
+                <option value="">Select category</option>
+                {categories.map(cat => (
+                  <option key={cat} value={cat}>{cat}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-tactical-text font-mono text-xs uppercase tracking-wider mb-2">
+                Confidence
+              </label>
+              <select
+                value={currentDecision.confidence}
+                onChange={(e) => updateCurrentDecision('confidence', parseInt(e.target.value))}
+                className="w-full p-3 bg-tactical-bg border border-tactical-border rounded-md text-tactical-text min-h-[44px]"
+              >
+                {confidenceLevels.map(level => (
+                  <option key={level.value} value={level.value}>{level.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+        </div>
       </div>
 
+      {/* Navigation Buttons */}
       <div className="flex justify-between pt-4 md:pt-6">
-        <Button variant="outline" onClick={prevStep} className="min-h-[44px]">
-          Back
-        </Button>
-        <Button 
-          onClick={handleNext}
-          disabled={validDecisionsCount === 0}
-          className="bg-tactical-accent hover:bg-tactical-accent/90 min-h-[44px]"
-        >
-          Schedule Reflections
-        </Button>
+        <div className="flex space-x-2">
+          <Button variant="outline" onClick={prevStep} className="min-h-[44px]">
+            Back
+          </Button>
+          {currentDecisionIndex > 0 && (
+            <Button 
+              variant="outline" 
+              onClick={handlePrevDecision}
+              className="min-h-[44px]"
+            >
+              Previous Decision
+            </Button>
+          )}
+        </div>
+
+        <div className="flex space-x-2">
+          {canSkipCurrent && (
+            <Button 
+              variant="outline"
+              onClick={handleSkipDecision}
+              className="min-h-[44px] text-tactical-text/60 hover:text-tactical-text"
+            >
+              Skip This Decision
+            </Button>
+          )}
+          
+          {isLastDecision ? (
+            <Button 
+              onClick={handleFinish}
+              disabled={!hasAtLeastOneDecision}
+              className="bg-tactical-accent hover:bg-tactical-accent/90 min-h-[44px]"
+            >
+              Schedule Reflections
+            </Button>
+          ) : (
+            <Button 
+              onClick={handleNextDecision}
+              disabled={!isCurrentDecisionValid && !canSkipCurrent}
+              className="bg-tactical-accent hover:bg-tactical-accent/90 min-h-[44px]"
+            >
+              Next Decision
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Help Text */}
+      <div className="text-center text-tactical-text/60 text-sm">
+        {isFirstDecision ? (
+          <p>Fill out the first decision to continue</p>
+        ) : (
+          <p>Fill out this decision or skip to move forward • Need at least 1 decision to finish</p>
+        )}
       </div>
     </div>
   );
