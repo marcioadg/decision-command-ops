@@ -7,7 +7,7 @@ export interface ReflectionNotification {
   decisionTitle: string;
   type: '7-day' | '30-day' | '90-day';
   dueDate: Date;
-  status: 'overdue' | 'due-today' | 'due-soon';
+  status: 'overdue' | 'due-today';
 }
 
 export const notificationService = {
@@ -15,8 +15,6 @@ export const notificationService = {
     const notifications: ReflectionNotification[] = [];
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const nextWeek = new Date(today);
-    nextWeek.setDate(nextWeek.getDate() + 7);
 
     decisions.forEach(decision => {
       if (!decision.reflection) return;
@@ -25,7 +23,7 @@ export const notificationService = {
         if (!interval || interval.completed) return;
         
         const dueDate = new Date(interval.date.getFullYear(), interval.date.getMonth(), interval.date.getDate());
-        let status: 'overdue' | 'due-today' | 'due-soon' = 'due-soon';
+        let status: 'overdue' | 'due-today' | null = null;
         
         if (dueDate < today) {
           status = 'overdue';
@@ -33,7 +31,8 @@ export const notificationService = {
           status = 'due-today';
         }
 
-        if (status === 'overdue' || status === 'due-today' || dueDate < nextWeek) {
+        // Only add notifications that are overdue or due today
+        if (status) {
           notifications.push({
             id: `${decision.id}-${type}`,
             decisionId: decision.id,
@@ -50,9 +49,9 @@ export const notificationService = {
       checkInterval(decision.reflection.ninetyDay, '90-day');
     });
 
-    // Sort by urgency: overdue first, then due today, then due soon
+    // Sort by urgency: overdue first, then due today
     return notifications.sort((a, b) => {
-      const urgencyOrder = { 'overdue': 0, 'due-today': 1, 'due-soon': 2 };
+      const urgencyOrder = { 'overdue': 0, 'due-today': 1 };
       const urgencyDiff = urgencyOrder[a.status] - urgencyOrder[b.status];
       if (urgencyDiff !== 0) return urgencyDiff;
       
@@ -64,7 +63,6 @@ export const notificationService = {
   getNotificationCounts(decisions: Decision[]): {
     overdue: number;
     dueToday: number;
-    dueThisWeek: number;
     total: number;
   } {
     const notifications = this.getReflectionNotifications(decisions);
@@ -72,7 +70,6 @@ export const notificationService = {
     const counts = {
       overdue: notifications.filter(n => n.status === 'overdue').length,
       dueToday: notifications.filter(n => n.status === 'due-today').length,
-      dueThisWeek: notifications.filter(n => n.status === 'due-soon').length,
       total: notifications.length
     };
 

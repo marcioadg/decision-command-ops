@@ -22,8 +22,6 @@ export const NotificationBell = ({ decisions, onDecisionClick }: NotificationBel
         return <AlertTriangle className={`${baseClasses} text-red-400`} />;
       case 'due-today':
         return <Clock className={`${baseClasses} text-yellow-400`} />;
-      case 'due-soon':
-        return <Calendar className={`${baseClasses} text-blue-400`} />;
     }
   };
 
@@ -31,7 +29,6 @@ export const NotificationBell = ({ decisions, onDecisionClick }: NotificationBel
     switch (status) {
       case 'overdue': return 'text-red-400';
       case 'due-today': return 'text-yellow-400';
-      case 'due-soon': return 'text-blue-400';
       default: return 'text-tactical-text/60';
     }
   };
@@ -55,8 +52,6 @@ export const NotificationBell = ({ decisions, onDecisionClick }: NotificationBel
       return `${Math.abs(diffDays)} days overdue`;
     } else if (diffDays === 0) {
       return 'Due today';
-    } else if (diffDays === 1) {
-      return 'Due tomorrow';
     } else {
       return `Due in ${diffDays} days`;
     }
@@ -77,7 +72,7 @@ export const NotificationBell = ({ decisions, onDecisionClick }: NotificationBel
       </button>
 
       {showDropdown && (
-        <div className="absolute right-0 top-full mt-2 w-80 bg-tactical-surface border border-tactical-border rounded-lg shadow-lg z-50">
+        <div className="absolute right-0 top-full mt-2 w-80 bg-tactical-surface border border-tactical-border rounded-lg shadow-lg z-[100] backdrop-blur-sm">
           <div className="p-4 border-b border-tactical-border">
             <h3 className="font-mono text-sm font-semibold text-tactical-accent uppercase">
               Reflection Notifications
@@ -87,8 +82,6 @@ export const NotificationBell = ({ decisions, onDecisionClick }: NotificationBel
                 {counts.overdue > 0 && `${counts.overdue} overdue`}
                 {counts.overdue > 0 && counts.dueToday > 0 && ', '}
                 {counts.dueToday > 0 && `${counts.dueToday} due today`}
-                {(counts.overdue > 0 || counts.dueToday > 0) && counts.dueThisWeek > 0 && ', '}
-                {counts.dueThisWeek > 0 && `${counts.dueThisWeek} due soon`}
               </p>
             )}
           </div>
