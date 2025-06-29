@@ -1,129 +1,123 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { CheckCircle, Calendar, Target } from 'lucide-react';
-import { useOnboarding } from '../OnboardingProvider';
-import { useDecisions } from '@/hooks/useDecisions';
-import { useAuth } from '@/hooks/useAuth';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useOnboarding } from '../OnboardingProvider';
+import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 
 export const ReflectionScheduling = () => {
   const { prevStep, decisions, personalityProfile } = useOnboarding();
-  const { createDecision } = useDecisions();
-  const { user } = useAuth();
+  const { completeOnboarding } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [isCompleting, setIsCompleting] = useState(false);
 
   const handleCompleteOnboarding = async () => {
+    setIsCompleting(true);
+    
     try {
-      // Create all decisions in the database
-      for (const decision of decisions) {
-        const newDecision = {
-          title: decision.title,
-          category: decision.category,
-          priority: 'medium' as const,
-          stage: decision.stage,
-          confidence: decision.confidence || 50,
-          owner: (user as any)?.name || 'User',
-          notes: `Created during onboarding. Reflection scheduled for 1 ${decision.reflectionInterval}.`
-        };
-        await createDecision(newDecision);
-      }
-
-      // Store onboarding completion
-      localStorage.setItem('onboarding_completed', 'true');
-      if (personalityProfile) {
-        localStorage.setItem('personality_profile', JSON.stringify(personalityProfile));
-      }
-
+      // Mark onboarding as completed
+      await completeOnboarding();
+      
+      // Show success message
       toast({
-        title: "Mission Command Ready!",
-        description: `${decisions.length} decisions loaded into your command center.`
+        title: "MISSION COMPLETE",
+        description: "Welcome to Decision Command. Your tactical dashboard is ready.",
       });
-
+      
+      // Navigate to dashboard
       navigate('/dashboard');
     } catch (error) {
+      console.error('Error completing onboarding:', error);
       toast({
-        title: "Setup Error",
-        description: "There was an issue setting up your decisions. Please try again.",
-        variant: "destructive"
+        title: "SYSTEM ERROR",
+        description: "Failed to complete onboarding. Please try again.",
+        variant: "destructive",
       });
+    } finally {
+      setIsCompleting(false);
     }
   };
-
-  const totalReflections = decisions.length * 3; // Each decision gets 3 reflection intervals
 
   return (
     <div className="space-y-8">
       <div className="text-center">
-        <CheckCircle className="w-16 h-16 text-tactical-accent mx-auto mb-4" />
         <h2 className="text-3xl font-bold text-tactical-accent font-tactical mb-4">
-          Command Center Ready
+          Mission Setup Complete
         </h2>
-        <p className="text-tactical-text/80">
-          You've got your command center ready. We'll remind you to reflect on your decisions at specific intervals.
+        <p className="text-tactical-text/80 mb-4">
+          Your tactical decision pipeline is now configured and ready for deployment.
         </p>
-      </div>
-
-      <div className="grid md:grid-cols-3 gap-6">
-        <div className="bg-tactical-surface border border-tactical-border rounded-lg p-6 text-center">
-          <Target className="w-8 h-8 text-tactical-accent mx-auto mb-3" />
-          <h3 className="font-semibold text-tactical-text mb-2">Decisions Loaded</h3>
-          <p className="text-2xl font-bold text-tactical-accent">{decisions.length}</p>
-          <p className="text-sm text-tactical-text/60">Ready for tracking</p>
-        </div>
-
-        <div className="bg-tactical-surface border border-tactical-border rounded-lg p-6 text-center">
-          <Calendar className="w-8 h-8 text-tactical-accent mx-auto mb-3" />
-          <h3 className="font-semibold text-tactical-text mb-2">Reflections Scheduled</h3>
-          <p className="text-2xl font-bold text-tactical-accent">{totalReflections}</p>
-          <p className="text-sm text-tactical-text/60">7, 30, 90 day intervals</p>
-        </div>
-
-        <div className="bg-tactical-surface border border-tactical-border rounded-lg p-6 text-center">
-          <CheckCircle className="w-8 h-8 text-tactical-accent mx-auto mb-3" />
-          <h3 className="font-semibold text-tactical-text mb-2">Profile Type</h3>
-          <p className="text-lg font-bold text-tactical-accent">
-            {personalityProfile?.profileType || 'Strategic'}
-          </p>
-          <p className="text-sm text-tactical-text/60">Decision maker</p>
-        </div>
-      </div>
-
-      <div className="bg-tactical-surface border border-tactical-accent/30 rounded-lg p-6">
-        <h3 className="font-semibold text-tactical-text mb-4">Your Decision Summary:</h3>
-        <div className="space-y-3">
-          {decisions.map((decision, index) => (
-            <div key={index} className="flex justify-between items-center py-2 border-b border-tactical-border/30 last:border-b-0">
+        
+        {personalityProfile && (
+          <div className="bg-tactical-surface border border-tactical-accent/30 rounded-lg p-6 mt-6">
+            <h3 className="text-tactical-accent font-semibold text-lg mb-3">
+              Command Profile: {personalityProfile.profileType}
+            </h3>
+            <div className="grid grid-cols-2 gap-4 text-sm">
               <div>
-                <p className="text-tactical-text font-medium">{decision.title}</p>
-                <p className="text-sm text-tactical-text/60">
-                  {decision.category} • {decision.confidence}% confidence • Reflect in 1 {decision.reflectionInterval}
-                </p>
+                <span className="text-tactical-text/60">Decision Speed:</span>
+                <span className="ml-2 text-tactical-text capitalize">{personalityProfile.decisionSpeed}</span>
               </div>
-              <div className="text-tactical-accent font-mono text-sm">
-                {decision.stage.toUpperCase()}
+              <div>
+                <span className="text-tactical-text/60">Approach:</span>
+                <span className="ml-2 text-tactical-text capitalize">{personalityProfile.approach}</span>
+              </div>
+              <div>
+                <span className="text-tactical-text/60">Style:</span>
+                <span className="ml-2 text-tactical-text capitalize">{personalityProfile.style}</span>
+              </div>
+              <div>
+                <span className="text-tactical-text/60">Risk Tolerance:</span>
+                <span className="ml-2 text-tactical-text capitalize">{personalityProfile.riskTolerance}</span>
               </div>
             </div>
-          ))}
-        </div>
+          </div>
+        )}
+
+        {decisions.length > 0 && (
+          <div className="bg-tactical-surface border border-tactical-border rounded-lg p-6 mt-6">
+            <h3 className="text-tactical-accent font-semibold text-lg mb-3">
+              Decision Backlog Loaded
+            </h3>
+            <p className="text-tactical-text/80 text-sm mb-3">
+              {decisions.length} decision{decisions.length > 1 ? 's' : ''} ready for tactical analysis
+            </p>
+            <div className="space-y-2">
+              {decisions.map((decision, index) => (
+                <div key={index} className="flex justify-between items-center text-sm">
+                  <span className="text-tactical-text">{decision.title}</span>
+                  <div className="flex items-center space-x-2">
+                    <span className="text-tactical-accent font-mono text-xs">
+                      {decision.category}
+                    </span>
+                    <span className="text-tactical-text/60 font-mono text-xs">
+                      {decision.confidence}%
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="text-center space-y-4">
-        <p className="text-tactical-text/80">
-          Your mission command center is configured and ready to help you make fewer, better decisions.
+      <div className="text-center">
+        <p className="text-tactical-text/60 mb-6">
+          Your command center is ready. Deploy to your tactical dashboard?
         </p>
+        
         <div className="flex justify-between pt-6">
-          <Button variant="outline" onClick={prevStep}>
+          <Button variant="outline" onClick={prevStep} disabled={isCompleting}>
             Back
           </Button>
           <Button 
             onClick={handleCompleteOnboarding}
-            className="bg-tactical-accent hover:bg-tactical-accent/90 px-8"
-            size="lg"
+            disabled={isCompleting}
+            className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-semibold px-8"
           >
-            Go to Dashboard
+            {isCompleting ? 'DEPLOYING...' : 'DEPLOY TO DASHBOARD'}
           </Button>
         </div>
       </div>

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 
 interface ProtectedRouteProps {
@@ -12,9 +12,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   requireAdmin = false 
 }) => {
-  const { user, profile, isLoading, isAdmin } = useAuth();
+  const { user, profile, isLoading, isAdmin, needsOnboarding } = useAuth();
+  const location = useLocation();
 
-  // FIXED: Show loading state longer to prevent flash of redirect
+  // Show loading state while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen bg-tactical-bg tactical-grid flex items-center justify-center">
@@ -28,18 +29,24 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     );
   }
 
-  // FIXED: Only redirect if we're sure there's no user (not just missing profile)
+  // Redirect to login if no user
   if (!user) {
     console.log('ProtectedRoute: No user found, redirecting to login');
     return <Navigate to="/login" replace />;
   }
 
-  // FIXED: Allow access even if profile is still loading, as long as user exists
+  // Check if user needs onboarding (but not if they're already on the onboarding page)
+  if (profile && needsOnboarding() && location.pathname !== '/onboarding') {
+    console.log('ProtectedRoute: User needs onboarding, redirecting to /onboarding');
+    return <Navigate to="/onboarding" replace />;
+  }
+
+  // Check admin requirements
   if (requireAdmin && profile && !isAdmin()) {
     console.log('ProtectedRoute: Admin required but user is not admin, redirecting to dashboard');
     return <Navigate to="/dashboard" replace />;
   }
 
-  // FIXED: Render children even if profile is still loading
+  // Render children if all checks pass
   return <>{children}</>;
 };

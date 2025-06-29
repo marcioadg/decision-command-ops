@@ -7,6 +7,7 @@ interface UserProfile {
   id: string;
   name: string;
   role: 'user' | 'admin' | 'company_admin';
+  onboarding_completed: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -21,6 +22,8 @@ interface AuthContextType {
   isLoading: boolean;
   isSuperAdmin: () => boolean;
   isAdmin: () => boolean;
+  needsOnboarding: () => boolean;
+  completeOnboarding: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -49,13 +52,44 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         console.log('User profile loaded:', data);
         const typedProfile: UserProfile = {
           ...data,
-          role: data.role as 'user' | 'admin' | 'company_admin'
+          role: data.role as 'user' | 'admin' | 'company_admin',
+          onboarding_completed: data.onboarding_completed || false
         };
 
         setProfile(typedProfile);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
+    }
+  };
+
+  const needsOnboarding = () => {
+    return profile && !profile.onboarding_completed;
+  };
+
+  const completeOnboarding = async () => {
+    if (!user?.id) return;
+
+    try {
+      console.log('Marking onboarding as completed for user:', user.id);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ onboarding_completed: true })
+        .eq('id', user.id);
+
+      if (error) {
+        console.error('Error completing onboarding:', error);
+        return;
+      }
+
+      // Update local profile state
+      if (profile) {
+        setProfile({ ...profile, onboarding_completed: true });
+      }
+      
+      console.log('Onboarding marked as completed');
+    } catch (error) {
+      console.error('Error completing onboarding:', error);
     }
   };
 
@@ -166,7 +200,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       signOut, 
       isLoading, 
       isSuperAdmin, 
-      isAdmin 
+      isAdmin,
+      needsOnboarding,
+      completeOnboarding
     }}>
       {children}
     </AuthContext.Provider>
