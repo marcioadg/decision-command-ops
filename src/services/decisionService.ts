@@ -1,18 +1,19 @@
 
 import { Decision } from '@/types/Decision';
-import { crudOperations } from './decision/crudOperations';
+import { secureDecisionService } from './secureDecisionService'; // Using secure service
 import { migrationService } from './decision/migrationService';
 import { reflectionService } from './decision/reflectionService';
 
+// Updated to use secure decision service for all operations
 export const decisionService = {
-  // CRUD Operations
-  getDecisions: crudOperations.getDecisions,
-  createDecision: crudOperations.createDecision,
-  updateDecision: crudOperations.updateDecision,
-  deleteDecision: crudOperations.deleteDecision,
+  // CRUD Operations - now using secure service
+  getDecisions: secureDecisionService.getDecisions,
+  createDecision: secureDecisionService.createDecision,
+  updateDecision: secureDecisionService.updateDecision,
+  deleteDecision: secureDecisionService.deleteDecision,
 
-  // Migration
-  migrateLocalStorageDecisions: migrationService.migrateLocalStorageDecisions,
+  // Migration - using secure service
+  migrateLocalStorageDecisions: secureDecisionService.migrateLocalStorageDecisions,
 
   // Reflections
   async getReflectionsDue(): Promise<{

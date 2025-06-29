@@ -1,7 +1,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { Decision } from '@/types/Decision';
-import { decisionService } from '@/services/decisionService';
+import { secureDecisionService } from '@/services/secureDecisionService'; // Using secure service
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import { useDecisionRealtime } from './decision/useDecisionRealtime';
@@ -38,7 +38,7 @@ export const useDecisions = () => {
     });
   }, []);
 
-  // Set up CRUD operations with immediate update callback
+  // Set up CRUD operations with secure service
   const { createDecision, updateDecision, deleteDecision } = useDecisionCRUD({
     isRealTimeConnected,
     setDecisions,
@@ -76,7 +76,8 @@ export const useDecisions = () => {
       setLoading(true);
       setError(null);
       
-      const data = await decisionService.getDecisions();
+      // Use secure decision service
+      const data = await secureDecisionService.getDecisions();
       console.log('Loaded decisions:', data.length);
       
       setDecisions(data);
@@ -91,7 +92,7 @@ export const useDecisions = () => {
       if (showToast) {
         toast({
           title: "Error Loading Decisions",
-          description: errorMessage,
+          description: "Unable to load your decisions. Please try again.",
           variant: "destructive"
         });
       }
@@ -99,7 +100,7 @@ export const useDecisions = () => {
       setLoading(false);
       loadingRef.current = false;
     }
-  }, [user?.id, toast]); // Only depend on user.id to prevent multiple loads
+  }, [user?.id, toast]);
 
   // Set up auto-retry logic
   useDecisionRetry({ error, retryCount, loadDecisions });
@@ -107,7 +108,7 @@ export const useDecisions = () => {
   const migrateFromLocalStorage = useCallback(async () => {
     try {
       console.log('Starting localStorage migration...');
-      const migratedCount = await decisionService.migrateLocalStorageDecisions();
+      const migratedCount = await secureDecisionService.migrateLocalStorageDecisions();
       if (migratedCount > 0) {
         toast({
           title: "Data Migrated",
@@ -121,7 +122,7 @@ export const useDecisions = () => {
       console.error('Error migrating decisions:', err);
       toast({
         title: "Migration Error",
-        description: errorMessage,
+        description: "Unable to migrate your data. Please try again.",
         variant: "destructive"
       });
       return 0;
@@ -134,7 +135,7 @@ export const useDecisions = () => {
       console.log('useDecisions: User authenticated, loading decisions');
       loadDecisions();
     }
-  }, [user?.id]); // Only depend on user.id
+  }, [user?.id]);
 
   return {
     decisions,

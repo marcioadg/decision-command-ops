@@ -20,7 +20,7 @@ export const useIndexActions = () => {
       soundSystem.playCardDrop();
     } catch (error) {
       console.error('useIndexActions: Error in handleDecisionUpdate:', error);
-      // Error is already handled in the hook
+      // Error is already handled in the hook with proper security-safe messages
     }
   }, [updateDecision]);
 
@@ -31,7 +31,7 @@ export const useIndexActions = () => {
       soundSystem.playCardDrop();
     } catch (error) {
       console.error('useIndexActions: Error in handleQuickAdd:', error);
-      // Error is already handled in the hook
+      // Error is already handled in the hook with proper security-safe messages
     }
   }, [createDecision]);
 
@@ -60,16 +60,23 @@ export const useIndexActions = () => {
       soundSystem.playArchive();
     } catch (error) {
       console.error('useIndexActions: Error in handleArchive:', error);
-      // Error is already handled in the hook, but add specific toast for archive failures
+      // Enhanced error handling with security-safe messages
       toast({
         title: "Archive Failed",
-        description: `Failed to ${decision.archived ? 'restore' : 'archive'} "${decision.title}". Please try again.`,
+        description: `Failed to ${decision.archived ? 'restore' : 'archive'} the decision. Please try again.`,
         variant: "destructive"
       });
     }
   }, [updateDecision, refreshDecisions, toast]);
 
   const handleLogout = useCallback(() => {
+    console.log('useIndexActions: Logging out user');
+    // Clear any sensitive data from localStorage
+    const keysToRemove = Object.keys(localStorage).filter(key => 
+      key.includes('decision') || key.includes('user') || key.includes('auth')
+    );
+    keysToRemove.forEach(key => localStorage.removeItem(key));
+    
     signOut();
   }, [signOut]);
 

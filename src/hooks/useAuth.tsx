@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -27,13 +28,33 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Password strength validation
+const validatePassword = (password: string): string | null => {
+  if (password.length < 8) {
+    return 'Password must be at least 8 characters long';
+  }
+  if (!/(?=.*[a-z])/.test(password)) {
+    return 'Password must contain at least one lowercase letter';
+  }
+  if (!/(?=.*[A-Z])/.test(password)) {
+    return 'Password must contain at least one uppercase letter';
+  }
+  if (!/(?=.*\d)/.test(password)) {
+    return 'Password must contain at least one number';
+  }
+  if (!/(?=.*[@$!%*?&])/.test(password)) {
+    return 'Password must contain at least one special character (@$!%*?&)';
+  }
+  return null;
+};
+
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const fetchUserProfile = async (userId: string) => {
+  const fetchUserProfile = async (userId: string, retries = 3) => {
     try {
       console.log('Fetching user profile for:', userId);
       const { data, error } = await supabase
@@ -44,6 +65,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (error) {
         console.error('Error fetching user profile:', error);
+        if (retries > 0) {
+          console.log(`Retrying profile fetch, ${retries} attempts remaining`);
+          setTimeout(() => fetchUserProfile(userId, retries - 1), 1000);
+          return;
+        }
         return;
       }
 
@@ -59,6 +85,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
+      if (retries > 0) {
+        setTimeout(() => fetchUserProfile(userId, retries - 1), 1000);
+      }
     }
   };
 
@@ -135,15 +164,20 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, name: string) => {
     console.log('Starting signup process for:', email);
     
-    // TODO: EMAIL VERIFICATION - Comment out email verification for now
-    // const redirectUrl = `${window.location.origin}/verify-email`;
+    // Validate password strength
+    const passwordError = validatePassword(password);
+    if (passwordError) {
+      return { error: { message: passwordError } };
+    }
+    
+    // Enable email verification in production
+    const redirectUrl = `${window.location.origin}/verify-email`;
     
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        // TODO: EMAIL VERIFICATION - Uncomment when ready to enable email verification
-        // emailRedirectTo: redirectUrl,
+        emailRedirectTo: redirectUrl,
         data: {
           name,
           role: 'user'
@@ -157,15 +191,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signIn = async (email: string, password: string) => {
     console.log('Attempting sign in for:', email);
+    
+    // Basic rate limiting check (client-side only, server-side would be better)
+    const lastAttempt = localStorage.getItem('lastSignInAttempt');
+    const attemptCount = parseInt(localStorage.getItem('signInAttempts') || '0');
+    const now = Date.now();
+    
+    if (lastAttempt && attemptCount >= 5 && now - parseInt(lastAttempt) < 300000) { // 5 minutes
+      return { error: { message: 'Too many sign-in attempts. Please try again in 5 minutes.' } };
+    }
+    
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password
     });
 
-    if (!error) {
-      console.log('Sign in successful');
-    } else {
+    if (error) {
       console.error('Sign in error:', error);
+      // Track failed attempts
+      localStorage.setItem('signInAttempts', (attemptCount + 1).toString());
+      localStorage.setItem('lastSignInAttempt', now.toString());
+    } else {
+      console.log('Sign in successful');
+      // Clear failed attempts on success
+      localStorage.removeItem('signInAttempts');
+      localStorage.removeItem('lastSignInAttempt');
     }
 
     return { error };
@@ -173,6 +223,22 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const signOut = async () => {
     console.log('Signing out user');
+    
+    // Clear all potentially sensitive data from localStorage
+    const sensitiveKeys = Object.keys(localStorage).filter(key => 
+      key.includes('decision') || 
+      key.includes('user') || 
+      key.includes('auth') ||
+      key.includes('tactical') ||
+      key.includes('admin') ||
+      key.includes('company')
+    );
+    
+    sensitiveKeys.forEach(key => {
+      console.log('Clearing localStorage key:', key);
+      localStorage.removeItem(key);
+    });
+    
     await supabase.auth.signOut();
     setUser(null);
     setProfile(null);
