@@ -32,7 +32,7 @@ export const ReflectionScheduling = () => {
             stage: onboardingDecision.stage,
             confidence: onboardingDecision.confidence,
             priority: 'medium' as DecisionPriority,
-            owner: user?.name || 'System',
+            owner: (user as any)?.name || 'System',
             notes: `Created during onboarding. Reflection scheduled for ${onboardingDecision.reflectionInterval || '1 month'}.`,
             archived: false
           };
