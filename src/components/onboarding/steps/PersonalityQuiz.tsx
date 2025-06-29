@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useOnboarding } from '../OnboardingProvider';
@@ -106,9 +105,9 @@ export const PersonalityQuiz = () => {
   const isComplete = Object.values(answers).every(answer => answer !== '');
 
   return (
-    <div className="space-y-6 md:space-y-8">
+    <div className="space-y-8 md:space-y-10">
       <div className="text-center px-4">
-        <h2 className="text-2xl md:text-3xl font-bold text-tactical-accent font-tactical mb-3 md:mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-tactical-accent font-tactical mb-4 md:mb-6">
           Choose Your Command Style
         </h2>
         <p className="text-tactical-text/80 text-sm md:text-base">
@@ -116,47 +115,51 @@ export const PersonalityQuiz = () => {
         </p>
       </div>
 
-      <div className="bg-tactical-surface border border-tactical-border rounded-lg p-4 md:p-8 mx-4 md:mx-0">
-        <div className="space-y-6 md:space-y-6">
+      <div className="bg-tactical-surface border border-tactical-border rounded-lg p-6 md:p-10 mx-4 md:mx-0">
+        <div className="space-y-10 md:space-y-12">
           {questions.map((question, index) => (
-            <div key={question.id} className="space-y-3 md:space-y-0 md:flex md:items-center md:justify-between">
-              <div className="flex items-center space-x-3 md:space-x-4">
-                <span className="text-tactical-accent font-mono text-sm w-6 flex-shrink-0">
+            <div key={question.id} className="space-y-4">
+              {/* Question Header */}
+              <div className="flex items-center space-x-4 pb-2">
+                <span className="text-tactical-accent font-mono text-base w-8 flex-shrink-0 font-bold">
                   {index + 1}.
                 </span>
-                <span className="text-tactical-text font-mono text-xs md:text-sm uppercase tracking-wider md:min-w-32">
+                <span className="text-tactical-text font-mono text-sm md:text-base uppercase tracking-wider font-medium">
                   {question.question}
                 </span>
               </div>
               
-              <div className="flex flex-wrap gap-2 md:gap-3 md:flex-nowrap">
-                {question.options.map((option) => (
-                  <button
-                    key={option.value}
-                    onClick={() => handleAnswerChange(question.id as keyof QuizAnswers, option.value)}
-                    className={`flex-1 md:flex-none px-3 md:px-4 py-3 md:py-2 rounded border font-mono text-xs uppercase tracking-wider transition-all duration-200 min-h-[44px] md:min-h-0 ${
-                      answers[question.id as keyof QuizAnswers] === option.value
-                        ? 'bg-tactical-accent text-tactical-bg border-tactical-accent'
-                        : 'bg-tactical-bg text-tactical-text border-tactical-border hover:border-tactical-accent/50'
-                    }`}
-                  >
-                    {option.label}
-                  </button>
-                ))}
+              {/* Options */}
+              <div className="pl-12">
+                <div className="flex flex-col sm:flex-row gap-3 md:gap-4">
+                  {question.options.map((option) => (
+                    <button
+                      key={option.value}
+                      onClick={() => handleAnswerChange(question.id as keyof QuizAnswers, option.value)}
+                      className={`flex-1 px-5 md:px-6 py-4 md:py-3 rounded-lg border font-mono text-sm uppercase tracking-wider transition-all duration-200 ${
+                        answers[question.id as keyof QuizAnswers] === option.value
+                          ? 'bg-tactical-accent text-tactical-bg border-tactical-accent shadow-lg'
+                          : 'bg-tactical-bg text-tactical-text border-tactical-border hover:border-tactical-accent/50 hover:bg-tactical-surface/50'
+                      }`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           ))}
         </div>
       </div>
 
-      <div className="flex justify-between pt-4 md:pt-6 px-4 md:px-0">
-        <Button variant="outline" onClick={prevStep} className="min-h-[44px]">
+      <div className="flex justify-between pt-6 md:pt-8 px-4 md:px-0">
+        <Button variant="outline" onClick={prevStep} className="min-h-[48px] px-6">
           Back
         </Button>
         <Button 
           onClick={handleNext}
           disabled={!isComplete}
-          className="bg-tactical-accent hover:bg-tactical-accent/90 min-h-[44px]"
+          className="bg-tactical-accent hover:bg-tactical-accent/90 min-h-[48px] px-6"
         >
           Analyze Results
         </Button>
