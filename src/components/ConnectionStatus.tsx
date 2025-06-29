@@ -24,7 +24,7 @@ export const ConnectionStatus = ({ isConnected, onRetry, className = "" }: Conne
 
   if (isConnected) {
     return (
-      <div className={`flex items-center space-x-1 text-xs font-mono text-impact-high ${className}`}>
+      <div className={`flex items-center space-x-1 text-xs font-mono text-green-600 ${className}`}>
         <Wifi className="w-3 h-3" />
         <span>LIVE</span>
       </div>
@@ -32,7 +32,7 @@ export const ConnectionStatus = ({ isConnected, onRetry, className = "" }: Conne
   }
 
   return (
-    <div className={`flex items-center space-x-2 text-xs font-mono text-urgency-high ${className}`}>
+    <div className={`flex items-center space-x-2 text-xs font-mono text-red-600 ${className}`}>
       <div className="flex items-center space-x-1">
         <WifiOff className="w-3 h-3" />
         <span>OFFLINE</span>
@@ -42,7 +42,7 @@ export const ConnectionStatus = ({ isConnected, onRetry, className = "" }: Conne
           variant="ghost"
           size="sm"
           onClick={handleRetry}
-          className="h-6 px-2 text-xs hover:bg-urgency-high/20"
+          className="h-6 px-2 text-xs hover:bg-red-100"
         >
           <AlertCircle className="w-3 h-3 mr-1" />
           RETRY

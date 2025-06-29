@@ -16,6 +16,7 @@ interface DecisionPipelineProps {
   onQuickAdd?: (stage: DecisionStage) => void;
   showArchived?: boolean;
   isRealTimeConnected?: boolean;
+  onRetryConnection?: () => void;
 }
 
 const stages: {
@@ -52,7 +53,8 @@ export const DecisionPipeline = ({
   onArchive,
   onQuickAdd,
   showArchived = false,
-  isRealTimeConnected = false
+  isRealTimeConnected = false,
+  onRetryConnection
 }: DecisionPipelineProps) => {
   const [draggedDecision, setDraggedDecision] = useState<Decision | null>(null);
   const [updatingDecisions, setUpdatingDecisions] = useState<Set<string>>(new Set());
@@ -143,7 +145,10 @@ export const DecisionPipeline = ({
     <div className="w-full max-w-7xl mx-auto px-4">
       {/* Real-time connection status indicator */}
       <div className="flex items-center justify-end mb-2">
-        <ConnectionStatus isConnected={isRealTimeConnected} />
+        <ConnectionStatus 
+          isConnected={isRealTimeConnected} 
+          onRetry={onRetryConnection}
+        />
       </div>
 
       <div className="flex gap-3 h-full">

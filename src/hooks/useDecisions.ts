@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { Decision } from '@/types/Decision';
 import { decisionService } from '@/services/decisionService';
@@ -17,7 +16,7 @@ export const useDecisions = () => {
   const { toast } = useToast();
 
   // Set up real-time subscription
-  const { isRealTimeConnected, pauseRealtimeForDecision } = useDecisionRealtime({ user, setDecisions });
+  const { isRealTimeConnected, pauseRealtimeForDecision, retryConnection } = useDecisionRealtime({ user, setDecisions });
 
   // Callback for immediate UI updates
   const handleImmediateUpdate = useCallback((decision: Decision) => {
@@ -134,6 +133,7 @@ export const useDecisions = () => {
     retryCount,
     isRealTimeConnected,
     pauseRealtimeForDecision,
-    onImmediateUpdate: handleImmediateUpdate
+    onImmediateUpdate: handleImmediateUpdate,
+    retryConnection
   };
 };

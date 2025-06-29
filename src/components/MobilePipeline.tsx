@@ -17,6 +17,7 @@ interface MobilePipelineProps {
   onQuickAdd?: (stage: DecisionStage) => void;
   showArchived?: boolean;
   isRealTimeConnected?: boolean;
+  onRetryConnection?: () => void;
 }
 
 const stages: { key: DecisionStage; label: string; description: string }[] = [
@@ -33,7 +34,8 @@ export const MobilePipeline = ({
   onArchive,
   onQuickAdd,
   showArchived = false,
-  isRealTimeConnected = false
+  isRealTimeConnected = false,
+  onRetryConnection
 }: MobilePipelineProps) => {
   const [activeStage, setActiveStage] = useState<DecisionStage>('backlog');
   const [selectedDecision, setSelectedDecision] = useState<Decision | null>(null);
@@ -121,7 +123,10 @@ export const MobilePipeline = ({
     <div className="flex flex-col h-full">
       {/* Connection status */}
       <div className="flex items-center justify-end p-2">
-        <ConnectionStatus isConnected={isRealTimeConnected} />
+        <ConnectionStatus 
+          isConnected={isRealTimeConnected} 
+          onRetry={onRetryConnection}
+        />
       </div>
 
       {/* Stage Navigation */}
