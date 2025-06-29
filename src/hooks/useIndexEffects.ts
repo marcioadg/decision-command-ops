@@ -52,18 +52,25 @@ export const useIndexEffects = ({
     }
   }, [decisions, setLocalDecisions]); // Depend on the actual decisions array
 
-  // Check for first login detection - trigger journal if user just authenticated and hasn't seen it
+  // Check for first login detection - trigger journal only if user has no decisions
   useEffect(() => {
     if (profile && !loading && !error) {
       const hasShownJournalThisSession = sessionStorage.getItem('journalShownThisSession');
       const userJustLoggedIn = !hasShownJournalThisSession;
       
       if (userJustLoggedIn) {
-        console.log('Index: User just logged in, triggering first login journal');
-        triggerFirstLoginJournal();
+        // Only show journal popup if user has no decisions in their pipeline
+        if (decisions.length === 0) {
+          console.log('Index: User just logged in with no decisions, triggering first login journal');
+          triggerFirstLoginJournal();
+        } else {
+          console.log('Index: User just logged in but has existing decisions, skipping journal popup');
+          // Mark as shown to prevent future checks this session
+          sessionStorage.setItem('journalShownThisSession', 'true');
+        }
       }
     }
-  }, [profile?.id, loading, error, triggerFirstLoginJournal]); // Use profile.id for stability
+  }, [profile?.id, loading, error, decisions.length, triggerFirstLoginJournal]); // Include decisions.length in dependency
 
   // Add cleanup effect to prevent memory leaks
   useEffect(() => {
