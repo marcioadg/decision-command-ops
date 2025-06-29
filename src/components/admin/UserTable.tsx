@@ -24,7 +24,6 @@ export const UserTable = ({ users, onEdit, onDelete }: UserTableProps) => {
       <TableHeader>
         <TableRow>
           <TableHead className="text-tactical-accent">Name</TableHead>
-          <TableHead className="text-tactical-accent">Username</TableHead>
           <TableHead className="text-tactical-accent">Email</TableHead>
           <TableHead className="text-tactical-accent">Company</TableHead>
           <TableHead className="text-tactical-accent">Role</TableHead>
@@ -37,7 +36,6 @@ export const UserTable = ({ users, onEdit, onDelete }: UserTableProps) => {
         {users.map((user) => (
           <TableRow key={user.id}>
             <TableCell className="text-tactical-text font-medium">{user.name}</TableCell>
-            <TableCell className="text-tactical-text/80">{user.username || 'N/A'}</TableCell>
             <TableCell className="text-tactical-text/80">{user.email}</TableCell>
             <TableCell className="text-tactical-text/80">{user.companyName}</TableCell>
             <TableCell>

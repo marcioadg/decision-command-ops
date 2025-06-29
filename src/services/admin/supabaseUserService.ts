@@ -15,18 +15,49 @@ export const supabaseUserService = {
 
       if (error) throw error;
 
-      return data?.map(profile => ({
-        id: profile.id,
-        name: profile.name,
-        username: profile.username || '',
-        email: `${profile.username}@${profile.companies?.name || 'unknown'}.com`, // This is a placeholder
-        companyId: profile.company_id || '',
-        companyName: profile.companies?.name || 'No Company',
-        role: profile.role as 'user' | 'company_admin',
-        isActive: true, // This would need to be tracked separately
-        createdAt: new Date(profile.created_at).toISOString(),
-        updatedAt: new Date(profile.updated_at).toISOString()
-      })) || [];
+      // Get user emails from auth metadata
+      const usersWithEmails = await Promise.all(
+        (data || []).map(async (profile) => {
+          try {
+            // For admin users, we can get email from the auth.users table via RPC
+            // For now, we'll use a placeholder until we implement proper email fetching
+            let email = 'user@example.com';
+            
+            // Try to get the actual email from Supabase auth
+            const { data: authData } = await supabase.auth.admin.getUserById(profile.id);
+            if (authData?.user?.email) {
+              email = authData.user.email;
+            }
+
+            return {
+              id: profile.id,
+              name: profile.name,
+              email: email,
+              companyId: profile.company_id || '',
+              companyName: profile.companies?.name || 'No Company',
+              role: profile.role as 'user' | 'company_admin',
+              isActive: true, // This would need to be tracked separately
+              createdAt: new Date(profile.created_at).toISOString(),
+              updatedAt: new Date(profile.updated_at).toISOString()
+            };
+          } catch (emailError) {
+            // If we can't fetch the email, use a placeholder
+            return {
+              id: profile.id,
+              name: profile.name,
+              email: `${profile.name.toLowerCase().replace(/\s+/g, '.')}@${profile.companies?.name?.toLowerCase().replace(/\s+/g, '') || 'unknown'}.com`,
+              companyId: profile.company_id || '',
+              companyName: profile.companies?.name || 'No Company',
+              role: profile.role as 'user' | 'company_admin',
+              isActive: true,
+              createdAt: new Date(profile.created_at).toISOString(),
+              updatedAt: new Date(profile.updated_at).toISOString()
+            };
+          }
+        })
+      );
+
+      return usersWithEmails;
     } catch (error) {
       console.error('Error fetching users:', error);
       throw error;
@@ -39,7 +70,6 @@ export const supabaseUserService = {
         .from('profiles')
         .update({
           name: data.name,
-          username: data.username,
           company_id: data.companyId,
           role: data.role
         })
@@ -55,11 +85,21 @@ export const supabaseUserService = {
       // Log the update
       await this.logAuditEvent('update', 'user', id, data);
 
+      // Get email for the updated user
+      let email = data.email || 'user@example.com';
+      try {
+        const { data: authData } = await supabase.auth.admin.getUserById(profile.id);
+        if (authData?.user?.email) {
+          email = authData.user.email;
+        }
+      } catch (emailError) {
+        console.log('Could not fetch email for user:', emailError);
+      }
+
       return {
         id: profile.id,
         name: profile.name,
-        username: profile.username || '',
-        email: `${profile.username}@${profile.companies?.name || 'unknown'}.com`,
+        email: email,
         companyId: profile.company_id || '',
         companyName: profile.companies?.name || 'No Company',
         role: profile.role as 'user' | 'company_admin',

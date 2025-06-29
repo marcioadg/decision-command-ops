@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -24,7 +25,6 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
   
   const [signUpForm, setSignUpForm] = useState({
     name: '',
-    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -97,8 +97,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
       const { error } = await signUp(
         signUpForm.email, 
         signUpForm.password, 
-        signUpForm.name,
-        signUpForm.username || undefined
+        signUpForm.name
       );
       
       if (error) {
@@ -114,13 +113,11 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
         });
         setSignUpForm({
           name: '',
-          username: '',
           email: '',
           password: '',
           confirmPassword: ''
         });
         onClose();
-        // Note: After email verification, user will be redirected to dashboard automatically
       }
     } catch (error) {
       toast({
@@ -200,15 +197,6 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
                   onChange={(e) => setSignUpForm({ ...signUpForm, name: e.target.value })}
                   className="bg-tactical-bg border-tactical-border text-tactical-text placeholder:text-tactical-text/50"
                   required
-                />
-              </div>
-              <div>
-                <Input
-                  type="text"
-                  placeholder="Username (optional)"
-                  value={signUpForm.username}
-                  onChange={(e) => setSignUpForm({ ...signUpForm, username: e.target.value })}
-                  className="bg-tactical-bg border-tactical-border text-tactical-text placeholder:text-tactical-text/50"
                 />
               </div>
               <div>

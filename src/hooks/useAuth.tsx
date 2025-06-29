@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 interface UserProfile {
   id: string;
   name: string;
-  username: string | null;
   role: 'user' | 'admin' | 'company_admin';
   created_at: string;
   updated_at: string;
@@ -16,7 +15,7 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   session: Session | null;
-  signUp: (email: string, password: string, name: string, username?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
@@ -48,7 +47,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (data) {
         console.log('User profile loaded:', data);
-        // Type assertion to ensure role is properly typed
         const typedProfile: UserProfile = {
           ...data,
           role: data.role as 'user' | 'admin' | 'company_admin'
@@ -64,7 +62,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   useEffect(() => {
     console.log('Setting up auth state listener');
     
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.email);
@@ -73,7 +70,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         
         if (session?.user) {
           console.log('User authenticated, fetching profile');
-          // Defer profile fetching to avoid blocking the auth state change
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 0);
@@ -86,7 +82,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session?.user?.email);
       setSession(session);
@@ -104,7 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, name: string, username?: string) => {
+  const signUp = async (email: string, password: string, name: string) => {
     const redirectUrl = `${window.location.origin}/dashboard`;
     
     const { error } = await supabase.auth.signUp({
@@ -114,7 +109,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         emailRedirectTo: redirectUrl,
         data: {
           name,
-          username,
           role: 'user'
         }
       }
@@ -159,7 +153,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const enhancedUser = user && profile ? {
     ...user,
     name: profile.name,
-    username: profile.username,
     role: profile.role
   } : user;
 

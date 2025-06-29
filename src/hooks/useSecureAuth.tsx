@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 interface UserProfile {
   id: string;
   name: string;
-  username: string | null;
   role: 'user' | 'admin' | 'company_admin';
   company_id: string | null;
   created_at: string;
@@ -17,7 +16,7 @@ interface SecureAuthContextType {
   user: User | null;
   profile: UserProfile | null;
   session: Session | null;
-  signUp: (email: string, password: string, name: string, username?: string) => Promise<{ error: any }>;
+  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
   isLoading: boolean;
@@ -84,7 +83,6 @@ export const SecureAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         setProfile(typedProfile);
         setError(null);
         
-        // Log successful profile load
         await logAuthEvent('profile_loaded', { userId });
       }
     } catch (error) {
@@ -116,7 +114,6 @@ export const SecureAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
           console.log('User authenticated, fetching profile');
           await fetchUserProfile(session.user.id);
           
-          // Log authentication events
           if (event === 'SIGNED_IN') {
             await logAuthEvent('sign_in', { email: session.user.email });
           }
@@ -134,7 +131,6 @@ export const SecureAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       console.log('Initial session check:', session?.user?.email);
       setSession(session);
@@ -150,7 +146,7 @@ export const SecureAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return () => subscription.unsubscribe();
   }, []);
 
-  const signUp = async (email: string, password: string, name: string, username?: string) => {
+  const signUp = async (email: string, password: string, name: string) => {
     const redirectUrl = `${window.location.origin}/`;
     
     const { error } = await supabase.auth.signUp({
@@ -160,7 +156,6 @@ export const SecureAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
         emailRedirectTo: redirectUrl,
         data: {
           name,
-          username,
           role: 'user'
         }
       }
@@ -194,10 +189,8 @@ export const SecureAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const signOut = async () => {
     console.log('Signing out user');
     
-    // Log logout before clearing state
     await logAuthEvent('sign_out_attempt');
     
-    // Clear any admin data from localStorage for security
     const localStorageKeys = Object.keys(localStorage);
     localStorageKeys.forEach(key => {
       if (key.includes('admin') || key.includes('company') || key.includes('tactical')) {
@@ -220,11 +213,9 @@ export const SecureAuthProvider: React.FC<{ children: React.ReactNode }> = ({ ch
     return profile?.role === 'admin' || profile?.role === 'company_admin';
   };
 
-  // Enhanced user object for backwards compatibility
   const enhancedUser = user && profile ? {
     ...user,
     name: profile.name,
-    username: profile.username,
     role: profile.role,
     company_id: profile.company_id
   } : user;

@@ -2,7 +2,6 @@
 export interface AdminUser {
   id: string;
   name: string;
-  username: string;
   email: string;
   companyId: string;
   companyName: string;
@@ -15,7 +14,6 @@ export interface AdminUser {
 
 export interface CreateAdminUserData {
   name: string;
-  username: string;
   email: string;
   companyId: string;
   role: 'user' | 'company_admin';

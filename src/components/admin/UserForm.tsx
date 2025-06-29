@@ -16,7 +16,6 @@ interface UserFormProps {
 export const UserForm = ({ editingUser, companies, onSubmit, onCancel }: UserFormProps) => {
   const [formData, setFormData] = useState<CreateAdminUserData>({
     name: editingUser?.name || '',
-    username: editingUser?.username || '',
     email: editingUser?.email || '',
     companyId: editingUser?.companyId || '',
     role: editingUser?.role || 'user',
@@ -35,15 +34,6 @@ export const UserForm = ({ editingUser, companies, onSubmit, onCancel }: UserFor
           placeholder="Full Name"
           value={formData.name}
           onChange={(e) => setFormData({...formData, name: e.target.value})}
-          className="bg-tactical-bg border-tactical-border text-tactical-text"
-          required
-        />
-      </div>
-      <div>
-        <Input
-          placeholder="Username"
-          value={formData.username}
-          onChange={(e) => setFormData({...formData, username: e.target.value})}
           className="bg-tactical-bg border-tactical-border text-tactical-text"
           required
         />
