@@ -25,7 +25,7 @@ export const ReflectionScheduling = () => {
           priority: 'medium' as const,
           stage: decision.stage,
           confidence: decision.confidence || 50,
-          owner: user?.name || 'User',
+          owner: (user as any)?.name || 'User',
           notes: `Created during onboarding. Reflection scheduled for 1 ${decision.reflectionInterval}.`
         };
         await createDecision(newDecision);
