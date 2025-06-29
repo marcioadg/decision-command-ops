@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -7,17 +7,19 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Plus, Edit, Trash2, Users, ToggleLeft, ToggleRight } from 'lucide-react';
-import { userService } from '@/services/admin/userService';
+import { supabaseUserService } from '@/services/admin/supabaseUserService';
 import { companyService } from '@/services/admin/companyService';
 import { AdminUser, CreateAdminUserData } from '@/types/admin/AdminUser';
 import { useToast } from '@/hooks/use-toast';
 
 export const UserManager = () => {
-  const [users, setUsers] = useState<AdminUser[]>(userService.getAll());
+  const [users, setUsers] = useState<AdminUser[]>([]);
   const [companies] = useState(companyService.getAll());
   const [editingUser, setEditingUser] = useState<AdminUser | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [filterCompany, setFilterCompany] = useState<string>('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
   const [formData, setFormData] = useState<CreateAdminUserData>({
@@ -28,6 +30,30 @@ export const UserManager = () => {
     role: 'user',
     password: '',
   });
+
+  // Load users from Supabase on component mount
+  useEffect(() => {
+    loadUsers();
+  }, []);
+
+  const loadUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const fetchedUsers = await supabaseUserService.getAll();
+      setUsers(fetchedUsers);
+    } catch (err) {
+      console.error('Error loading users:', err);
+      setError('Failed to load users. Please try again.');
+      toast({
+        title: "Error",
+        description: "Failed to load users from database.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const resetForm = () => {
     setFormData({
@@ -41,30 +67,41 @@ export const UserManager = () => {
     setEditingUser(null);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (editingUser) {
-      const { password, ...updateData } = formData;
-      const updated = userService.update(editingUser.id, updateData);
-      if (updated) {
-        setUsers(userService.getAll());
+    try {
+      if (editingUser) {
+        const { password, ...updateData } = formData;
+        const updated = await supabaseUserService.update(editingUser.id, updateData);
+        if (updated) {
+          await loadUsers(); // Reload users from database
+          toast({
+            title: "User Updated",
+            description: `${formData.name} has been updated successfully.`,
+          });
+        }
+      } else {
+        // Note: User creation via admin panel would require additional Supabase Auth setup
+        // For now, we'll show a message that users need to sign up through the normal flow
         toast({
-          title: "User Updated",
-          description: `${formData.name} has been updated successfully.`,
+          title: "User Creation",
+          description: "Users must sign up through the normal registration process. Admin user creation coming soon.",
+          variant: "destructive",
         });
+        return;
       }
-    } else {
-      userService.create(formData);
-      setUsers(userService.getAll());
+      
+      setIsDialogOpen(false);
+      resetForm();
+    } catch (err) {
+      console.error('Error saving user:', err);
       toast({
-        title: "User Created",
-        description: `${formData.name} has been created successfully.`,
+        title: "Error",
+        description: "Failed to save user. Please try again.",
+        variant: "destructive",
       });
     }
-    
-    setIsDialogOpen(false);
-    resetForm();
   };
 
   const handleEdit = (user: AdminUser) => {
@@ -80,30 +117,58 @@ export const UserManager = () => {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (user: AdminUser) => {
+  const handleDelete = async (user: AdminUser) => {
     if (confirm(`Are you sure you want to delete ${user.name}?`)) {
-      userService.delete(user.id);
-      setUsers(userService.getAll());
-      toast({
-        title: "User Deleted",
-        description: `${user.name} has been deleted.`,
-        variant: "destructive",
-      });
+      try {
+        await supabaseUserService.delete(user.id);
+        await loadUsers(); // Reload users from database
+        toast({
+          title: "User Deleted",
+          description: `${user.name} has been deleted.`,
+          variant: "destructive",
+        });
+      } catch (err) {
+        console.error('Error deleting user:', err);
+        toast({
+          title: "Error",
+          description: "Failed to delete user. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
-  };
-
-  const handleToggleActive = (user: AdminUser) => {
-    userService.toggleActive(user.id);
-    setUsers(userService.getAll());
-    toast({
-      title: `User ${user.isActive ? 'Deactivated' : 'Activated'}`,
-      description: `${user.name} has been ${user.isActive ? 'deactivated' : 'activated'}.`,
-    });
   };
 
   const filteredUsers = filterCompany === 'all' 
     ? users 
     : users.filter(u => u.companyId === filterCompany);
+
+  if (loading) {
+    return (
+      <Card className="tactical-card">
+        <CardContent className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <div className="w-8 h-8 border-2 border-red-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <p className="text-tactical-text font-mono">Loading users...</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="tactical-card">
+        <CardContent className="flex items-center justify-center py-8">
+          <div className="text-center">
+            <p className="text-red-400 font-mono mb-4">{error}</p>
+            <Button onClick={loadUsers} className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg">
+              Retry
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="tactical-card">
@@ -111,7 +176,7 @@ export const UserManager = () => {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2 text-tactical-accent">
             <Users className="h-5 w-5" />
-            User Management
+            User Management ({users.length} users)
           </CardTitle>
           <div className="flex gap-4">
             <Select value={filterCompany} onValueChange={setFilterCompany}>
@@ -127,6 +192,9 @@ export const UserManager = () => {
                 ))}
               </SelectContent>
             </Select>
+            <Button onClick={loadUsers} variant="outline" className="border-tactical-border text-tactical-text hover:bg-tactical-bg">
+              Refresh
+            </Button>
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
               <DialogTrigger asChild>
                 <Button 
@@ -170,6 +238,7 @@ export const UserManager = () => {
                       onChange={(e) => setFormData({...formData, email: e.target.value})}
                       className="bg-tactical-bg border-tactical-border text-tactical-text"
                       required
+                      disabled={editingUser ? true : false} // Can't change email for existing users
                     />
                   </div>
                   <div>
@@ -205,8 +274,11 @@ export const UserManager = () => {
                         value={formData.password}
                         onChange={(e) => setFormData({...formData, password: e.target.value})}
                         className="bg-tactical-bg border-tactical-border text-tactical-text"
-                        required
+                        disabled
                       />
+                      <p className="text-xs text-tactical-text/60 mt-1">
+                        User creation through admin panel coming soon. Users must register normally.
+                      </p>
                     </div>
                   )}
                   <div className="flex gap-2">
@@ -221,6 +293,7 @@ export const UserManager = () => {
                     <Button 
                       type="submit"
                       className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg"
+                      disabled={!editingUser} // Only allow updates for now
                     >
                       {editingUser ? 'Update' : 'Create'}
                     </Button>
@@ -241,6 +314,7 @@ export const UserManager = () => {
               <TableHead className="text-tactical-accent">Company</TableHead>
               <TableHead className="text-tactical-accent">Role</TableHead>
               <TableHead className="text-tactical-accent">Status</TableHead>
+              <TableHead className="text-tactical-accent">Created</TableHead>
               <TableHead className="text-tactical-accent">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -248,7 +322,7 @@ export const UserManager = () => {
             {filteredUsers.map((user) => (
               <TableRow key={user.id}>
                 <TableCell className="text-tactical-text font-medium">{user.name}</TableCell>
-                <TableCell className="text-tactical-text/80">{user.username}</TableCell>
+                <TableCell className="text-tactical-text/80">{user.username || 'N/A'}</TableCell>
                 <TableCell className="text-tactical-text/80">{user.email}</TableCell>
                 <TableCell className="text-tactical-text/80">{user.companyName}</TableCell>
                 <TableCell>
@@ -265,16 +339,11 @@ export const UserManager = () => {
                     {user.isActive ? 'ACTIVE' : 'INACTIVE'}
                   </span>
                 </TableCell>
+                <TableCell className="text-tactical-text/60 text-xs">
+                  {new Date(user.createdAt).toLocaleDateString()}
+                </TableCell>
                 <TableCell>
                   <div className="flex gap-2">
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => handleToggleActive(user)}
-                      className="border-tactical-border text-tactical-text hover:bg-tactical-bg"
-                    >
-                      {user.isActive ? <ToggleRight className="h-3 w-3" /> : <ToggleLeft className="h-3 w-3" />}
-                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -299,7 +368,7 @@ export const UserManager = () => {
         </Table>
         {filteredUsers.length === 0 && (
           <div className="text-center py-8 text-tactical-text/60">
-            No users found. Create your first user to get started.
+            No users found. {filterCompany !== 'all' ? 'Try changing the company filter.' : 'Users will appear here when they register.'}
           </div>
         )}
       </CardContent>
