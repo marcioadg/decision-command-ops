@@ -11,6 +11,7 @@ import Home from "./pages/Home";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
 import Admin from "./pages/Admin";
+import Onboarding from "./pages/Onboarding";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -27,6 +28,16 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Home />} />
                 <Route path="/login" element={<Login />} />
+                <Route 
+                  path="/onboarding" 
+                  element={
+                    <ErrorBoundary>
+                      <ProtectedRoute>
+                        <Onboarding />
+                      </ProtectedRoute>
+                    </ErrorBoundary>
+                  } 
+                />
                 <Route 
                   path="/dashboard" 
                   element={
