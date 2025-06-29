@@ -106,34 +106,35 @@ export const PersonalityQuiz = () => {
   const isComplete = Object.values(answers).every(answer => answer !== '');
 
   return (
-    <div className="space-y-8">
-      <div className="text-center">
-        <h2 className="text-3xl font-bold text-tactical-accent font-tactical mb-4">
+    <div className="space-y-6 md:space-y-8">
+      <div className="text-center px-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-tactical-accent font-tactical mb-3 md:mb-4">
           Choose Your Command Style
         </h2>
-        <p className="text-tactical-text/80">
+        <p className="text-tactical-text/80 text-sm md:text-base">
           Select your operational preferences
         </p>
       </div>
 
-      <div className="bg-tactical-surface border border-tactical-border rounded-lg p-8">
-        <div className="space-y-6">
+      <div className="bg-tactical-surface border border-tactical-border rounded-lg p-4 md:p-8 mx-4 md:mx-0">
+        <div className="space-y-6 md:space-y-6">
           {questions.map((question, index) => (
-            <div key={question.id} className="flex items-center justify-between">
-              <div className="flex items-center space-x-4">
-                <span className="text-tactical-accent font-mono text-sm w-6">
+            <div key={question.id} className="space-y-3 md:space-y-0 md:flex md:items-center md:justify-between">
+              <div className="flex items-center space-x-3 md:space-x-4">
+                <span className="text-tactical-accent font-mono text-sm w-6 flex-shrink-0">
                   {index + 1}.
                 </span>
-                <span className="text-tactical-text font-mono text-sm uppercase tracking-wider min-w-32">
+                <span className="text-tactical-text font-mono text-xs md:text-sm uppercase tracking-wider md:min-w-32">
                   {question.question}
                 </span>
               </div>
-              <div className="flex space-x-3">
+              
+              <div className="flex flex-wrap gap-2 md:gap-3 md:flex-nowrap">
                 {question.options.map((option) => (
                   <button
                     key={option.value}
                     onClick={() => handleAnswerChange(question.id as keyof QuizAnswers, option.value)}
-                    className={`px-4 py-2 rounded border font-mono text-xs uppercase tracking-wider transition-all duration-200 ${
+                    className={`flex-1 md:flex-none px-3 md:px-4 py-3 md:py-2 rounded border font-mono text-xs uppercase tracking-wider transition-all duration-200 min-h-[44px] md:min-h-0 ${
                       answers[question.id as keyof QuizAnswers] === option.value
                         ? 'bg-tactical-accent text-tactical-bg border-tactical-accent'
                         : 'bg-tactical-bg text-tactical-text border-tactical-border hover:border-tactical-accent/50'
@@ -148,14 +149,14 @@ export const PersonalityQuiz = () => {
         </div>
       </div>
 
-      <div className="flex justify-between pt-6">
-        <Button variant="outline" onClick={prevStep}>
+      <div className="flex justify-between pt-4 md:pt-6 px-4 md:px-0">
+        <Button variant="outline" onClick={prevStep} className="min-h-[44px]">
           Back
         </Button>
         <Button 
           onClick={handleNext}
           disabled={!isComplete}
-          className="bg-tactical-accent hover:bg-tactical-accent/90"
+          className="bg-tactical-accent hover:bg-tactical-accent/90 min-h-[44px]"
         >
           Analyze Results
         </Button>

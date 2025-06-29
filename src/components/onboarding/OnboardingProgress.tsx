@@ -9,10 +9,10 @@ export const OnboardingProgress = () => {
     <div className="w-full bg-tactical-surface border-b border-tactical-border">
       <div className="max-w-2xl mx-auto px-4 py-3">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-tactical-accent font-mono text-sm uppercase tracking-wider">
+          <span className="text-tactical-accent font-mono text-xs md:text-sm uppercase tracking-wider">
             Mission Progress
           </span>
-          <span className="text-tactical-text/60 font-mono text-sm">
+          <span className="text-tactical-text/60 font-mono text-xs md:text-sm">
             {currentStep}/{totalSteps}
           </span>
         </div>
