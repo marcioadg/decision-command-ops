@@ -14,7 +14,7 @@ interface OnboardingDecision {
   title: string;
   category: DecisionCategory;
   stage: DecisionStage;
-  confidence?: number;
+  confidence: number;
   reflectionInterval?: 'week' | 'month' | 'quarter';
 }
 
