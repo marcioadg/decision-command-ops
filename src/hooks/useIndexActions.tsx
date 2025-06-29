@@ -36,18 +36,37 @@ export const useIndexActions = () => {
   }, [createDecision]);
 
   const handleArchive = useCallback(async (decision: Decision) => {
+    console.log('useIndexActions: handleArchive called for decision:', decision.id);
     try {
       const updatedDecision: Decision = {
         ...decision,
         archived: !decision.archived,
         updatedAt: new Date()
       };
+      
+      console.log('useIndexActions: Archiving decision with optimistic update');
       await updateDecision(updatedDecision);
+      
+      // Explicitly refresh decisions to ensure UI consistency
+      console.log('useIndexActions: Refreshing decisions after archive');
+      refreshDecisions();
+      
       soundSystem.playArchive();
+      
+      toast({
+        title: updatedDecision.archived ? "Decision Archived" : "Decision Restored",
+        description: `"${decision.title}" has been ${updatedDecision.archived ? 'archived' : 'restored'}.`
+      });
     } catch (error) {
-      // Error is already handled in the hook
+      console.error('useIndexActions: Error in handleArchive:', error);
+      // Error is already handled in the hook, but add specific toast for archive failures
+      toast({
+        title: "Archive Failed",
+        description: `Failed to ${decision.archived ? 'restore' : 'archive'} "${decision.title}". Please try again.`,
+        variant: "destructive"
+      });
     }
-  }, [updateDecision]);
+  }, [updateDecision, refreshDecisions, toast]);
 
   const handleLogout = useCallback(() => {
     signOut();
