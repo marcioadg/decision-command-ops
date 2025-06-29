@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Decision, DecisionCategory, DecisionPriority, DecisionStage } from '@/types/Decision';
+import { migrationService } from './decision/migrationService';
 
 // Network utility functions
 const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
@@ -114,31 +115,36 @@ const calculateReflectionDates = (createdAt: Date) => {
 };
 
 export const secureDecisionService = {
-  // Get all decisions for user's company
+  // Get all decisions - supports both personal and company-based decisions
   async getDecisions(): Promise<Decision[]> {
     try {
-      console.log('Starting to fetch company decisions...');
+      console.log('Starting to fetch decisions...');
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's profile to find company_id
+      // Try to get user's profile to find company_id (gracefully handle if no company)
       const { data: profile } = await supabase
         .from('profiles')
         .select('company_id')
         .eq('id', user.id)
         .single();
 
-      if (!profile?.company_id) {
-        throw new Error('User not assigned to a company');
-      }
-
       const result = await retryRequest(async () => {
-        const { data, error } = await supabase
+        let query = supabase
           .from('decisions')
           .select('*')
-          .eq('company_id', profile.company_id)
           .order('created_at', { ascending: false });
+
+        // If user has a company, get company decisions
+        // If no company, get personal decisions (where user_id matches and company_id is null)
+        if (profile?.company_id) {
+          query = query.eq('company_id', profile.company_id);
+        } else {
+          query = query.eq('user_id', user.id).is('company_id', null);
+        }
+
+        const { data, error } = await query;
 
         if (error) {
           console.error('Supabase error fetching decisions:', error);
@@ -148,7 +154,7 @@ export const secureDecisionService = {
         return data;
       });
 
-      console.log(`Successfully fetched ${result?.length || 0} company decisions`);
+      console.log(`Successfully fetched ${result?.length || 0} decisions`);
       return result?.map(convertToDecision) || [];
     } catch (error) {
       console.error('Error in getDecisions:', error);
@@ -161,24 +167,20 @@ export const secureDecisionService = {
     }
   },
 
-  // Create new decision
+  // Create new decision - supports both personal and company-based decisions
   async createDecision(decision: Omit<Decision, 'id' | 'createdAt'>): Promise<Decision> {
     try {
-      console.log('Creating new company decision:', decision.title);
+      console.log('Creating new decision:', decision.title);
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      // Get user's profile to find company_id
+      // Get user's profile to find company_id (if any)
       const { data: profile } = await supabase
         .from('profiles')
         .select('company_id')
         .eq('id', user.id)
         .single();
-
-      if (!profile?.company_id) {
-        throw new Error('User not assigned to a company');
-      }
 
       const now = new Date();
       const newDecision = { ...decision, id: '', createdAt: now };
@@ -202,7 +204,7 @@ export const secureDecisionService = {
       const dbDecision = {
         ...convertToDbDecision(newDecision),
         user_id: user.id,
-        company_id: profile.company_id
+        company_id: profile?.company_id || null // Allow null for personal decisions
       };
 
       const result = await retryRequest(async () => {
@@ -220,7 +222,7 @@ export const secureDecisionService = {
         return data;
       });
 
-      console.log('Successfully created company decision:', result.id);
+      console.log('Successfully created decision:', result.id);
       return convertToDecision(result);
     } catch (error) {
       console.error('Error in createDecision:', error);
@@ -236,7 +238,7 @@ export const secureDecisionService = {
   // Update existing decision
   async updateDecision(decision: Decision): Promise<Decision> {
     try {
-      console.log('Updating company decision:', decision.id);
+      console.log('Updating decision:', decision.id);
       
       // Auto-set reflection dates if moving to 'decided' stage for the first time
       if (decision.stage === 'decided' && !decision.reflection?.sevenDay) {
@@ -272,7 +274,7 @@ export const secureDecisionService = {
         return data;
       });
 
-      console.log('Successfully updated company decision:', result.id);
+      console.log('Successfully updated decision:', result.id);
       return convertToDecision(result);
     } catch (error) {
       console.error('Error in updateDecision:', error);
@@ -288,7 +290,7 @@ export const secureDecisionService = {
   // Delete decision
   async deleteDecision(id: string): Promise<void> {
     try {
-      console.log('Deleting company decision:', id);
+      console.log('Deleting decision:', id);
       
       await retryRequest(async () => {
         const { error } = await supabase
@@ -302,9 +304,77 @@ export const secureDecisionService = {
         }
       });
 
-      console.log('Successfully deleted company decision:', id);
+      console.log('Successfully deleted decision:', id);
     } catch (error) {
       console.error('Error in deleteDecision:', error);
+      
+      if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
+        throw new Error('Network connection failed. Please check your internet connection and try again.');
+      }
+      
+      throw error;
+    }
+  },
+
+  // Migrate localStorage decisions - updated to handle both personal and company contexts
+  async migrateLocalStorageDecisions(): Promise<number> {
+    try {
+      console.log('Starting localStorage migration with flexible company support...');
+      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const savedDecisions = localStorage.getItem('tactical-decisions');
+      if (!savedDecisions) {
+        console.log('No localStorage decisions found');
+        return 0;
+      }
+
+      // Get user's profile to determine company context
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('id', user.id)
+        .single();
+
+      const localDecisions: Decision[] = JSON.parse(savedDecisions).map((d: any) => ({
+        ...d,
+        createdAt: new Date(d.createdAt),
+        updatedAt: d.updatedAt ? new Date(d.updatedAt) : undefined,
+        // Convert old reflection structure to new one
+        reflection: d.reflection ? {
+          questions: d.reflection.questions || [],
+          sevenDay: d.reflection.reminderDate ? {
+            date: new Date(d.reflection.reminderDate),
+            completed: d.reflection.answers?.length > 0,
+            answers: d.reflection.answers || []
+          } : undefined
+        } : undefined
+      }));
+
+      const dbDecisions = localDecisions.map(decision => ({
+        ...convertToDbDecision(decision),
+        user_id: user.id,
+        company_id: profile?.company_id || null // Support both company and personal decisions
+      }));
+
+      await retryRequest(async () => {
+        const { error } = await supabase
+          .from('decisions')
+          .insert(dbDecisions);
+
+        if (error) {
+          console.error('Supabase error migrating decisions:', error);
+          throw error;
+        }
+      });
+
+      // Clear localStorage after successful migration
+      localStorage.removeItem('tactical-decisions');
+      console.log(`Successfully migrated ${localDecisions.length} decisions`);
+      return localDecisions.length;
+    } catch (error) {
+      console.error('Error in migrateLocalStorageDecisions:', error);
       
       if (error instanceof TypeError && error.message.includes('Failed to fetch')) {
         throw new Error('Network connection failed. Please check your internet connection and try again.');

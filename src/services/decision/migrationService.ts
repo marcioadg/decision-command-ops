@@ -5,7 +5,7 @@ import { convertToDbDecision } from './conversionUtils';
 import { retryRequest, handleNetworkError } from './networkUtils';
 
 export const migrationService = {
-  // Migrate localStorage decisions to database
+  // Migrate localStorage decisions to database - updated for flexible company support
   async migrateLocalStorageDecisions(): Promise<number> {
     try {
       console.log('Starting localStorage migration...');
@@ -18,6 +18,13 @@ export const migrationService = {
         console.log('No localStorage decisions found');
         return 0;
       }
+
+      // Get user's profile to determine company context (gracefully handle no company)
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('company_id')
+        .eq('id', user.id)
+        .single();
 
       const localDecisions: Decision[] = JSON.parse(savedDecisions).map((d: any) => ({
         ...d,
@@ -36,7 +43,8 @@ export const migrationService = {
 
       const dbDecisions = localDecisions.map(decision => ({
         ...convertToDbDecision(decision),
-        user_id: user.id
+        user_id: user.id,
+        company_id: profile?.company_id || null // Support both company and personal decisions
       }));
 
       await retryRequest(async () => {
