@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -45,12 +44,6 @@ export const ReflectionScheduling = () => {
       
       // Mark onboarding as completed
       await completeOnboarding();
-      
-      // Show success message
-      toast({
-        title: "MISSION COMPLETE",
-        description: "Welcome to Decision Command. Your tactical dashboard is ready.",
-      });
       
       // Navigate to dashboard
       navigate('/dashboard');

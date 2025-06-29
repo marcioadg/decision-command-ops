@@ -57,10 +57,6 @@ export const useDecisionCRUD = ({
         ));
       }
       
-      toast({
-        title: "Decision Created",
-        description: `"${newDecision.title}" has been added to your pipeline.`
-      });
       return newDecision;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create decision';
@@ -119,11 +115,6 @@ export const useDecisionCRUD = ({
       if (!isRealTimeConnected) {
         setDecisions(prev => prev.filter(d => d.id !== id));
       }
-      
-      toast({
-        title: "Decision Deleted",
-        description: "The decision has been removed from your pipeline."
-      });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to delete decision';
       console.error('Error deleting decision:', err);

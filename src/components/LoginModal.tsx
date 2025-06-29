@@ -46,10 +46,6 @@ export const LoginModal = ({ isOpen, onClose, defaultTab = 'signin' }: LoginModa
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "ACCESS GRANTED",
-          description: "Welcome to the Tactical Decision Pipeline",
-        });
         onClose();
         
         // Navigate to dashboard or admin based on user role
@@ -107,10 +103,6 @@ export const LoginModal = ({ isOpen, onClose, defaultTab = 'signin' }: LoginModa
           variant: "destructive",
         });
       } else {
-        toast({
-          title: "ACCOUNT CREATED",
-          description: "Please check your email to verify your account",
-        });
         setSignUpForm({
           name: '',
           email: '',

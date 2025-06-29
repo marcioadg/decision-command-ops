@@ -52,11 +52,6 @@ export const useIndexActions = () => {
       refreshDecisions();
       
       soundSystem.playArchive();
-      
-      toast({
-        title: updatedDecision.archived ? "Decision Archived" : "Decision Restored",
-        description: `"${decision.title}" has been ${updatedDecision.archived ? 'archived' : 'restored'}.`
-      });
     } catch (error) {
       console.error('useIndexActions: Error in handleArchive:', error);
       // Error is already handled in the hook, but add specific toast for archive failures
@@ -70,11 +65,7 @@ export const useIndexActions = () => {
 
   const handleLogout = useCallback(() => {
     signOut();
-    toast({
-      title: "SESSION TERMINATED",
-      description: "You have been logged out",
-    });
-  }, [signOut, toast]);
+  }, [signOut]);
 
   const handleRetry = useCallback(() => {
     console.log('Manual retry requested');

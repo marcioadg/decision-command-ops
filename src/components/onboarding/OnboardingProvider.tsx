@@ -64,12 +64,6 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const skipOnboarding = async () => {
     try {
       await completeOnboarding();
-      
-      toast({
-        title: "ONBOARDING SKIPPED",
-        description: "You can always complete your profile setup later from the dashboard.",
-      });
-      
       navigate('/dashboard');
     } catch (error) {
       console.error('Error skipping onboarding:', error);

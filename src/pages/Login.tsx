@@ -58,11 +58,6 @@ const Login = () => {
           description: error.message,
           variant: "destructive",
         });
-      } else {
-        toast({
-          title: "ACCESS GRANTED",
-          description: "Welcome to the Tactical Decision Pipeline",
-        });
       }
     } catch (error) {
       toast({
@@ -116,11 +111,6 @@ const Login = () => {
         });
       } else {
         console.log('Signup successful - redirecting to onboarding immediately');
-        
-        toast({
-          title: "Welcome Aboard!",
-          description: "Account created successfully. Starting onboarding...",
-        });
         
         // Clear the form
         setSignUpForm({

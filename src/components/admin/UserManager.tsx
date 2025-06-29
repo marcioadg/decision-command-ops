@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
@@ -57,10 +56,6 @@ export const UserManager = () => {
         const updated = await supabaseUserService.update(editingUser.id, updateData);
         if (updated) {
           await loadUsers();
-          toast({
-            title: "User Updated",
-            description: `${formData.name} has been updated successfully.`,
-          });
         }
       } else {
         toast({
