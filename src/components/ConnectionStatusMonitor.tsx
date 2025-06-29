@@ -1,12 +1,9 @@
-
 import { useEffect, useState, useRef } from 'react';
 import { Wifi, WifiOff, AlertTriangle } from 'lucide-react';
-
 interface ConnectionStatusMonitorProps {
   isRealTimeConnected: boolean;
   className?: string;
 }
-
 export const ConnectionStatusMonitor = ({
   isRealTimeConnected,
   className = ""
@@ -14,7 +11,6 @@ export const ConnectionStatusMonitor = ({
   const [connectionQuality, setConnectionQuality] = useState<'good' | 'poor' | 'offline'>('offline');
   const lastUpdateRef = useRef<Date | null>(null);
   const qualityCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
-
   useEffect(() => {
     if (isRealTimeConnected) {
       setConnectionQuality('good');
@@ -52,7 +48,6 @@ export const ConnectionStatusMonitor = ({
       }
     };
   }, [isRealTimeConnected]);
-
   const getStatusColor = () => {
     switch (connectionQuality) {
       case 'good':
@@ -65,7 +60,6 @@ export const ConnectionStatusMonitor = ({
         return 'text-gray-600';
     }
   };
-
   const getStatusIcon = () => {
     switch (connectionQuality) {
       case 'good':
@@ -78,7 +72,6 @@ export const ConnectionStatusMonitor = ({
         return <WifiOff className="w-3 h-3" />;
     }
   };
-
   const getStatusText = () => {
     switch (connectionQuality) {
       case 'good':
@@ -91,11 +84,5 @@ export const ConnectionStatusMonitor = ({
         return 'UNKNOWN';
     }
   };
-
-  return (
-    <div className={`flex items-center space-x-1 text-xs font-mono ${getStatusColor()} ${className}`}>
-      {getStatusIcon()}
-      <span>{getStatusText()}</span>
-    </div>
-  );
+  return;
 };
