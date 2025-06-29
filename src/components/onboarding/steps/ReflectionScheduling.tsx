@@ -41,58 +41,66 @@ export const ReflectionScheduling = () => {
   };
 
   return (
-    <div className="space-y-6 md:space-y-8 px-4 md:px-0">
+    <div className="space-y-8 md:space-y-12 px-4 md:px-0">
       <div className="text-center">
-        <h2 className="text-2xl md:text-3xl font-bold text-tactical-accent font-tactical mb-3 md:mb-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-tactical-accent font-tactical mb-4 md:mb-6">
           Mission Setup Complete
         </h2>
-        <p className="text-tactical-text/80 mb-4 text-sm md:text-base">
+        <p className="text-tactical-text/80 mb-6 md:mb-8 text-sm md:text-base">
           Your tactical decision pipeline is now configured and ready for deployment.
         </p>
         
         {personalityProfile && (
-          <div className="bg-tactical-surface border border-tactical-accent/30 rounded-lg p-4 md:p-6 mt-6">
-            <h3 className="text-tactical-accent font-semibold text-base md:text-lg mb-3">
+          <div className="bg-tactical-surface border border-tactical-accent/30 rounded-lg p-6 md:p-8 mt-8 md:mt-10">
+            <h3 className="text-tactical-accent font-semibold text-lg md:text-xl mb-6 md:mb-8">
               Command Profile: {personalityProfile.profileType}
             </h3>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4 text-sm">
-              <div className="flex justify-between sm:block">
-                <span className="text-tactical-text/60">Decision Speed:</span>
-                <span className="sm:ml-0 ml-2 text-tactical-text capitalize">{personalityProfile.decisionSpeed}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 md:gap-8 text-sm md:text-base">
+              <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <span className="text-tactical-text/60 font-medium">Decision Speed:</span>
+                <span className="text-tactical-text capitalize font-mono bg-tactical-bg px-3 py-1 rounded">
+                  {personalityProfile.decisionSpeed}
+                </span>
               </div>
-              <div className="flex justify-between sm:block">
-                <span className="text-tactical-text/60">Approach:</span>
-                <span className="sm:ml-0 ml-2 text-tactical-text capitalize">{personalityProfile.approach}</span>
+              <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <span className="text-tactical-text/60 font-medium">Approach:</span>
+                <span className="text-tactical-text capitalize font-mono bg-tactical-bg px-3 py-1 rounded">
+                  {personalityProfile.approach}
+                </span>
               </div>
-              <div className="flex justify-between sm:block">
-                <span className="text-tactical-text/60">Style:</span>
-                <span className="sm:ml-0 ml-2 text-tactical-text capitalize">{personalityProfile.style}</span>
+              <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <span className="text-tactical-text/60 font-medium">Style:</span>
+                <span className="text-tactical-text capitalize font-mono bg-tactical-bg px-3 py-1 rounded">
+                  {personalityProfile.style}
+                </span>
               </div>
-              <div className="flex justify-between sm:block">
-                <span className="text-tactical-text/60">Risk Tolerance:</span>
-                <span className="sm:ml-0 ml-2 text-tactical-text capitalize">{personalityProfile.riskTolerance}</span>
+              <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-center space-y-2 sm:space-y-0">
+                <span className="text-tactical-text/60 font-medium">Risk Tolerance:</span>
+                <span className="text-tactical-text capitalize font-mono bg-tactical-bg px-3 py-1 rounded">
+                  {personalityProfile.riskTolerance}
+                </span>
               </div>
             </div>
           </div>
         )}
 
         {decisions.length > 0 && (
-          <div className="bg-tactical-surface border border-tactical-border rounded-lg p-4 md:p-6 mt-6">
-            <h3 className="text-tactical-accent font-semibold text-base md:text-lg mb-3">
+          <div className="bg-tactical-surface border border-tactical-border rounded-lg p-6 md:p-8 mt-8 md:mt-10">
+            <h3 className="text-tactical-accent font-semibold text-lg md:text-xl mb-4 md:mb-6">
               Decision Backlog Loaded
             </h3>
-            <p className="text-tactical-text/80 text-sm mb-3">
+            <p className="text-tactical-text/80 text-sm md:text-base mb-6">
               {decisions.length} decision{decisions.length > 1 ? 's' : ''} ready for tactical analysis
             </p>
-            <div className="space-y-2">
+            <div className="space-y-4">
               {decisions.map((decision, index) => (
-                <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-sm space-y-1 sm:space-y-0">
-                  <span className="text-tactical-text">{decision.title}</span>
-                  <div className="flex items-center justify-between sm:justify-end space-x-2">
-                    <span className="text-tactical-accent font-mono text-xs">
+                <div key={index} className="flex flex-col sm:flex-row sm:justify-between sm:items-center text-sm md:text-base space-y-2 sm:space-y-0 p-3 bg-tactical-bg rounded border border-tactical-border/50">
+                  <span className="text-tactical-text font-medium">{decision.title}</span>
+                  <div className="flex items-center justify-between sm:justify-end space-x-4">
+                    <span className="text-tactical-accent font-mono text-xs md:text-sm bg-tactical-accent/10 px-2 py-1 rounded">
                       {decision.category}
                     </span>
-                    <span className="text-tactical-text/60 font-mono text-xs">
+                    <span className="text-tactical-text/60 font-mono text-xs md:text-sm">
                       {decision.confidence}%
                     </span>
                   </div>
@@ -103,19 +111,19 @@ export const ReflectionScheduling = () => {
         )}
       </div>
 
-      <div className="text-center">
-        <p className="text-tactical-text/60 mb-6 text-sm md:text-base">
+      <div className="text-center pt-6 md:pt-8">
+        <p className="text-tactical-text/60 mb-8 md:mb-10 text-sm md:text-base">
           Your command center is ready. Deploy to your tactical dashboard?
         </p>
         
-        <div className="flex flex-col sm:flex-row justify-between pt-4 md:pt-6 space-y-3 sm:space-y-0">
-          <Button variant="outline" onClick={prevStep} disabled={isCompleting} className="min-h-[44px] w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row justify-between space-y-4 sm:space-y-0">
+          <Button variant="outline" onClick={prevStep} disabled={isCompleting} className="min-h-[48px] px-8 w-full sm:w-auto">
             Back
           </Button>
           <Button 
             onClick={handleCompleteOnboarding}
             disabled={isCompleting}
-            className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-semibold px-6 md:px-8 min-h-[44px] w-full sm:w-auto"
+            className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-semibold px-8 min-h-[48px] w-full sm:w-auto"
           >
             {isCompleting ? 'DEPLOYING...' : 'DEPLOY TO DASHBOARD'}
           </Button>
