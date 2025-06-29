@@ -39,7 +39,7 @@ export const OnboardingProvider: React.FC<{ children: React.ReactNode }> = ({ ch
   const [personalityProfile, setPersonalityProfile] = useState<PersonalityProfile | null>(null);
   const [decisions, setDecisions] = useState<OnboardingDecision[]>([]);
   
-  const totalSteps = 5;
+  const totalSteps = 4;
 
   const nextStep = () => {
     if (currentStep < totalSteps) {

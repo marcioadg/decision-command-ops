@@ -4,7 +4,6 @@ import { useOnboarding } from './OnboardingProvider';
 import { MissionBrief } from './steps/MissionBrief';
 import { PersonalityQuiz } from './steps/PersonalityQuiz';
 import { DecisionCapture } from './steps/DecisionCapture';
-import { ConfidenceLevels } from './steps/ConfidenceLevels';
 import { ReflectionScheduling } from './steps/ReflectionScheduling';
 import { OnboardingProgress } from './OnboardingProgress';
 
@@ -20,8 +19,6 @@ export const OnboardingFlow = () => {
       case 3:
         return <DecisionCapture />;
       case 4:
-        return <ConfidenceLevels />;
-      case 5:
         return <ReflectionScheduling />;
       default:
         return <MissionBrief />;

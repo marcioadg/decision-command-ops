@@ -206,7 +206,7 @@ export const DecisionCapture = () => {
           disabled={validDecisionsCount === 0}
           className="bg-tactical-accent hover:bg-tactical-accent/90"
         >
-          Set Confidence Levels
+          Schedule Reflections
         </Button>
       </div>
     </div>
