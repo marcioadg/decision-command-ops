@@ -10,16 +10,24 @@ const Home = () => {
   const navigate = useNavigate();
   const { user, profile, isLoading } = useAuth();
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [loginModalDefaultTab, setLoginModalDefaultTab] = useState<'signin' | 'signup'>('signin');
 
   const handleGetStarted = () => {
     if (user) {
       navigate(profile?.role === 'admin' ? '/admin' : '/dashboard');
     } else {
+      setLoginModalDefaultTab('signup');
       setIsLoginModalOpen(true);
     }
   };
 
   const handleSignIn = () => {
+    setLoginModalDefaultTab('signin');
+    setIsLoginModalOpen(true);
+  };
+
+  const handleSignUp = () => {
+    setLoginModalDefaultTab('signup');
     setIsLoginModalOpen(true);
   };
 
@@ -67,7 +75,7 @@ const Home = () => {
                   SIGN IN
                 </Button>
                 <Button
-                  onClick={() => setIsLoginModalOpen(true)}
+                  onClick={handleSignUp}
                   className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-mono text-xs"
                   size="sm"
                 >
@@ -314,7 +322,8 @@ const Home = () => {
       {/* Login Modal */}
       <LoginModal 
         isOpen={isLoginModalOpen} 
-        onClose={() => setIsLoginModalOpen(false)} 
+        onClose={() => setIsLoginModalOpen(false)}
+        defaultTab={loginModalDefaultTab}
       />
     </div>
   );

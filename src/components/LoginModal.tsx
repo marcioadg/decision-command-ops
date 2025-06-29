@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,9 +10,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  defaultTab?: 'signin' | 'signup';
 }
 
-export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
+export const LoginModal = ({ isOpen, onClose, defaultTab = 'signin' }: LoginModalProps) => {
   const { signIn, signUp, profile } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -139,7 +139,7 @@ export const LoginModal = ({ isOpen, onClose }: LoginModalProps) => {
           </DialogTitle>
         </DialogHeader>
         
-        <Tabs defaultValue="signin" className="w-full">
+        <Tabs defaultValue={defaultTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 bg-tactical-bg border border-tactical-border">
             <TabsTrigger 
               value="signin" 
