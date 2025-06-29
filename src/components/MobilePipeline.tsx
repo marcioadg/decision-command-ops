@@ -4,10 +4,10 @@ import { Decision, DecisionStage } from '@/types/Decision';
 import { MobileStageView } from './MobileStageView';
 import { MobileStageNavigation } from './MobileStageNavigation';
 import { MoveDecisionSheet } from './MoveDecisionSheet';
+import { ConnectionStatus } from './ConnectionStatus';
 import { useOptimisticDecisions } from '@/hooks/useOptimisticDecisions';
 import { soundSystem } from '@/utils/soundSystem';
 import { useToast } from '@/hooks/use-toast';
-import { Wifi, WifiOff } from 'lucide-react';
 
 interface MobilePipelineProps {
   decisions: Decision[];
@@ -121,21 +121,7 @@ export const MobilePipeline = ({
     <div className="flex flex-col h-full">
       {/* Connection status */}
       <div className="flex items-center justify-end p-2">
-        <div className={`flex items-center space-x-1 text-xs font-mono ${
-          isRealTimeConnected ? 'text-impact-high' : 'text-tactical-text/40'
-        }`}>
-          {isRealTimeConnected ? (
-            <>
-              <Wifi className="w-3 h-3" />
-              <span>LIVE</span>
-            </>
-          ) : (
-            <>
-              <WifiOff className="w-3 h-3" />
-              <span>OFFLINE</span>
-            </>
-          )}
-        </div>
+        <ConnectionStatus isConnected={isRealTimeConnected} />
       </div>
 
       {/* Stage Navigation */}

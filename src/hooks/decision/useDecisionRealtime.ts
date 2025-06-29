@@ -12,6 +12,8 @@ interface UseDecisionRealtimeProps {
 export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeProps) => {
   const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
   const [pausedDecisionIds, setPausedDecisionIds] = useState<Set<string>>(new Set());
+  const [retryCount, setRetryCount] = useState(0);
+  const [reconnectTimer, setReconnectTimer] = useState<NodeJS.Timeout | null>(null);
 
   const pauseRealtimeForDecision = useCallback((decisionId: string, duration = 2000) => {
     console.log(`Pausing real-time updates for decision ${decisionId} for ${duration}ms`);
@@ -27,13 +29,32 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
     }, duration);
   }, []);
 
+  const attemptReconnection = useCallback(() => {
+    if (retryCount >= 5) {
+      console.log('Max reconnection attempts reached');
+      return;
+    }
+
+    const delay = Math.min(1000 * Math.pow(2, retryCount), 30000);
+    console.log(`Attempting real-time reconnection in ${delay}ms (attempt ${retryCount + 1}/5)`);
+    
+    const timer = setTimeout(() => {
+      setRetryCount(prev => prev + 1);
+    }, delay);
+    
+    setReconnectTimer(timer);
+  }, [retryCount]);
+
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      setIsRealTimeConnected(false);
+      return;
+    }
 
     console.log('Setting up real-time subscription for decisions');
     
     const channel = supabase
-      .channel('decisions-changes')
+      .channel(`decisions-changes-${user.id}`)
       .on(
         'postgres_changes',
         {
@@ -47,7 +68,7 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
           
           const { eventType, new: newRecord, old: oldRecord } = payload;
           
-          // Check if updates are paused for this decision with proper type checking
+          // Check if updates are paused for this decision
           const recordId = (newRecord && typeof newRecord === 'object' && 'id' in newRecord) 
             ? newRecord.id 
             : (oldRecord && typeof oldRecord === 'object' && 'id' in oldRecord) 
@@ -104,20 +125,41 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       )
       .subscribe((status) => {
         console.log('Real-time subscription status:', status);
-        setIsRealTimeConnected(status === 'SUBSCRIBED');
         
-        if (status === 'CHANNEL_ERROR') {
-          console.error('Real-time channel error');
-          setIsRealTimeConnected(false);
+        switch (status) {
+          case 'SUBSCRIBED':
+            setIsRealTimeConnected(true);
+            setRetryCount(0);
+            if (reconnectTimer) {
+              clearTimeout(reconnectTimer);
+              setReconnectTimer(null);
+            }
+            break;
+            
+          case 'CHANNEL_ERROR':
+          case 'TIMED_OUT':
+          case 'CLOSED':
+            console.error('Real-time connection issue:', status);
+            setIsRealTimeConnected(false);
+            if (status === 'CHANNEL_ERROR' || status === 'TIMED_OUT') {
+              attemptReconnection();
+            }
+            break;
+            
+          default:
+            setIsRealTimeConnected(false);
         }
       });
 
     return () => {
       console.log('Cleaning up real-time subscription');
+      if (reconnectTimer) {
+        clearTimeout(reconnectTimer);
+      }
       supabase.removeChannel(channel);
       setIsRealTimeConnected(false);
     };
-  }, [user, setDecisions, pausedDecisionIds]);
+  }, [user, setDecisions, pausedDecisionIds, attemptReconnection, reconnectTimer]);
 
   return { 
     isRealTimeConnected,

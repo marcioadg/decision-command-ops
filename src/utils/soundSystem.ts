@@ -2,15 +2,20 @@
 class SoundSystem {
   private audioContext: AudioContext | null = null;
   private enabled: boolean = true;
+  private initialized: boolean = false;
 
   constructor() {
-    // Initialize audio context on first user interaction
-    this.initAudioContext();
+    // Don't initialize audio context immediately
+    // Wait for user interaction
   }
 
-  private initAudioContext() {
+  private async initAudioContext() {
+    if (this.initialized || !this.enabled) return;
+    
     try {
       this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      this.initialized = true;
+      console.log('AudioContext initialized successfully');
     } catch (error) {
       console.warn('Web Audio API not supported');
       this.enabled = false;
@@ -18,10 +23,23 @@ class SoundSystem {
   }
 
   private async ensureAudioContext() {
-    if (!this.audioContext || !this.enabled) return null;
+    if (!this.enabled) return null;
+    
+    // Initialize on first use (after user interaction)
+    if (!this.initialized) {
+      await this.initAudioContext();
+    }
+    
+    if (!this.audioContext) return null;
     
     if (this.audioContext.state === 'suspended') {
-      await this.audioContext.resume();
+      try {
+        await this.audioContext.resume();
+        console.log('AudioContext resumed');
+      } catch (error) {
+        console.warn('Failed to resume AudioContext:', error);
+        return null;
+      }
     }
     
     return this.audioContext;
