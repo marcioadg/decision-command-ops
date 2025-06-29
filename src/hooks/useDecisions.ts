@@ -81,13 +81,6 @@ export const useDecisions = () => {
       
       setDecisions(data);
       setRetryCount(0);
-      
-      if (showToast && data.length === 0) {
-        toast({
-          title: "No Decisions Found",
-          description: "Start by creating your first decision using the Quick Add button."
-        });
-      }
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to load decisions';
       console.error('Error loading decisions:', err);
