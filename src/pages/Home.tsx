@@ -14,7 +14,13 @@ const Home = () => {
 
   const handleGetStarted = () => {
     if (user) {
-      navigate(profile?.role === 'admin' ? '/admin' : '/dashboard');
+      if (profile?.role === 'admin') {
+        navigate('/admin');
+      } else if (!profile?.onboarding_completed) {
+        navigate('/onboarding');
+      } else {
+        navigate('/dashboard');
+      }
     } else {
       setLoginModalDefaultTab('signup');
       setIsLoginModalOpen(true);
@@ -29,6 +35,13 @@ const Home = () => {
   const handleSignUp = () => {
     setLoginModalDefaultTab('signup');
     setIsLoginModalOpen(true);
+  };
+
+  const getDashboardButtonText = () => {
+    if (!user) return 'GET STARTED';
+    if (profile?.role === 'admin') return 'GO TO ADMIN';
+    if (!profile?.onboarding_completed) return 'COMPLETE SETUP';
+    return 'GO TO DASHBOARD';
   };
 
   if (isLoading) {
@@ -56,12 +69,12 @@ const Home = () => {
           <div className="flex items-center space-x-4">
             {user ? (
               <Button
-                onClick={() => navigate(profile?.role === 'admin' ? '/admin' : '/dashboard')}
+                onClick={handleGetStarted}
                 className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-mono text-xs"
                 size="sm"
               >
                 <User className="w-4 h-4 mr-2" />
-                GO TO DASHBOARD
+                {getDashboardButtonText()}
               </Button>
             ) : (
               <>
@@ -115,7 +128,7 @@ const Home = () => {
               size="lg" 
               className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-bold px-8 py-4 text-lg"
             >
-              {user ? 'GO TO DASHBOARD' : 'GET STARTED'}
+              {getDashboardButtonText()}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </div>
@@ -297,7 +310,7 @@ const Home = () => {
               size="lg" 
               className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg font-bold px-8 py-4 text-lg"
             >
-              {user ? 'GO TO DASHBOARD' : 'GET STARTED NOW'}
+              {getDashboardButtonText()}
               <ArrowRight className="ml-2 w-5 h-5" />
             </Button>
           </div>
