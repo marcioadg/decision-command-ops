@@ -1,3 +1,4 @@
+
 import { IndexHeader } from '@/components/IndexHeader';
 import { MobileHeader } from '@/components/MobileHeader';
 import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
@@ -86,7 +87,8 @@ const Index = () => {
     handleQuickAddClick,
     handleJournalClick,
     handleJournalComplete,
-    handleStageQuickAdd
+    handleStageQuickAdd,
+    triggerFirstLoginJournal
   } = useIndexState();
 
   const {
@@ -96,6 +98,19 @@ const Index = () => {
     handleLogout,
     handleRetry
   } = useIndexActions();
+
+  // Check for first login detection - trigger journal if user just authenticated and hasn't seen it
+  useEffect(() => {
+    if (profile && !loading && !error) {
+      const hasShownJournalThisSession = sessionStorage.getItem('journalShownThisSession');
+      const userJustLoggedIn = !hasShownJournalThisSession;
+      
+      if (userJustLoggedIn) {
+        console.log('Index: User just logged in, triggering first login journal');
+        triggerFirstLoginJournal();
+      }
+    }
+  }, [profile, loading, error, triggerFirstLoginJournal]);
 
   // Check for localStorage data and offer migration on first load
   useIndexMigration(hasMigrated, setHasMigrated);

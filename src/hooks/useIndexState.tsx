@@ -1,5 +1,5 @@
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Decision, DecisionStage } from '@/types/Decision';
 
 export const useIndexState = () => {
@@ -11,6 +11,27 @@ export const useIndexState = () => {
   const [isJournalOpen, setIsJournalOpen] = useState(false);
   const [journalData, setJournalData] = useState<{ title: string; notes: string } | null>(null);
   const [quickAddStage, setQuickAddStage] = useState<DecisionStage | undefined>(undefined);
+  const [isFirstLogin, setIsFirstLogin] = useState(false);
+
+  // Check for first login on mount
+  useEffect(() => {
+    const hasShownJournalThisSession = sessionStorage.getItem('journalShownThisSession');
+    if (!hasShownJournalThisSession) {
+      console.log('useIndexState: First login detected, will show journal');
+      setIsFirstLogin(true);
+    }
+  }, []);
+
+  // Auto-open journal on first login
+  useEffect(() => {
+    if (isFirstLogin) {
+      console.log('useIndexState: Opening journal for first login');
+      setIsJournalOpen(true);
+      setIsFirstLogin(false);
+      // Mark that we've shown the journal this session
+      sessionStorage.setItem('journalShownThisSession', 'true');
+    }
+  }, [isFirstLogin]);
 
   const handleCloseDetailModal = () => {
     console.log('useIndexState: Closing detail modal');
@@ -61,6 +82,11 @@ export const useIndexState = () => {
     setIsQuickAddOpen(true);
   };
 
+  const triggerFirstLoginJournal = () => {
+    console.log('useIndexState: Triggering first login journal');
+    setIsFirstLogin(true);
+  };
+
   return {
     // State
     selectedDecision,
@@ -71,6 +97,7 @@ export const useIndexState = () => {
     isJournalOpen,
     journalData,
     quickAddStage,
+    isFirstLogin,
     // Setters
     setHasMigrated,
     // Handlers
@@ -82,6 +109,7 @@ export const useIndexState = () => {
     handleQuickAddClick,
     handleJournalClick,
     handleJournalComplete,
-    handleStageQuickAdd
+    handleStageQuickAdd,
+    triggerFirstLoginJournal
   };
 };
