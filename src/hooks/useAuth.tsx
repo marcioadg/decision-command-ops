@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -136,14 +135,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const signUp = async (email: string, password: string, name: string) => {
     console.log('Starting signup process for:', email);
     
-    // Set redirect URL to verify-email page
-    const redirectUrl = `${window.location.origin}/verify-email`;
+    // TODO: EMAIL VERIFICATION - Comment out email verification for now
+    // const redirectUrl = `${window.location.origin}/verify-email`;
     
     const { error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: redirectUrl,
+        // TODO: EMAIL VERIFICATION - Uncomment when ready to enable email verification
+        // emailRedirectTo: redirectUrl,
         data: {
           name,
           role: 'user'

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -107,14 +106,16 @@ const Login = () => {
           variant: "destructive",
         });
       } else {
-        console.log('Signup successful, navigating to verify-email');
+        console.log('Signup successful, will redirect to onboarding via ProtectedRoute');
         toast({
           title: "Account Created",
-          description: "Please check your email to verify your account",
+          description: "Welcome aboard! Starting your tactical onboarding...",
         });
         
-        // Navigate immediately to verification page
-        navigate(`/verify-email?email=${encodeURIComponent(signUpForm.email)}`);
+        // TODO: EMAIL VERIFICATION - Uncomment when ready to enable email verification
+        // navigate(`/verify-email?email=${encodeURIComponent(signUpForm.email)}`);
+        
+        // The ProtectedRoute will automatically detect new users need onboarding and redirect them
       }
     } catch (error) {
       console.error('Signup catch error:', error);
