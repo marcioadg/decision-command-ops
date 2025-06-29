@@ -107,13 +107,9 @@ const Login = () => {
           title: "Account Created",
           description: "Please check your email to verify your account",
         });
-        // Reset form
-        setSignUpForm({
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: ''
-        });
+        
+        // Redirect to verification page with email parameter
+        navigate(`/verify-email?email=${encodeURIComponent(signUpForm.email)}`);
       }
     } catch (error) {
       toast({
