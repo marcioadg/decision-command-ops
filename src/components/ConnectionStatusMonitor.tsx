@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Wifi, WifiOff, AlertTriangle } from 'lucide-react';
 
 interface ConnectionStatusMonitorProps {
@@ -12,29 +12,46 @@ export const ConnectionStatusMonitor = ({
   className = "" 
 }: ConnectionStatusMonitorProps) => {
   const [connectionQuality, setConnectionQuality] = useState<'good' | 'poor' | 'offline'>('offline');
-  const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
+  const lastUpdateRef = useRef<Date | null>(null);
+  const qualityCheckIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isRealTimeConnected) {
       setConnectionQuality('good');
-      setLastUpdate(new Date());
+      lastUpdateRef.current = new Date();
+      
+      // Clear any existing interval
+      if (qualityCheckIntervalRef.current) {
+        clearInterval(qualityCheckIntervalRef.current);
+      }
       
       // Monitor connection quality
-      const qualityCheck = setInterval(() => {
+      qualityCheckIntervalRef.current = setInterval(() => {
         const now = new Date();
-        const timeSinceUpdate = lastUpdate ? now.getTime() - lastUpdate.getTime() : 0;
+        const timeSinceUpdate = lastUpdateRef.current ? now.getTime() - lastUpdateRef.current.getTime() : 0;
         
         if (timeSinceUpdate > 60000) { // More than 1 minute since last update
           setConnectionQuality('poor');
         }
       }, 10000); // Check every 10 seconds
-
-      return () => clearInterval(qualityCheck);
     } else {
       setConnectionQuality('offline');
-      setLastUpdate(null);
+      lastUpdateRef.current = null;
+      
+      // Clear interval when offline
+      if (qualityCheckIntervalRef.current) {
+        clearInterval(qualityCheckIntervalRef.current);
+        qualityCheckIntervalRef.current = null;
+      }
     }
-  }, [isRealTimeConnected, lastUpdate]);
+
+    // Cleanup on unmount
+    return () => {
+      if (qualityCheckIntervalRef.current) {
+        clearInterval(qualityCheckIntervalRef.current);
+      }
+    };
+  }, [isRealTimeConnected]);
 
   const getStatusColor = () => {
     switch (connectionQuality) {
@@ -67,9 +84,9 @@ export const ConnectionStatusMonitor = ({
     <div className={`flex items-center space-x-1 text-xs font-mono ${getStatusColor()} ${className}`}>
       {getStatusIcon()}
       <span>{getStatusText()}</span>
-      {lastUpdate && connectionQuality === 'good' && (
+      {lastUpdateRef.current && connectionQuality === 'good' && (
         <span className="text-xs opacity-60">
-          {lastUpdate.toLocaleTimeString()}
+          {lastUpdateRef.current.toLocaleTimeString()}
         </span>
       )}
     </div>

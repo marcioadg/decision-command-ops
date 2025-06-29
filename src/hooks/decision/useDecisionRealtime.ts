@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { Decision } from '@/types/Decision';
 import { useRealtimeConnection } from './realtime/useRealtimeConnection';
 import { useRealtimeReconnection } from './realtime/useRealtimeReconnection';
@@ -12,6 +12,7 @@ interface UseDecisionRealtimeProps {
 
 export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeProps) => {
   const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
+  const isInitializedRef = useRef(false);
 
   // Set up message handling
   const { handleMessage, pauseRealtimeForDecision } = useRealtimeMessageHandler({ setDecisions });
@@ -47,11 +48,15 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
     baseRetryConnection(setupConnection);
   };
 
-  // Initial setup
+  // Initial setup - only run once per user change
   useEffect(() => {
-    if (user?.id) {
+    if (user?.id && !isInitializedRef.current) {
+      console.log('Initializing real-time connection for user:', user.id);
+      isInitializedRef.current = true;
       setupConnection();
-    } else {
+    } else if (!user?.id) {
+      console.log('No user, cleaning up real-time connection');
+      isInitializedRef.current = false;
       cleanupConnection();
     }
     
@@ -59,8 +64,9 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       console.log('Cleaning up real-time subscription');
       cleanupConnection();
       cleanupReconnection();
+      isInitializedRef.current = false;
     };
-  }, [user?.id, setupConnection, cleanupConnection, cleanupReconnection]);
+  }, [user?.id]);
 
   return { 
     isRealTimeConnected,
