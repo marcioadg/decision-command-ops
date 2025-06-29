@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -90,6 +91,8 @@ const Login = () => {
     setIsSubmitting(true);
     
     try {
+      console.log('Attempting signup with email:', signUpForm.email);
+      
       const { error } = await signUp(
         signUpForm.email, 
         signUpForm.password, 
@@ -97,21 +100,24 @@ const Login = () => {
       );
       
       if (error) {
+        console.error('Signup error:', error);
         toast({
           title: "Sign Up Failed",
           description: error.message,
           variant: "destructive",
         });
       } else {
+        console.log('Signup successful, navigating to verify-email');
         toast({
           title: "Account Created",
           description: "Please check your email to verify your account",
         });
         
-        // Redirect to verification page with email parameter
+        // Navigate immediately to verification page
         navigate(`/verify-email?email=${encodeURIComponent(signUpForm.email)}`);
       }
     } catch (error) {
+      console.error('Signup catch error:', error);
       toast({
         title: "Sign Up Failed",
         description: "An unexpected error occurred",
