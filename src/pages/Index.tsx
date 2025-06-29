@@ -197,6 +197,11 @@ const Index = () => {
         onJournalComplete={handleJournalComplete}
         onImmediateDecisionUpdate={applyImmediateUpdate}
       />
+
+      {/* Floating Version Indicator */}
+      <div className="fixed bottom-4 right-4 z-50 px-2 py-1 bg-tactical-surface/80 border border-tactical-border/50 rounded text-xs font-mono text-tactical-text/60 backdrop-blur-sm">
+        version 0.1
+      </div>
     </div>
   );
 };
