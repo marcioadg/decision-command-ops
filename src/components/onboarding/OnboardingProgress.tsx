@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { useOnboarding } from './OnboardingProvider';
+import { SkipOnboardingButton } from './SkipOnboardingButton';
 
 export const OnboardingProgress = () => {
   const { currentStep, totalSteps } = useOnboarding();
@@ -12,9 +13,12 @@ export const OnboardingProgress = () => {
           <span className="text-tactical-accent font-mono text-xs md:text-sm uppercase tracking-wider">
             Mission Progress
           </span>
-          <span className="text-tactical-text/60 font-mono text-xs md:text-sm">
-            {currentStep}/{totalSteps}
-          </span>
+          <div className="flex items-center space-x-4">
+            <span className="text-tactical-text/60 font-mono text-xs md:text-sm">
+              {currentStep}/{totalSteps}
+            </span>
+            <SkipOnboardingButton />
+          </div>
         </div>
         <div className="w-full bg-tactical-bg rounded-full h-2">
           <div 
