@@ -42,7 +42,6 @@ export const userService = {
     const newUser: AdminUser = {
       id: generateId(),
       name: data.name,
-      username: data.username,
       email: data.email,
       companyId: data.companyId,
       companyName: company?.name || 'Unknown Company',

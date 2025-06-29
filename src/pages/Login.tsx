@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -20,7 +19,6 @@ const Login = () => {
   
   const [signUpForm, setSignUpForm] = useState({
     name: '',
-    username: '',
     email: '',
     password: '',
     confirmPassword: ''
@@ -95,8 +93,7 @@ const Login = () => {
       const { error } = await signUp(
         signUpForm.email, 
         signUpForm.password, 
-        signUpForm.name,
-        signUpForm.username || undefined
+        signUpForm.name
       );
       
       if (error) {
@@ -113,7 +110,6 @@ const Login = () => {
         // Reset form
         setSignUpForm({
           name: '',
-          username: '',
           email: '',
           password: '',
           confirmPassword: ''
@@ -211,15 +207,6 @@ const Login = () => {
                       onChange={(e) => setSignUpForm({ ...signUpForm, name: e.target.value })}
                       className="bg-tactical-bg border-tactical-border text-tactical-text placeholder:text-tactical-text/50"
                       required
-                    />
-                  </div>
-                  <div>
-                    <Input
-                      type="text"
-                      placeholder="Username (optional)"
-                      value={signUpForm.username}
-                      onChange={(e) => setSignUpForm({ ...signUpForm, username: e.target.value })}
-                      className="bg-tactical-bg border-tactical-border text-tactical-text placeholder:text-tactical-text/50"
                     />
                   </div>
                   <div>
