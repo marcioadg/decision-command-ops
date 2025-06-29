@@ -1,5 +1,5 @@
-
 import { Decision } from '@/types/Decision';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface StatusBarProps {
   decisions: Decision[];
@@ -30,46 +30,62 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
     : 0;
 
   return (
-    <div className="bg-tactical-surface/80 backdrop-blur-sm border-b border-tactical-border">
-      <div className="container mx-auto px-6 py-3">
-        <div className="flex items-center justify-between">
-          {/* Left Side - Pipeline Stats */}
-          <div className="flex items-center space-x-6">
-            <div className="hud-metric bg-tactical-accent/20 text-tactical-accent">
-              ACTIVE: {activeWorkCount}
+    <TooltipProvider>
+      <div className="bg-tactical-surface/80 backdrop-blur-sm border-b border-tactical-border">
+        <div className="container mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+            {/* Left Side - Pipeline Stats */}
+            <div className="flex items-center space-x-6">
+              <div className="hud-metric bg-tactical-accent/20 text-tactical-accent">
+                ACTIVE: {activeWorkCount}
+              </div>
+              
+              <div className="flex items-center space-x-4 text-xs font-mono">
+                <span className="text-tactical-text/60">BACKLOG:</span>
+                <span className="text-tactical-text">{stageStats.backlog}</span>
+                
+                <span className="text-tactical-text/60">CONSIDERING:</span>
+                <span className="text-urgency-medium">{stageStats.considering}</span>
+                
+                <span className="text-tactical-text/60">COMMITTED:</span>
+                <span className="text-tactical-accent">{stageStats.committed}</span>
+                
+                <span className="text-tactical-text/60">DECIDED:</span>
+                <span className="text-impact-high">{stageStats.decided}</span>
+              </div>
             </div>
-            
-            <div className="flex items-center space-x-4 text-xs font-mono">
-              <span className="text-tactical-text/60">BACKLOG:</span>
-              <span className="text-tactical-text">{stageStats.backlog}</span>
-              
-              <span className="text-tactical-text/60">CONSIDERING:</span>
-              <span className="text-urgency-medium">{stageStats.considering}</span>
-              
-              <span className="text-tactical-text/60">COMMITTED:</span>
-              <span className="text-tactical-accent">{stageStats.committed}</span>
-              
-              <span className="text-tactical-text/60">DECIDED:</span>
-              <span className="text-impact-high">{stageStats.decided}</span>
-            </div>
-          </div>
 
-          {/* Right Side - Performance Metrics */}
-          <div className="flex items-center space-x-6">
-            <div className="hud-metric">
-              HIGH PRIORITY: {highPriorityDecisions}
-            </div>
-            
-            <div className="hud-metric">
-              AVG CONFIDENCE: {avgConfidence}%
-            </div>
-            
-            <div className={`hud-metric ${clarityScore >= 70 ? 'bg-impact-high/20 text-impact-high' : clarityScore >= 40 ? 'bg-urgency-medium/20 text-urgency-medium' : 'bg-urgency-high/20 text-urgency-high'}`}>
-              CLARITY: {clarityScore}%
+            {/* Right Side - Performance Metrics */}
+            <div className="flex items-center space-x-6">
+              <div className="hud-metric">
+                HIGH PRIORITY: {highPriorityDecisions}
+              </div>
+              
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="hud-metric">
+                    AVG CONFIDENCE: {avgConfidence}%
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Average confidence score across all active decisions</p>
+                </TooltipContent>
+              </Tooltip>
+              
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className={`hud-metric ${clarityScore >= 70 ? 'bg-impact-high/20 text-impact-high' : clarityScore >= 40 ? 'bg-urgency-medium/20 text-urgency-medium' : 'bg-urgency-high/20 text-urgency-high'}`}>
+                    CLARITY: {clarityScore}%
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Percentage of active decisions that have been decided</p>
+                </TooltipContent>
+              </Tooltip>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </TooltipProvider>
   );
 };
