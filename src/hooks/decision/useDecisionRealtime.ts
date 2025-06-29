@@ -12,9 +12,13 @@ interface UseDecisionRealtimeProps {
 export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeProps) => {
   const [isRealTimeConnected, setIsRealTimeConnected] = useState(false);
   const [pausedDecisionIds, setPausedDecisionIds] = useState<Set<string>>(new Set());
-  const [connectionAttempts, setConnectionAttempts] = useState(0);
+  
+  // Use refs to avoid triggering re-renders and circular dependencies
+  const connectionAttemptsRef = useRef(0);
   const channelRef = useRef<any>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const isConnectingRef = useRef(false);
+  const circuitBreakerRef = useRef(false);
 
   const pauseRealtimeForDecision = useCallback((decisionId: string, duration = 2000) => {
     console.log(`Pausing real-time updates for decision ${decisionId} for ${duration}ms`);
@@ -40,22 +44,36 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
     }
+    isConnectingRef.current = false;
   }, []);
 
   const setupRealtimeConnection = useCallback(() => {
+    // Circuit breaker: stop if too many failures
+    if (circuitBreakerRef.current) {
+      console.log('Circuit breaker active - not attempting connection');
+      return;
+    }
+
     if (!user) {
       console.log('No user available for real-time connection');
       setIsRealTimeConnected(false);
       return;
     }
 
+    // Prevent multiple simultaneous connection attempts
+    if (isConnectingRef.current) {
+      console.log('Connection attempt already in progress');
+      return;
+    }
+
     // Clean up any existing connection
     cleanupConnection();
+    isConnectingRef.current = true;
 
-    console.log(`Setting up real-time subscription for user ${user.id} (attempt ${connectionAttempts + 1})`);
+    console.log(`Setting up real-time subscription for user ${user.id} (attempt ${connectionAttemptsRef.current + 1})`);
     
     const channel = supabase
-      .channel(`decisions-changes-${user.id}-${Date.now()}`) // Unique channel name to avoid conflicts
+      .channel(`decisions-changes-${user.id}-${Date.now()}`)
       .on(
         'postgres_changes',
         {
@@ -126,22 +144,19 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       )
       .subscribe((status) => {
         console.log('Real-time subscription status:', status, 'for user:', user.id);
+        isConnectingRef.current = false;
         
         switch (status) {
           case 'SUBSCRIBED':
             console.log('Real-time connection established successfully');
             setIsRealTimeConnected(true);
-            setConnectionAttempts(0);
+            connectionAttemptsRef.current = 0;
+            circuitBreakerRef.current = false;
             break;
             
           case 'CHANNEL_ERROR':
-            console.error('Real-time channel error - will attempt reconnection');
-            setIsRealTimeConnected(false);
-            scheduleReconnection();
-            break;
-            
           case 'TIMED_OUT':
-            console.error('Real-time connection timed out - will attempt reconnection');
+            console.error(`Real-time connection ${status.toLowerCase()} - will attempt reconnection`);
             setIsRealTimeConnected(false);
             scheduleReconnection();
             break;
@@ -158,39 +173,59 @@ export const useDecisionRealtime = ({ user, setDecisions }: UseDecisionRealtimeP
       });
 
     channelRef.current = channel;
-  }, [user, setDecisions, pausedDecisionIds, connectionAttempts, cleanupConnection]);
+  }, [user, setDecisions, pausedDecisionIds, cleanupConnection]);
 
   const scheduleReconnection = useCallback(() => {
-    if (connectionAttempts >= 5) {
-      console.log('Max connection attempts reached, giving up on real-time');
+    connectionAttemptsRef.current += 1;
+    
+    if (connectionAttemptsRef.current >= 5) {
+      console.log('Max connection attempts reached, activating circuit breaker');
+      circuitBreakerRef.current = true;
+      setIsRealTimeConnected(false);
       return;
     }
 
-    const delay = Math.min(1000 * Math.pow(2, connectionAttempts), 30000); // Exponential backoff, max 30s
-    console.log(`Scheduling real-time reconnection in ${delay}ms (attempt ${connectionAttempts + 1}/5)`);
+    const delay = Math.min(1000 * Math.pow(2, connectionAttemptsRef.current - 1), 30000);
+    console.log(`Scheduling real-time reconnection in ${delay}ms (attempt ${connectionAttemptsRef.current}/5)`);
+    
+    // Clear any existing timeout to prevent multiple schedules
+    if (reconnectTimeoutRef.current) {
+      clearTimeout(reconnectTimeoutRef.current);
+    }
     
     reconnectTimeoutRef.current = setTimeout(() => {
-      setConnectionAttempts(prev => prev + 1);
+      reconnectTimeoutRef.current = null;
       setupRealtimeConnection();
     }, delay);
-  }, [connectionAttempts, setupRealtimeConnection]);
+  }, [setupRealtimeConnection]);
 
   const retryConnection = useCallback(() => {
     console.log('Manual retry of real-time connection requested');
-    setConnectionAttempts(0);
-    setupRealtimeConnection();
-  }, [setupRealtimeConnection]);
+    connectionAttemptsRef.current = 0;
+    circuitBreakerRef.current = false;
+    cleanupConnection();
+    
+    // Add small delay to prevent immediate retry loops
+    setTimeout(() => {
+      setupRealtimeConnection();
+    }, 100);
+  }, [setupRealtimeConnection, cleanupConnection]);
 
-  // Initial setup and cleanup
+  // Initial setup - only depend on user ID to avoid circular dependencies
   useEffect(() => {
-    setupRealtimeConnection();
+    if (user?.id) {
+      setupRealtimeConnection();
+    } else {
+      cleanupConnection();
+      setIsRealTimeConnected(false);
+    }
     
     return () => {
       console.log('Cleaning up real-time subscription');
       cleanupConnection();
       setIsRealTimeConnected(false);
     };
-  }, [user?.id]); // Only depend on user ID to avoid unnecessary reconnections
+  }, [user?.id]); // CRITICAL: Only depend on user.id, not the functions
 
   return { 
     isRealTimeConnected,
