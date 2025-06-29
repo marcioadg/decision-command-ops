@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
@@ -26,9 +25,10 @@ const Login = () => {
   });
 
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [justSignedUp, setJustSignedUp] = useState(false);
 
   useEffect(() => {
-    console.log('Login page: Auth state changed - user:', user?.email, 'profile:', profile?.name, 'onboarding_completed:', profile?.onboarding_completed);
+    console.log('Login page: Auth state changed - user:', user?.email, 'profile:', profile?.name, 'onboarding_completed:', profile?.onboarding_completed, 'justSignedUp:', justSignedUp);
     
     if (user && profile) {
       console.log('Login page: User authenticated, checking role and onboarding status');
@@ -36,15 +36,15 @@ const Login = () => {
       if (profile.role === 'admin') {
         console.log('Login page: Admin user, redirecting to /admin');
         navigate('/admin');
-      } else if (!profile.onboarding_completed) {
-        console.log('Login page: User needs onboarding, redirecting to /onboarding');
+      } else if (justSignedUp || !profile.onboarding_completed) {
+        console.log('Login page: User needs onboarding (justSignedUp:', justSignedUp, ', onboarding_completed:', profile.onboarding_completed, '), redirecting to /onboarding');
         navigate('/onboarding');
       } else {
         console.log('Login page: Regular user with completed onboarding, redirecting to /dashboard');
         navigate('/dashboard');
       }
     }
-  }, [user, profile, navigate]);
+  }, [user, profile, navigate, justSignedUp]);
 
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -116,10 +116,12 @@ const Login = () => {
           variant: "destructive",
         });
       } else {
-        console.log('Signup successful - user should be immediately authenticated');
+        console.log('Signup successful - setting justSignedUp flag and clearing form');
+        setJustSignedUp(true);
+        
         toast({
-          title: "Account Created",
-          description: "Welcome aboard! Starting your tactical onboarding...",
+          title: "Welcome Aboard!",
+          description: "Your account has been created. Starting tactical onboarding...",
         });
         
         // Clear the form
@@ -130,8 +132,13 @@ const Login = () => {
           confirmPassword: ''
         });
         
-        // The useEffect above will handle redirection based on auth state
-        // No manual navigation needed - auth state will update automatically
+        // For immediate redirect in case auth state takes time to update
+        setTimeout(() => {
+          if (!user || !profile) {
+            console.log('Auth state not updated yet after signup, forcing redirect to onboarding');
+            navigate('/onboarding');
+          }
+        }, 1000);
       }
     } catch (error) {
       console.error('Signup catch error:', error);
