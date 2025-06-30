@@ -1,11 +1,26 @@
 
 import { useEffect } from 'react';
 import { useDecisions } from '@/hooks/useDecisions';
+import { Decision } from '@/types/Decision';
 
-export const useIndexMigration = (hasMigrated: boolean, setHasMigrated: (value: boolean) => void) => {
+interface UseIndexMigrationProps {
+  user: any;
+  hasMigrated: boolean;
+  setHasMigrated: (value: boolean) => void;
+  setLocalDecisions: (decisions: Decision[]) => void;
+}
+
+export const useIndexMigration = ({
+  user,
+  hasMigrated,
+  setHasMigrated,
+  setLocalDecisions
+}: UseIndexMigrationProps) => {
   const { migrateFromLocalStorage } = useDecisions();
 
   useEffect(() => {
+    if (!user) return;
+    
     const checkForMigration = async () => {
       if (hasMigrated) return;
       
@@ -17,6 +32,8 @@ export const useIndexMigration = (hasMigrated: boolean, setHasMigrated: (value: 
             const migratedCount = await migrateFromLocalStorage();
             if (migratedCount > 0) {
               setHasMigrated(true);
+              // Refresh decisions after migration
+              setLocalDecisions([]);
             }
           }
         } catch (error) {
@@ -26,5 +43,5 @@ export const useIndexMigration = (hasMigrated: boolean, setHasMigrated: (value: 
     };
 
     checkForMigration();
-  }, [migrateFromLocalStorage, hasMigrated, setHasMigrated]);
+  }, [user, migrateFromLocalStorage, hasMigrated, setHasMigrated, setLocalDecisions]);
 };
