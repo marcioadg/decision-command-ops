@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
@@ -136,6 +135,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setTimeout(() => {
             fetchUserProfile(session.user.id);
           }, 0);
+          
+          // Track login event for analytics
+          if (event === 'SIGNED_IN') {
+            setTimeout(async () => {
+              try {
+                await supabase
+                  .from('audit_logs')
+                  .insert({
+                    user_id: session.user.id,
+                    action: 'user_login',
+                    resource_type: 'auth',
+                    details: { 
+                      email: session.user.email,
+                      timestamp: new Date().toISOString()
+                    }
+                  });
+              } catch (error) {
+                console.error('Error logging login event:', error);
+              }
+            }, 100);
+          }
         } else {
           console.log('User signed out, clearing profile');
           setProfile(null);

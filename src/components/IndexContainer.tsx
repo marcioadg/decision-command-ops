@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { secureDecisionService } from '@/services/secureDecisionService';
@@ -15,10 +14,15 @@ import { useIndexState } from '@/hooks/useIndexState';
 import { useIndexEffects } from '@/hooks/useIndexEffects';
 import { useIndexMigration } from '@/hooks/useIndexMigration';
 import { useIndexActions } from '@/hooks/useIndexActions';
+import { useVisitTracking } from '@/hooks/useVisitTracking';
 
 export const IndexContainer = () => {
   const { user, profile, isLoading: authLoading } = useAuth();
   const isMobile = useIsMobile();
+  
+  // Track page visit
+  useVisitTracking('dashboard');
+  
   const {
     selectedDecision,
     isDetailModalOpen,

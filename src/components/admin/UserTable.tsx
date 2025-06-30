@@ -1,7 +1,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit, Trash2 } from 'lucide-react';
+import { Edit, Trash2, Clock, LogIn } from 'lucide-react';
 import { AdminUser } from '@/types/admin/AdminUser';
 
 interface UserTableProps {
@@ -11,6 +11,17 @@ interface UserTableProps {
 }
 
 export const UserTable = ({ users, onEdit, onDelete }: UserTableProps) => {
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return 'Never';
+    return new Date(dateString).toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
+
   if (users.length === 0) {
     return (
       <div className="text-center py-8 text-tactical-text/60">
@@ -28,6 +39,8 @@ export const UserTable = ({ users, onEdit, onDelete }: UserTableProps) => {
           <TableHead className="text-tactical-accent">Company</TableHead>
           <TableHead className="text-tactical-accent">Role</TableHead>
           <TableHead className="text-tactical-accent">Status</TableHead>
+          <TableHead className="text-tactical-accent">Last Login</TableHead>
+          <TableHead className="text-tactical-accent">Logins</TableHead>
           <TableHead className="text-tactical-accent">Created</TableHead>
           <TableHead className="text-tactical-accent">Actions</TableHead>
         </TableRow>
@@ -51,6 +64,18 @@ export const UserTable = ({ users, onEdit, onDelete }: UserTableProps) => {
               }`}>
                 {user.isActive ? 'ACTIVE' : 'INACTIVE'}
               </span>
+            </TableCell>
+            <TableCell className="text-tactical-text/60 text-xs">
+              <div className="flex items-center gap-1">
+                <Clock className="h-3 w-3" />
+                {formatDate(user.lastLogin)}
+              </div>
+            </TableCell>
+            <TableCell className="text-tactical-text/60 text-xs">
+              <div className="flex items-center gap-1">
+                <LogIn className="h-3 w-3" />
+                {user.loginCount || 0}
+              </div>
             </TableCell>
             <TableCell className="text-tactical-text/60 text-xs">
               {new Date(user.createdAt).toLocaleDateString()}

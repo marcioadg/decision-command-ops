@@ -191,7 +191,11 @@ export type Database = {
         Row: {
           company_id: string | null
           created_at: string
+          email: string | null
           id: string
+          last_login_at: string | null
+          last_visit_at: string | null
+          login_count: number | null
           mission: string | null
           name: string
           onboarding_completed: boolean
@@ -201,7 +205,11 @@ export type Database = {
         Insert: {
           company_id?: string | null
           created_at?: string
+          email?: string | null
           id: string
+          last_login_at?: string | null
+          last_visit_at?: string | null
+          login_count?: number | null
           mission?: string | null
           name: string
           onboarding_completed?: boolean
@@ -211,7 +219,11 @@ export type Database = {
         Update: {
           company_id?: string | null
           created_at?: string
+          email?: string | null
           id?: string
+          last_login_at?: string | null
+          last_visit_at?: string | null
+          login_count?: number | null
           mission?: string | null
           name?: string
           onboarding_completed?: boolean
@@ -227,6 +239,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_sessions: {
+        Row: {
+          created_at: string
+          id: string
+          ip_address: unknown | null
+          page_visits: number | null
+          session_end: string | null
+          session_start: string
+          updated_at: string
+          user_agent: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          page_visits?: number | null
+          session_end?: string | null
+          session_start?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          ip_address?: unknown | null
+          page_visits?: number | null
+          session_end?: string | null
+          session_start?: string
+          updated_at?: string
+          user_agent?: string | null
+          user_id?: string
+        }
+        Relationships: []
       }
     }
     Views: {

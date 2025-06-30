@@ -8,6 +8,7 @@ export interface AdminUser {
   role: 'user' | 'company_admin';
   isActive: boolean;
   lastLogin?: string;
+  loginCount?: number;
   createdAt: string;
   updatedAt: string;
 }
