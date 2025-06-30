@@ -31,10 +31,20 @@ export const visitTrackingService = {
 
   async updateSessionVisits(sessionId: string) {
     try {
+      // First get the current page_visits count
+      const { data: currentSession } = await supabase
+        .from('user_sessions')
+        .select('page_visits')
+        .eq('id', sessionId)
+        .single();
+
+      const currentVisits = currentSession?.page_visits || 0;
+
+      // Update with incremented count
       const { error } = await supabase
         .from('user_sessions')
         .update({ 
-          page_visits: supabase.sql`page_visits + 1`,
+          page_visits: currentVisits + 1,
           updated_at: new Date().toISOString()
         })
         .eq('id', sessionId);
