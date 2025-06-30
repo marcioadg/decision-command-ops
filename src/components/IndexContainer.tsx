@@ -1,37 +1,23 @@
-
-import { IndexHeader } from '@/components/IndexHeader';
-import { MobileHeader } from '@/components/MobileHeader';
-import { IndexLoadingScreen } from '@/components/IndexLoadingScreen';
-import { IndexErrorScreen } from '@/components/IndexErrorScreen';
-import { IndexMainContent } from '@/components/IndexMainContent';
-import { IndexModals } from '@/components/IndexModals';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { useDecisions } from '@/hooks/useDecisions';
+import { secureDecisionService } from '@/services/secureDecisionService';
+import { Decision } from '@/types/Decision';
+import { IndexHeader } from './IndexHeader';
+import { MobileHeader } from './MobileHeader';
+import { IndexMainContent } from './IndexMainContent';
+import { IndexModals } from './IndexModals';
+import { IndexLoadingScreen } from './IndexLoadingScreen';
+import { IndexErrorScreen } from './IndexErrorScreen';
+import { MissionBar } from './MissionBar';
+import { useMobile } from '@/hooks/use-mobile';
 import { useIndexState } from '@/hooks/useIndexState';
-import { useIndexActions } from '@/hooks/useIndexActions';
-import { useIndexMigration } from '@/hooks/useIndexMigration';
-import { useImmediateDecisionSync } from '@/hooks/useImmediateDecisionSync';
 import { useIndexEffects } from '@/hooks/useIndexEffects';
-import { useIsMobile } from '@/hooks/use-mobile';
-import { useState } from 'react';
+import { useIndexMigration } from '@/hooks/useIndexMigration';
+import { useIndexActions } from '@/hooks/useIndexActions';
 
 export const IndexContainer = () => {
-  const { profile } = useAuth();
-  const isMobile = useIsMobile();
-  
-  // Get decisions hook with all needed functions
-  const decisionsHook = useDecisions();
-  const {
-    decisions,
-    loading,
-    error,
-    retryCount,
-    isRealTimeConnected
-  } = decisionsHook;
-
-  // Create local state for immediate updates - this will be the source of truth for UI
-  const [localDecisions, setLocalDecisions] = useState(decisions);
-
+  const { user, profile, isLoading: authLoading, error: authError } = useAuth();
+  const { isMobile } = useMobile();
   const {
     selectedDecision,
     isDetailModalOpen,
@@ -53,94 +39,111 @@ export const IndexContainer = () => {
     handleStageQuickAdd,
     triggerFirstLoginJournal
   } = useIndexState();
+  const [localDecisions, setLocalDecisions] = useState<Decision[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [reflectionsDue, setReflectionsDue] = useState<{
+    overdue: Decision[];
+    dueToday: Decision[];
+    dueThisWeek: Decision[];
+  }>({ overdue: [], dueToday: [], dueThisWeek: [] });
 
   const {
     handleDecisionUpdate,
-    handleQuickAdd,
-    handleArchive,
-    handleLogout,
-    handleRetry
-  } = useIndexActions();
-
-  // Set up immediate decision sync for instant UI updates
-  const { applyImmediateUpdate } = useImmediateDecisionSync({ 
-    setDecisions: setLocalDecisions 
+    handleDecisionDelete,
+    handleDecisionArchive,
+    handleDecisionCreate
+  } = useIndexActions({
+    setLocalDecisions,
+    handleCloseDetailModal
   });
 
-  // Handle all side effects
   useIndexEffects({
     profile,
     loading,
     error,
-    decisions,
+    decisions: localDecisions,
     localDecisions,
     setLocalDecisions,
     triggerFirstLoginJournal
   });
 
-  // Check for localStorage data and offer migration on first load
-  useIndexMigration(hasMigrated, setHasMigrated);
-
-  // Add debug logging for modal state
-  console.log('Index: Modal state debug', {
-    selectedDecision: selectedDecision?.id,
-    isDetailModalOpen,
-    decisionsCount: localDecisions.length
+  useIndexMigration({
+    user,
+    hasMigrated,
+    setHasMigrated,
+    setLocalDecisions
   });
 
-  if (loading) {
-    return <IndexLoadingScreen retryCount={retryCount} />;
+  useEffect(() => {
+    if (!user) return;
+
+    const loadDecisions = async () => {
+      setLoading(true);
+      try {
+        const decisions = await secureDecisionService.getDecisions();
+        setLocalDecisions(decisions);
+
+        const reflections = await secureDecisionService.getReflectionsDue();
+        setReflectionsDue(reflections);
+        setError(null);
+      } catch (err: any) {
+        console.error('Index: Error fetching decisions:', err);
+        setError(err.message || 'Failed to load decisions.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadDecisions();
+  }, [user?.id]);
+
+  if (authLoading) {
+    return <IndexLoadingScreen />;
   }
 
-  // Show error screen with retry option
-  if (error && !loading) {
-    return (
-      <IndexErrorScreen
-        error={error}
-        onRetry={handleRetry}
-        onLogout={handleLogout}
-      />
-    );
+  if (authError) {
+    return <IndexErrorScreen message={authError} />;
   }
 
   return (
-    <div className="min-h-screen bg-tactical-bg tactical-grid">
+    <div className="min-h-screen bg-gray-950 text-gray-100">
+      {/* Header */}
       {isMobile ? (
         <MobileHeader
-          profileName={profile?.name}
-          decisions={localDecisions}
           showArchived={showArchived}
-          error={error}
-          onDecisionClick={handleDecisionClick}
-          onQuickAddClick={handleQuickAddClick}
-          onJournalClick={handleJournalClick}
           onToggleArchived={handleToggleArchived}
-          onLogout={handleLogout}
+          onQuickAdd={() => handleQuickAddClick()}
+          onJournal={() => handleJournalClick()}
         />
       ) : (
         <IndexHeader
-          profileName={profile?.name}
-          decisions={localDecisions}
+          decisionsCount={localDecisions.length}
           showArchived={showArchived}
-          error={error}
-          onDecisionClick={handleDecisionClick}
-          onQuickAddClick={handleQuickAddClick}
-          onJournalClick={handleJournalClick}
+          reflectionsDue={reflectionsDue}
           onToggleArchived={handleToggleArchived}
-          onLogout={handleLogout}
+          onQuickAdd={() => handleQuickAddClick()}
+          onJournal={() => handleJournalClick()}
         />
       )}
 
+      {/* Mission Bar */}
+      <MissionBar />
+
+      {/* Main Content */}
       <IndexMainContent
         decisions={localDecisions}
-        showArchived={showArchived}
-        onDecisionUpdate={handleDecisionUpdate}
+        loading={loading}
+        error={error}
         onDecisionClick={handleDecisionClick}
-        onArchive={handleArchive}
+        onDecisionUpdate={handleDecisionUpdate}
+        onDecisionDelete={handleDecisionDelete}
+        onDecisionArchive={handleDecisionArchive}
         onQuickAdd={handleStageQuickAdd}
-        isRealTimeConnected={isRealTimeConnected}
+        showArchived={showArchived}
       />
 
+      {/* Modals */}
       <IndexModals
         selectedDecision={selectedDecision}
         isDetailModalOpen={isDetailModalOpen}
@@ -151,16 +154,10 @@ export const IndexContainer = () => {
         onCloseDetailModal={handleCloseDetailModal}
         onCloseQuickAdd={handleCloseQuickAdd}
         onCloseJournal={handleCloseJournal}
-        onDecisionUpdate={handleDecisionUpdate}
-        onQuickAdd={handleQuickAdd}
         onJournalComplete={handleJournalComplete}
-        onImmediateDecisionUpdate={applyImmediateUpdate}
+        onCreateDecision={handleDecisionCreate}
+        onDecisionUpdate={handleDecisionUpdate}
       />
-
-      {/* Floating Version Indicator */}
-      <div className="fixed bottom-4 right-4 z-50 px-2 py-1 bg-tactical-surface/80 border border-tactical-border/50 rounded text-xs font-mono text-tactical-text/60 backdrop-blur-sm">
-        version 0.1
-      </div>
     </div>
   );
 };

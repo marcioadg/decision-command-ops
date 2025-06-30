@@ -192,6 +192,7 @@ export type Database = {
           company_id: string | null
           created_at: string
           id: string
+          mission: string | null
           name: string
           onboarding_completed: boolean
           role: string
@@ -201,6 +202,7 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           id: string
+          mission?: string | null
           name: string
           onboarding_completed?: boolean
           role?: string
@@ -210,6 +212,7 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           id?: string
+          mission?: string | null
           name?: string
           onboarding_completed?: boolean
           role?: string

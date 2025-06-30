@@ -8,6 +8,7 @@ interface UserProfile {
   name: string;
   role: 'user' | 'admin' | 'company_admin';
   onboarding_completed: boolean;
+  mission?: string | null;
   created_at: string;
   updated_at: string;
 }
