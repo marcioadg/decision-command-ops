@@ -26,10 +26,6 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
     ? Math.round(activeDecisions.reduce((sum, d) => sum + d.confidence, 0) / activeDecisions.length)
     : 0;
 
-  const clarityScore = activeDecisions.length > 0 
-    ? Math.round((stageStats.decided / totalDecisions) * 100)
-    : 0;
-
   // Calculate accuracy score based on completed reflections
   const completedReflections = activeDecisions.filter(d => 
     d.reflection?.thirtyDay?.completed && d.reflection.thirtyDay.wasCorrect !== undefined
@@ -81,17 +77,6 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Average confidence score across all active decisions</p>
-                </TooltipContent>
-              </Tooltip>
-              
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className={`hud-metric ${clarityScore >= 70 ? 'bg-impact-high/20 text-impact-high' : clarityScore >= 40 ? 'bg-urgency-medium/20 text-urgency-medium' : 'bg-urgency-high/20 text-urgency-high'}`}>
-                    CLARITY: {clarityScore}%
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Percentage of active decisions that have been decided</p>
                 </TooltipContent>
               </Tooltip>
 
