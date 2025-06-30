@@ -50,27 +50,34 @@ export const useIndexEffects = ({
     } else {
       console.log('Index: No sync needed - local decisions are up to date');
     }
-  }, [decisions, setLocalDecisions]); // Depend on the actual decisions array
+  }, [decisions, setLocalDecisions]);
 
-  // Check for first login detection - trigger journal only if user has no decisions
+  // Check for zero decisions and show journal - only after data has loaded
   useEffect(() => {
     if (profile && !loading && !error) {
       const hasShownJournalThisSession = sessionStorage.getItem('journalShownThisSession');
-      const userJustLoggedIn = !hasShownJournalThisSession;
       
-      if (userJustLoggedIn) {
-        // Only show journal popup if user has no decisions in their pipeline
-        if (decisions.length === 0) {
-          console.log('Index: User just logged in with no decisions, triggering first login journal');
-          triggerFirstLoginJournal();
-        } else {
-          console.log('Index: User just logged in but has existing decisions, skipping journal popup');
-          // Mark as shown to prevent future checks this session
+      console.log('Index: Checking journal conditions:', {
+        hasProfile: !!profile,
+        loading,
+        error,
+        decisionsCount: decisions.length,
+        hasShownJournalThisSession: !!hasShownJournalThisSession
+      });
+      
+      // Show journal if user has zero decisions and we haven't shown it this session
+      if (decisions.length === 0 && !hasShownJournalThisSession) {
+        console.log('Index: User has zero decisions, triggering journal');
+        triggerFirstLoginJournal();
+      } else if (decisions.length > 0) {
+        console.log('Index: User has existing decisions, skipping journal popup');
+        // Mark as shown to prevent future checks this session even if they delete all decisions
+        if (!hasShownJournalThisSession) {
           sessionStorage.setItem('journalShownThisSession', 'true');
         }
       }
     }
-  }, [profile?.id, loading, error, decisions.length, triggerFirstLoginJournal]); // Include decisions.length in dependency
+  }, [profile?.id, loading, error, decisions.length, triggerFirstLoginJournal]);
 
   // Add cleanup effect to prevent memory leaks
   useEffect(() => {
