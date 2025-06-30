@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { secureDecisionService } from '@/services/secureDecisionService';
@@ -9,15 +10,15 @@ import { IndexModals } from './IndexModals';
 import { IndexLoadingScreen } from './IndexLoadingScreen';
 import { IndexErrorScreen } from './IndexErrorScreen';
 import { MissionBar } from './MissionBar';
-import { useMobile } from '@/hooks/use-mobile';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { useIndexState } from '@/hooks/useIndexState';
 import { useIndexEffects } from '@/hooks/useIndexEffects';
 import { useIndexMigration } from '@/hooks/useIndexMigration';
 import { useIndexActions } from '@/hooks/useIndexActions';
 
 export const IndexContainer = () => {
-  const { user, profile, isLoading: authLoading, error: authError } = useAuth();
-  const { isMobile } = useMobile();
+  const { user, profile, isLoading: authLoading } = useAuth();
+  const isMobile = useIsMobile();
   const {
     selectedDecision,
     isDetailModalOpen,
@@ -47,16 +48,15 @@ export const IndexContainer = () => {
     dueToday: Decision[];
     dueThisWeek: Decision[];
   }>({ overdue: [], dueToday: [], dueThisWeek: [] });
+  const [retryCount, setRetryCount] = useState(0);
 
   const {
     handleDecisionUpdate,
-    handleDecisionDelete,
-    handleDecisionArchive,
-    handleDecisionCreate
-  } = useIndexActions({
-    setLocalDecisions,
-    handleCloseDetailModal
-  });
+    handleQuickAdd,
+    handleArchive,
+    handleLogout,
+    handleRetry
+  } = useIndexActions();
 
   useIndexEffects({
     profile,
@@ -80,6 +80,7 @@ export const IndexContainer = () => {
 
     const loadDecisions = async () => {
       setLoading(true);
+      setRetryCount(prev => prev + 1);
       try {
         const decisions = await secureDecisionService.getDecisions();
         setLocalDecisions(decisions);
@@ -87,6 +88,7 @@ export const IndexContainer = () => {
         const reflections = await secureDecisionService.getReflectionsDue();
         setReflectionsDue(reflections);
         setError(null);
+        setRetryCount(0);
       } catch (err: any) {
         console.error('Index: Error fetching decisions:', err);
         setError(err.message || 'Failed to load decisions.');
@@ -99,11 +101,11 @@ export const IndexContainer = () => {
   }, [user?.id]);
 
   if (authLoading) {
-    return <IndexLoadingScreen />;
+    return <IndexLoadingScreen retryCount={retryCount} />;
   }
 
-  if (authError) {
-    return <IndexErrorScreen message={authError} />;
+  if (error) {
+    return <IndexErrorScreen error={error} onRetry={handleRetry} onLogout={handleLogout} />;
   }
 
   return (
@@ -111,19 +113,27 @@ export const IndexContainer = () => {
       {/* Header */}
       {isMobile ? (
         <MobileHeader
+          profileName={profile?.name}
+          decisions={localDecisions}
           showArchived={showArchived}
+          error={error}
+          onDecisionClick={handleDecisionClick}
+          onQuickAddClick={handleQuickAddClick}
+          onJournalClick={handleJournalClick}
           onToggleArchived={handleToggleArchived}
-          onQuickAdd={() => handleQuickAddClick()}
-          onJournal={() => handleJournalClick()}
+          onLogout={handleLogout}
         />
       ) : (
         <IndexHeader
-          decisionsCount={localDecisions.length}
+          profileName={profile?.name}
+          decisions={localDecisions}
           showArchived={showArchived}
-          reflectionsDue={reflectionsDue}
+          error={error}
+          onDecisionClick={handleDecisionClick}
+          onQuickAddClick={handleQuickAddClick}
+          onJournalClick={handleJournalClick}
           onToggleArchived={handleToggleArchived}
-          onQuickAdd={() => handleQuickAddClick()}
-          onJournal={() => handleJournalClick()}
+          onLogout={handleLogout}
         />
       )}
 
@@ -133,14 +143,11 @@ export const IndexContainer = () => {
       {/* Main Content */}
       <IndexMainContent
         decisions={localDecisions}
-        loading={loading}
-        error={error}
-        onDecisionClick={handleDecisionClick}
-        onDecisionUpdate={handleDecisionUpdate}
-        onDecisionDelete={handleDecisionDelete}
-        onDecisionArchive={handleDecisionArchive}
-        onQuickAdd={handleStageQuickAdd}
         showArchived={showArchived}
+        onDecisionUpdate={handleDecisionUpdate}
+        onDecisionClick={handleDecisionClick}
+        onArchive={handleArchive}
+        onQuickAdd={handleStageQuickAdd}
       />
 
       {/* Modals */}
@@ -155,7 +162,7 @@ export const IndexContainer = () => {
         onCloseQuickAdd={handleCloseQuickAdd}
         onCloseJournal={handleCloseJournal}
         onJournalComplete={handleJournalComplete}
-        onCreateDecision={handleDecisionCreate}
+        onQuickAdd={handleQuickAdd}
         onDecisionUpdate={handleDecisionUpdate}
       />
     </div>
