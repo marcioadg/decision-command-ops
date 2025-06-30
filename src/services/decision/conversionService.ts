@@ -15,6 +15,11 @@ export const convertToDecision = (dbDecision: any): Decision => ({
   archived: dbDecision.archived || false,
   createdAt: new Date(dbDecision.created_at),
   updatedAt: dbDecision.updated_at ? new Date(dbDecision.updated_at) : undefined,
+  preAnalysis: dbDecision.pre_analysis ? {
+    upside: dbDecision.pre_analysis.upside,
+    downside: dbDecision.pre_analysis.downside,
+    alignment: dbDecision.pre_analysis.alignment
+  } : undefined,
   reflection: (dbDecision.reflection_7_day_date || dbDecision.reflection_30_day_date || dbDecision.reflection_90_day_date || dbDecision.reflection_questions) ? {
     sevenDay: dbDecision.reflection_7_day_date ? {
       date: new Date(dbDecision.reflection_7_day_date),
@@ -47,6 +52,11 @@ export const convertToDbDecision = (decision: Decision): any => {
     notes: decision.notes,
     bias_check: decision.biasCheck,
     archived: decision.archived || false,
+    pre_analysis: decision.preAnalysis ? {
+      upside: decision.preAnalysis.upside,
+      downside: decision.preAnalysis.downside,
+      alignment: decision.preAnalysis.alignment
+    } : null,
     reflection_questions: decision.reflection?.questions
   };
 
