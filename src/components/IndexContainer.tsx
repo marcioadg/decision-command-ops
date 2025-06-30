@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { secureDecisionService } from '@/services/secureDecisionService';
@@ -9,6 +10,7 @@ import { IndexModals } from './IndexModals';
 import { IndexLoadingScreen } from './IndexLoadingScreen';
 import { IndexErrorScreen } from './IndexErrorScreen';
 import { MissionBar } from './MissionBar';
+import { StatusBar } from './StatusBar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useIndexState } from '@/hooks/useIndexState';
 import { useIndexEffects } from '@/hooks/useIndexEffects';
@@ -143,6 +145,9 @@ export const IndexContainer = () => {
 
       {/* Mission Bar */}
       <MissionBar />
+
+      {/* Status Bar */}
+      <StatusBar decisions={localDecisions} />
 
       {/* Main Content */}
       <IndexMainContent
