@@ -5,7 +5,7 @@ export interface ReflectionNotification {
   id: string;
   decisionId: string;
   decisionTitle: string;
-  type: '7-day' | '30-day' | '90-day';
+  type: '30-day';
   dueDate: Date;
   status: 'overdue' | 'due-today';
 }
@@ -17,36 +17,28 @@ export const notificationService = {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
     decisions.forEach(decision => {
-      if (!decision.reflection) return;
+      if (!decision.reflection?.thirtyDay || decision.reflection.thirtyDay.completed) return;
+      
+      const dueDate = new Date(decision.reflection.thirtyDay.date.getFullYear(), decision.reflection.thirtyDay.date.getMonth(), decision.reflection.thirtyDay.date.getDate());
+      let status: 'overdue' | 'due-today' | null = null;
+      
+      if (dueDate < today) {
+        status = 'overdue';
+      } else if (dueDate.getTime() === today.getTime()) {
+        status = 'due-today';
+      }
 
-      const checkInterval = (interval: any, type: '7-day' | '30-day' | '90-day') => {
-        if (!interval || interval.completed) return;
-        
-        const dueDate = new Date(interval.date.getFullYear(), interval.date.getMonth(), interval.date.getDate());
-        let status: 'overdue' | 'due-today' | null = null;
-        
-        if (dueDate < today) {
-          status = 'overdue';
-        } else if (dueDate.getTime() === today.getTime()) {
-          status = 'due-today';
-        }
-
-        // Only add notifications that are overdue or due today
-        if (status) {
-          notifications.push({
-            id: `${decision.id}-${type}`,
-            decisionId: decision.id,
-            decisionTitle: decision.title,
-            type,
-            dueDate: interval.date,
-            status
-          });
-        }
-      };
-
-      checkInterval(decision.reflection.sevenDay, '7-day');
-      checkInterval(decision.reflection.thirtyDay, '30-day');
-      checkInterval(decision.reflection.ninetyDay, '90-day');
+      // Only add notifications that are overdue or due today
+      if (status) {
+        notifications.push({
+          id: `${decision.id}-30-day`,
+          decisionId: decision.id,
+          decisionTitle: decision.title,
+          type: '30-day',
+          dueDate: decision.reflection.thirtyDay.date,
+          status
+        });
+      }
     });
 
     // Sort by urgency: overdue first, then due today

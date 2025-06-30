@@ -1,28 +1,19 @@
 
 import { Decision } from '@/types/Decision';
 
-// Auto-calculate reflection dates when decision moves to 'decided' stage
-export const calculateReflectionDates = (createdAt: Date) => {
-  const sevenDayDate = new Date(createdAt);
-  sevenDayDate.setDate(sevenDayDate.getDate() + 7);
-  
+// Auto-calculate reflection date when decision moves to 'decided' stage
+export const calculateReflectionDate = (createdAt: Date) => {
   const thirtyDayDate = new Date(createdAt);
   thirtyDayDate.setDate(thirtyDayDate.getDate() + 30);
-  
-  const ninetyDayDate = new Date(createdAt);
-  ninetyDayDate.setDate(ninetyDayDate.getDate() + 90);
-  
-  return { sevenDayDate, thirtyDayDate, ninetyDayDate };
+  return thirtyDayDate;
 };
 
 export const setupReflectionIntervals = (decision: Decision, createdAt: Date = new Date()) => {
-  if (decision.stage === 'decided' && !decision.reflection?.sevenDay) {
-    const { sevenDayDate, thirtyDayDate, ninetyDayDate } = calculateReflectionDates(createdAt);
+  if (decision.stage === 'decided' && !decision.reflection?.thirtyDay) {
+    const thirtyDayDate = calculateReflectionDate(createdAt);
     return {
       ...decision.reflection,
-      sevenDay: { date: sevenDayDate, completed: false },
-      thirtyDay: { date: thirtyDayDate, completed: false },
-      ninetyDay: { date: ninetyDayDate, completed: false },
+      thirtyDay: { date: thirtyDayDate, completed: false, wasCorrect: undefined },
       questions: decision.reflection?.questions || [
         'What went well with this decision?',
         'What could have been improved?',

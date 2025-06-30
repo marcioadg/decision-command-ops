@@ -20,23 +20,14 @@ export const convertDatabaseRecordToDecision = (record: any): Decision => {
       downside: record.pre_analysis.downside,
       alignment: record.pre_analysis.alignment
     } : undefined,
-    reflection: {
-      sevenDay: record.reflection_7_day_date ? {
-        date: new Date(record.reflection_7_day_date),
-        completed: record.reflection_7_day_completed || false,
-        answers: record.reflection_7_day_answers || undefined
-      } : undefined,
+    reflection: record.reflection_30_day_date || record.reflection_questions ? {
       thirtyDay: record.reflection_30_day_date ? {
         date: new Date(record.reflection_30_day_date),
         completed: record.reflection_30_day_completed || false,
-        answers: record.reflection_30_day_answers || undefined
-      } : undefined,
-      ninetyDay: record.reflection_90_day_date ? {
-        date: new Date(record.reflection_90_day_date),
-        completed: record.reflection_90_day_completed || false,
-        answers: record.reflection_90_day_answers || undefined
+        answers: record.reflection_30_day_answers || undefined,
+        wasCorrect: record.reflection_was_correct
       } : undefined,
       questions: record.reflection_questions || undefined
-    }
+    } : undefined
   };
 };
