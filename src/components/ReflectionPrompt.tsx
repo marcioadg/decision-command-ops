@@ -17,7 +17,7 @@ export const ReflectionPrompt = ({ shouldShow }: ReflectionPromptProps) => {
         <span className="text-sm font-mono text-tactical-accent">REFLECTION RECOMMENDED</span>
       </div>
       <p className="text-xs text-tactical-text/80">
-        This decision has been executed. Set up reflection intervals to review its outcomes at 7, 30, and 90 days.
+        This decision has been executed. Set up a 30-day reflection to review its outcomes and assess its accuracy.
       </p>
     </div>
   );

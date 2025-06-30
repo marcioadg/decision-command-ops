@@ -5,7 +5,7 @@ import { ReflectionIntervalScheduling } from './ReflectionIntervalScheduling';
 import { ReflectionIntervalNotes } from './ReflectionIntervalNotes';
 
 interface ReflectionIntervalProps {
-  intervalKey: '7-day' | '30-day' | '90-day';
+  intervalKey: '30-day';
   label: string;
   description: string;
   data: ReflectionIntervalType | undefined;
@@ -50,6 +50,51 @@ export const ReflectionInterval = ({
         statusColor={status.color}
         statusText={status.status.toUpperCase().replace('-', ' ')}
       />
+
+      {/* Decision Accuracy */}
+      <div className="mb-3">
+        <label className="block text-xs font-mono text-tactical-text/80 mb-1">Decision Accuracy</label>
+        {editMode ? (
+          <div className="flex items-center space-x-4">
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="wasCorrect"
+                checked={data?.wasCorrect === true}
+                onChange={() => onUpdate({ wasCorrect: true })}
+                className="text-tactical-accent"
+              />
+              <span className="text-xs text-tactical-text/80">Correct</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="wasCorrect"
+                checked={data?.wasCorrect === false}
+                onChange={() => onUpdate({ wasCorrect: false })}
+                className="text-tactical-accent"
+              />
+              <span className="text-xs text-tactical-text/80">Incorrect</span>
+            </label>
+            <label className="flex items-center space-x-2">
+              <input
+                type="radio"
+                name="wasCorrect"
+                checked={data?.wasCorrect === undefined}
+                onChange={() => onUpdate({ wasCorrect: undefined })}
+                className="text-tactical-accent"
+              />
+              <span className="text-xs text-tactical-text/80">Not assessed</span>
+            </label>
+          </div>
+        ) : (
+          <p className="text-xs text-tactical-text/80">
+            {data?.wasCorrect === true ? 'Correct' : 
+             data?.wasCorrect === false ? 'Incorrect' : 
+             'Not assessed'}
+          </p>
+        )}
+      </div>
 
       {/* Reflection Notes */}
       <ReflectionIntervalNotes

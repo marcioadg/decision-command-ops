@@ -8,72 +8,46 @@ interface DecisionCardReflectionStatusProps {
 
 export const DecisionCardReflectionStatus = ({ decision }: DecisionCardReflectionStatusProps) => {
   const getReflectionStatus = () => {
-    if (!decision.reflection) return null;
+    if (!decision.reflection?.thirtyDay) return null;
     
     const now = new Date();
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    
-    const intervals = [
-      { data: decision.reflection.sevenDay, name: '7D' },
-      { data: decision.reflection.thirtyDay, name: '30D' },
-      { data: decision.reflection.ninetyDay, name: '90D' }
-    ].filter(interval => interval.data);
+    const reflection = decision.reflection.thirtyDay;
 
-    if (intervals.length === 0) return null;
-
-    // Find the most urgent status
-    let mostUrgent = { status: 'completed', interval: null, daysUntil: Infinity };
-
-    intervals.forEach(({ data, name }) => {
-      if (!data) return;
-      
-      if (data.completed) return; // Skip completed reflections
-      
-      const dueDate = new Date(data.date.getFullYear(), data.date.getMonth(), data.date.getDate());
-      const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysUntil < 0 && mostUrgent.status !== 'overdue') {
-        mostUrgent = { status: 'overdue', interval: name, daysUntil };
-      } else if (daysUntil === 0 && mostUrgent.status !== 'overdue') {
-        mostUrgent = { status: 'due-today', interval: name, daysUntil };
-      } else if (daysUntil > 0 && daysUntil < mostUrgent.daysUntil && mostUrgent.status === 'completed') {
-        mostUrgent = { status: 'due-soon', interval: name, daysUntil };
-      }
-    });
-
-    if (mostUrgent.status === 'completed') {
-      // All reflections are completed
-      const completedCount = intervals.filter(({ data }) => data?.completed).length;
+    if (reflection.completed) {
       return {
         type: 'complete',
         color: 'text-gray-400',
-        text: `${completedCount}/${intervals.length} COMPLETE`,
+        text: 'REFLECTION COMPLETE',
         icon: MessageSquare
       };
     }
 
-    const statusConfig = {
-      'overdue': {
+    const dueDate = new Date(reflection.date.getFullYear(), reflection.date.getMonth(), reflection.date.getDate());
+    const daysUntil = Math.ceil((dueDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+    
+    if (daysUntil < 0) {
+      return {
         type: 'overdue',
         color: 'text-gray-500',
-        text: `REFLECTION ${mostUrgent.interval} OVERDUE`,
+        text: 'REFLECTION OVERDUE',
         icon: AlertTriangle
-      },
-      'due-today': {
+      };
+    } else if (daysUntil === 0) {
+      return {
         type: 'due-today',
         color: 'text-gray-600',
-        text: `REFLECTION ${mostUrgent.interval} DUE TODAY`,
+        text: 'REFLECTION DUE TODAY',
         icon: Clock
-      },
-      'due-soon': {
+      };
+    } else {
+      return {
         type: 'due-soon',
         color: 'text-gray-400',
-        text: `REFLECTION IN ${mostUrgent.daysUntil}D`,
+        text: `REFLECTION IN ${daysUntil}D`,
         icon: Calendar
-      }
-    };
-
-    return statusConfig[mostUrgent.status as keyof typeof statusConfig] || null;
+      };
+    }
   };
 
   const reflectionStatus = getReflectionStatus();

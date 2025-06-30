@@ -7,6 +7,7 @@ export interface ReflectionInterval {
   date: Date;
   completed: boolean;
   answers?: string[];
+  wasCorrect?: boolean;
 }
 
 export interface PreAnalysis {
@@ -30,9 +31,7 @@ export interface Decision {
   archived?: boolean;
   preAnalysis?: PreAnalysis;
   reflection?: {
-    sevenDay?: ReflectionInterval;
     thirtyDay?: ReflectionInterval;
-    ninetyDay?: ReflectionInterval;
     questions?: string[];
   };
 }

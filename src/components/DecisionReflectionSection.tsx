@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { Decision, ReflectionInterval } from '@/types/Decision';
 import { MessageSquare, ChevronDown, ChevronRight } from 'lucide-react';
@@ -18,16 +19,14 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
     const reflection = decision.reflection;
     if (!reflection) return false;
     
-    // Check if there's meaningful content in any reflection interval
-    const hasSevenDayContent = reflection.sevenDay?.answers?.some(answer => answer.trim().length > 0);
+    // Check if there's meaningful content in the 30-day reflection
     const hasThirtyDayContent = reflection.thirtyDay?.answers?.some(answer => answer.trim().length > 0);
-    const hasNinetyDayContent = reflection.ninetyDay?.answers?.some(answer => answer.trim().length > 0);
     const hasQuestions = reflection.questions?.some(question => question.trim().length > 0);
     
-    return hasSevenDayContent || hasThirtyDayContent || hasNinetyDayContent || hasQuestions;
+    return hasThirtyDayContent || hasQuestions;
   };
 
-  const hasAnyReflection = decision.reflection?.sevenDay || decision.reflection?.thirtyDay || decision.reflection?.ninetyDay || decision.reflection?.questions?.length;
+  const hasAnyReflection = decision.reflection?.thirtyDay || decision.reflection?.questions?.length;
   const shouldShowReflectionPrompt = decision.stage === 'decided' && !hasAnyReflection;
   // Only show reflections for decided stage, or if there's saved content (for backwards compatibility)
   const canShowReflection = decision.stage === 'decided' || hasReflectionContent();
@@ -41,24 +40,22 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
     
     onUpdate({
       reflection: {
-        sevenDay: decision.reflection?.sevenDay,
         thirtyDay: decision.reflection?.thirtyDay,
-        ninetyDay: decision.reflection?.ninetyDay,
         questions: decision.reflection?.questions || [],
         ...updates
       }
     });
   };
 
-  const handleIntervalUpdate = (interval: '7-day' | '30-day' | '90-day', updates: Partial<ReflectionInterval>) => {
-    const intervalKey = interval === '7-day' ? 'sevenDay' : interval === '30-day' ? 'thirtyDay' : 'ninetyDay';
-    const currentInterval = decision.reflection?.[intervalKey];
+  const handleIntervalUpdate = (updates: Partial<ReflectionInterval>) => {
+    const currentInterval = decision.reflection?.thirtyDay;
     
     handleReflectionUpdate({
-      [intervalKey]: {
+      thirtyDay: {
         date: currentInterval?.date || new Date(),
         completed: currentInterval?.completed || false,
         answers: currentInterval?.answers || [],
+        wasCorrect: currentInterval?.wasCorrect,
         ...updates
       }
     });
@@ -67,30 +64,6 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
   const handleQuestionsUpdate = (questions: string[]) => {
     handleReflectionUpdate({ questions });
   };
-
-  const reflectionIntervals = [
-    {
-      key: '7-day' as const,
-      label: 'Reflections in 7D',
-      description: 'Initial quick review',
-      data: decision.reflection?.sevenDay,
-      defaultDays: 7
-    },
-    {
-      key: '30-day' as const,
-      label: 'Reflections in 30D',
-      description: 'Medium-term impact assessment',
-      data: decision.reflection?.thirtyDay,
-      defaultDays: 30
-    },
-    {
-      key: '90-day' as const,
-      label: 'Reflections in 90D',
-      description: 'Long-term outcome evaluation',
-      data: decision.reflection?.ninetyDay,
-      defaultDays: 90
-    }
-  ];
 
   return (
     <div className="border-t border-tactical-border pt-6">
@@ -103,10 +76,10 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
       >
         {showReflection ? <ChevronDown className="w-4 h-4" /> : <ChevronRight className="w-4 h-4" />}
         <MessageSquare className="w-4 h-4" />
-        <span className="font-mono text-sm uppercase">Multi-Interval Reflections</span>
+        <span className="font-mono text-sm uppercase">30-Day Reflection</span>
         {hasAnyReflection && !showReflection && (
           <span className="text-xs text-tactical-text/60">
-            ({reflectionIntervals.filter(r => r.data?.completed).length}/{reflectionIntervals.filter(r => r.data).length} complete)
+            ({decision.reflection?.thirtyDay?.completed ? 'Complete' : 'Pending'})
           </span>
         )}
       </button>
@@ -120,20 +93,17 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
             onUpdate={handleQuestionsUpdate}
           />
 
-          {/* Reflection Intervals */}
-          {reflectionIntervals.map(({ key, label, description, data, defaultDays }) => (
-            <ReflectionIntervalComponent
-              key={key}
-              intervalKey={key}
-              label={label}
-              description={description}
-              data={data}
-              defaultDays={defaultDays}
-              createdAt={decision.createdAt}
-              editMode={editMode}
-              onUpdate={(updates) => handleIntervalUpdate(key, updates)}
-            />
-          ))}
+          {/* 30-Day Reflection Interval */}
+          <ReflectionIntervalComponent
+            intervalKey="30-day"
+            label="30-Day Reflection"
+            description="Medium-term impact assessment"
+            data={decision.reflection?.thirtyDay}
+            defaultDays={30}
+            createdAt={decision.createdAt}
+            editMode={editMode}
+            onUpdate={handleIntervalUpdate}
+          />
         </div>
       )}
     </div>

@@ -19,25 +19,17 @@ export const reflectionService = {
       const dueThisWeek: Decision[] = [];
 
       decisions.forEach(decision => {
-        if (!decision.reflection) return;
+        if (!decision.reflection?.thirtyDay || decision.reflection.thirtyDay.completed) return;
 
-        const checkReflection = (interval: any, type: string) => {
-          if (!interval || interval.completed) return;
-          
-          const dueDate = new Date(interval.date.getFullYear(), interval.date.getMonth(), interval.date.getDate());
-          
-          if (dueDate < today) {
-            overdue.push(decision);
-          } else if (dueDate.getTime() === today.getTime()) {
-            dueToday.push(decision);
-          } else if (dueDate < nextWeek) {
-            dueThisWeek.push(decision);
-          }
-        };
-
-        checkReflection(decision.reflection.sevenDay, '7-day');
-        checkReflection(decision.reflection.thirtyDay, '30-day');
-        checkReflection(decision.reflection.ninetyDay, '90-day');
+        const dueDate = new Date(decision.reflection.thirtyDay.date.getFullYear(), decision.reflection.thirtyDay.date.getMonth(), decision.reflection.thirtyDay.date.getDate());
+        
+        if (dueDate < today) {
+          overdue.push(decision);
+        } else if (dueDate.getTime() === today.getTime()) {
+          dueToday.push(decision);
+        } else if (dueDate < nextWeek) {
+          dueThisWeek.push(decision);
+        }
       });
 
       return { overdue, dueToday, dueThisWeek };

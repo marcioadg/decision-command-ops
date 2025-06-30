@@ -18,20 +18,10 @@ export const deepCloneDecision = (decision: Decision): Decision => {
   if (decision.reflection) {
     cloned.reflection = {
       questions: decision.reflection.questions ? [...decision.reflection.questions] : undefined,
-      sevenDay: decision.reflection.sevenDay ? {
-        ...decision.reflection.sevenDay,
-        date: new Date(decision.reflection.sevenDay.date),
-        answers: decision.reflection.sevenDay.answers ? [...decision.reflection.sevenDay.answers] : undefined
-      } : undefined,
       thirtyDay: decision.reflection.thirtyDay ? {
         ...decision.reflection.thirtyDay,
         date: new Date(decision.reflection.thirtyDay.date),
         answers: decision.reflection.thirtyDay.answers ? [...decision.reflection.thirtyDay.answers] : undefined
-      } : undefined,
-      ninetyDay: decision.reflection.ninetyDay ? {
-        ...decision.reflection.ninetyDay,
-        date: new Date(decision.reflection.ninetyDay.date),
-        answers: decision.reflection.ninetyDay.answers ? [...decision.reflection.ninetyDay.answers] : undefined
       } : undefined
     };
   }

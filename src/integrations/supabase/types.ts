@@ -108,14 +108,9 @@ export type Database = {
           reflection_30_day_answers: string[] | null
           reflection_30_day_completed: boolean | null
           reflection_30_day_date: string | null
-          reflection_7_day_answers: string[] | null
-          reflection_7_day_completed: boolean | null
-          reflection_7_day_date: string | null
-          reflection_90_day_answers: string[] | null
-          reflection_90_day_completed: boolean | null
-          reflection_90_day_date: string | null
           reflection_answers: string[] | null
           reflection_questions: string[] | null
+          reflection_was_correct: boolean | null
           stage: string
           title: string
           updated_at: string | null
@@ -136,14 +131,9 @@ export type Database = {
           reflection_30_day_answers?: string[] | null
           reflection_30_day_completed?: boolean | null
           reflection_30_day_date?: string | null
-          reflection_7_day_answers?: string[] | null
-          reflection_7_day_completed?: boolean | null
-          reflection_7_day_date?: string | null
-          reflection_90_day_answers?: string[] | null
-          reflection_90_day_completed?: boolean | null
-          reflection_90_day_date?: string | null
           reflection_answers?: string[] | null
           reflection_questions?: string[] | null
+          reflection_was_correct?: boolean | null
           stage: string
           title: string
           updated_at?: string | null
@@ -164,14 +154,9 @@ export type Database = {
           reflection_30_day_answers?: string[] | null
           reflection_30_day_completed?: boolean | null
           reflection_30_day_date?: string | null
-          reflection_7_day_answers?: string[] | null
-          reflection_7_day_completed?: boolean | null
-          reflection_7_day_date?: string | null
-          reflection_90_day_answers?: string[] | null
-          reflection_90_day_completed?: boolean | null
-          reflection_90_day_date?: string | null
           reflection_answers?: string[] | null
           reflection_questions?: string[] | null
+          reflection_was_correct?: boolean | null
           stage?: string
           title?: string
           updated_at?: string | null

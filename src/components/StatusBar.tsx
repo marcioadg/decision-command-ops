@@ -1,3 +1,4 @@
+
 import { Decision } from '@/types/Decision';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
@@ -27,6 +28,17 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
 
   const clarityScore = activeDecisions.length > 0 
     ? Math.round((stageStats.decided / totalDecisions) * 100)
+    : 0;
+
+  // Calculate accuracy score based on completed reflections
+  const completedReflections = activeDecisions.filter(d => 
+    d.reflection?.thirtyDay?.completed && d.reflection.thirtyDay.wasCorrect !== undefined
+  );
+  const correctDecisions = completedReflections.filter(d => 
+    d.reflection?.thirtyDay?.wasCorrect === true
+  );
+  const accuracyScore = completedReflections.length > 0 
+    ? Math.round((correctDecisions.length / completedReflections.length) * 100)
     : 0;
 
   return (
@@ -80,6 +92,17 @@ export const StatusBar = ({ decisions }: StatusBarProps) => {
                 </TooltipTrigger>
                 <TooltipContent>
                   <p>Percentage of active decisions that have been decided</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className={`hud-metric ${accuracyScore >= 80 ? 'bg-impact-high/20 text-impact-high' : accuracyScore >= 60 ? 'bg-urgency-medium/20 text-urgency-medium' : completedReflections.length === 0 ? 'bg-tactical-text/20 text-tactical-text' : 'bg-urgency-high/20 text-urgency-high'}`}>
+                    ACCURACY: {completedReflections.length === 0 ? 'N/A' : `${accuracyScore}%`}
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Percentage of reflected decisions that were assessed as correct ({correctDecisions.length}/{completedReflections.length})</p>
                 </TooltipContent>
               </Tooltip>
             </div>
