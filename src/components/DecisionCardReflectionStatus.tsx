@@ -68,7 +68,7 @@ export const DecisionCardReflectionStatus = ({ decision }: DecisionCardReflectio
       'due-soon': {
         type: 'due-soon',
         color: 'text-gray-400',
-        text: `REFLECTION ${mostUrgent.interval} IN ${mostUrgent.daysUntil}D`,
+        text: `REFLECTION IN ${mostUrgent.daysUntil}D`,
         icon: Calendar
       }
     };
