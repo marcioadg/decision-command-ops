@@ -1,99 +1,33 @@
-
 import { Decision } from '@/types/Decision';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-
 interface StatusBarProps {
   decisions: Decision[];
 }
-
-export const StatusBar = ({ decisions }: StatusBarProps) => {
+export const StatusBar = ({
+  decisions
+}: StatusBarProps) => {
   // Filter out archived decisions for all counts
   const activeDecisions = decisions.filter(d => !d.archived);
   const totalDecisions = activeDecisions.length;
-  
   const stageStats = {
     backlog: activeDecisions.filter(d => d.stage === 'backlog').length,
     considering: activeDecisions.filter(d => d.stage === 'considering').length,
     committed: activeDecisions.filter(d => d.stage === 'committed').length,
-    decided: activeDecisions.filter(d => d.stage === 'decided').length,
+    decided: activeDecisions.filter(d => d.stage === 'decided').length
   };
 
   // Active count excludes decided stage (no lessons column anymore)
   const activeWorkCount = stageStats.backlog + stageStats.considering + stageStats.committed;
-  
   const highPriorityDecisions = activeDecisions.filter(d => d.priority === 'high').length;
-  const avgConfidence = activeDecisions.length > 0 
-    ? Math.round(activeDecisions.reduce((sum, d) => sum + d.confidence, 0) / activeDecisions.length)
-    : 0;
+  const avgConfidence = activeDecisions.length > 0 ? Math.round(activeDecisions.reduce((sum, d) => sum + d.confidence, 0) / activeDecisions.length) : 0;
 
   // Calculate accuracy score based on completed reflections
-  const completedReflections = activeDecisions.filter(d => 
-    d.reflection?.thirtyDay?.completed && d.reflection.thirtyDay.wasCorrect !== undefined
-  );
-  const correctDecisions = completedReflections.filter(d => 
-    d.reflection?.thirtyDay?.wasCorrect === true
-  );
-  const accuracyScore = completedReflections.length > 0 
-    ? Math.round((correctDecisions.length / completedReflections.length) * 100)
-    : 0;
-
-  return (
-    <TooltipProvider>
+  const completedReflections = activeDecisions.filter(d => d.reflection?.thirtyDay?.completed && d.reflection.thirtyDay.wasCorrect !== undefined);
+  const correctDecisions = completedReflections.filter(d => d.reflection?.thirtyDay?.wasCorrect === true);
+  const accuracyScore = completedReflections.length > 0 ? Math.round(correctDecisions.length / completedReflections.length * 100) : 0;
+  return <TooltipProvider>
       <div className="bg-tactical-surface/80 backdrop-blur-sm border-b border-tactical-border">
-        <div className="container mx-auto px-6 py-3">
-          <div className="flex items-center justify-between">
-            {/* Left Side - Pipeline Stats */}
-            <div className="flex items-center space-x-6">
-              <div className="hud-metric bg-tactical-accent/20 text-tactical-accent">
-                ACTIVE: {activeWorkCount}
-              </div>
-              
-              <div className="flex items-center space-x-4 text-xs font-mono">
-                <span className="text-tactical-text/60">BACKLOG:</span>
-                <span className="text-tactical-text">{stageStats.backlog}</span>
-                
-                <span className="text-tactical-text/60">CONSIDERING:</span>
-                <span className="text-urgency-medium">{stageStats.considering}</span>
-                
-                <span className="text-tactical-text/60">COMMITTED:</span>
-                <span className="text-tactical-accent">{stageStats.committed}</span>
-                
-                <span className="text-tactical-text/60">DECIDED:</span>
-                <span className="text-impact-high">{stageStats.decided}</span>
-              </div>
-            </div>
-
-            {/* Right Side - Performance Metrics */}
-            <div className="flex items-center space-x-6">
-              <div className="hud-metric">
-                HIGH PRIORITY: {highPriorityDecisions}
-              </div>
-              
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className="hud-metric">
-                    AVG CONFIDENCE: {avgConfidence}%
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Average confidence score across all active decisions</p>
-                </TooltipContent>
-              </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger>
-                  <div className={`hud-metric ${accuracyScore >= 80 ? 'bg-impact-high/20 text-impact-high' : accuracyScore >= 60 ? 'bg-urgency-medium/20 text-urgency-medium' : completedReflections.length === 0 ? 'bg-tactical-text/20 text-tactical-text' : 'bg-urgency-high/20 text-urgency-high'}`}>
-                    ACCURACY: {completedReflections.length === 0 ? 'N/A' : `${accuracyScore}%`}
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Percentage of reflected decisions that were assessed as correct ({correctDecisions.length}/{completedReflections.length})</p>
-                </TooltipContent>
-              </Tooltip>
-            </div>
-          </div>
-        </div>
+        
       </div>
-    </TooltipProvider>
-  );
+    </TooltipProvider>;
 };
