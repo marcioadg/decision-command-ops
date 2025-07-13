@@ -57,25 +57,28 @@ export const useDecisionCRUD = ({
         updatedAt: new Date()
       };
 
-      // Apply immediate optimistic update to state
-      console.log('Applying optimistic update for new decision');
-      setDecisions(prev => [optimisticDecision, ...prev]);
+      // Apply immediate optimistic update using the callback
+      console.log('Applying optimistic update for new decision via onImmediateUpdate');
+      if (onImmediateUpdate) {
+        onImmediateUpdate(optimisticDecision);
+      }
       
       // Call the API to create the real decision
       const newDecision = await secureDecisionService.createDecision(sanitizedDecision);
       console.log('Decision created successfully, replacing optimistic with real:', newDecision.id);
       
-      // Replace optimistic decision with real one from the database
-      setDecisions(prev => prev.map(d => 
-        d.id === optimisticDecision.id ? newDecision : d
-      ));
+      // Replace optimistic decision with real one using the callback
+      console.log('Replacing optimistic decision with real decision via onImmediateUpdate');
+      if (onImmediateUpdate) {
+        onImmediateUpdate(newDecision);
+      }
       
       return newDecision;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create decision';
       console.error('Error creating decision:', err);
       
-      // Remove the optimistic decision on error
+      // Remove any optimistic decisions on error
       setDecisions(prev => prev.filter(d => !d.id.startsWith('temp-')));
       
       toast({
@@ -85,7 +88,7 @@ export const useDecisionCRUD = ({
       });
       throw err;
     }
-  }, [toast, setDecisions]);
+  }, [toast, setDecisions, onImmediateUpdate]);
 
   const updateDecision = useCallback(async (decision: Decision) => {
     try {

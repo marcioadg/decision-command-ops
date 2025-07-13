@@ -28,11 +28,20 @@ export const useDecisions = () => {
     console.log('useDecisions: Handling immediate update for decision:', decision.id);
     setDecisions(prev => {
       const exists = prev.find(d => d.id === decision.id);
-      if (exists) {
+      const isOptimistic = decision.id.startsWith('temp-');
+      const hasOptimistic = prev.find(d => d.id.startsWith('temp-'));
+      
+      if (!isOptimistic && hasOptimistic) {
+        // Replace the optimistic decision with the real one
+        console.log('useDecisions: Replacing optimistic decision with real one');
+        return prev.map(d => d.id.startsWith('temp-') ? decision : d);
+      } else if (exists) {
         // Update existing decision
+        console.log('useDecisions: Updating existing decision');
         return prev.map(d => d.id === decision.id ? decision : d);
       } else {
         // Add new decision
+        console.log('useDecisions: Adding new decision');
         return [decision, ...prev];
       }
     });
