@@ -18,6 +18,7 @@ import { useIndexEffects } from '@/hooks/useIndexEffects';
 import { useIndexMigration } from '@/hooks/useIndexMigration';
 import { useIndexActions } from '@/hooks/useIndexActions';
 import { useVisitTracking } from '@/hooks/useVisitTracking';
+import { RadarBackground } from './RadarBackground';
 
 export const IndexContainer = () => {
   const { user, profile, isLoading: authLoading } = useAuth();
@@ -113,7 +114,10 @@ export const IndexContainer = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
+    <div className="min-h-screen bg-gray-950 text-gray-100 relative">
+      {/* Radar Background */}
+      <RadarBackground />
+      
       {/* Header */}
       {isMobile ? (
         <MobileHeader
