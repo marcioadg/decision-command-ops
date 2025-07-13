@@ -54,7 +54,8 @@ export const useDecisionCRUD = ({
         ...sanitizedDecision,
         id: `temp-${Date.now()}`, // Temporary ID
         createdAt: new Date(),
-        updatedAt: new Date()
+        updatedAt: new Date(),
+        archived: false // Ensure new decisions are not archived
       };
 
       // Apply immediate optimistic update using the callback
