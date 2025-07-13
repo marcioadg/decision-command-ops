@@ -57,36 +57,27 @@ export const useDecisionCRUD = ({
         updatedAt: new Date()
       };
 
-      // Apply immediate update for optimistic UI
-      if (onImmediateUpdate) {
-        console.log('Applying immediate optimistic update for new decision');
-        onImmediateUpdate(optimisticDecision);
-      }
-
-      // If not connected to real-time, update local state immediately
-      if (!isRealTimeConnected) {
-        setDecisions(prev => [optimisticDecision, ...prev]);
-      }
+      // Apply immediate optimistic update to state
+      console.log('Applying optimistic update for new decision');
+      setDecisions(prev => [optimisticDecision, ...prev]);
       
+      // Call the API to create the real decision
       const newDecision = await secureDecisionService.createDecision(sanitizedDecision);
+      console.log('Decision created successfully, replacing optimistic with real:', newDecision.id);
       
-      // Replace optimistic decision with real one
-      if (onImmediateUpdate) {
-        console.log('Replacing optimistic decision with real decision');
-        onImmediateUpdate(newDecision);
-      }
-
-      // Update local state with real decision if not using real-time
-      if (!isRealTimeConnected) {
-        setDecisions(prev => prev.map(d => 
-          d.id === optimisticDecision.id ? newDecision : d
-        ));
-      }
+      // Replace optimistic decision with real one from the database
+      setDecisions(prev => prev.map(d => 
+        d.id === optimisticDecision.id ? newDecision : d
+      ));
       
       return newDecision;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Failed to create decision';
       console.error('Error creating decision:', err);
+      
+      // Remove the optimistic decision on error
+      setDecisions(prev => prev.filter(d => !d.id.startsWith('temp-')));
+      
       toast({
         title: "Error Creating Decision",
         description: errorMessage,
@@ -94,7 +85,7 @@ export const useDecisionCRUD = ({
       });
       throw err;
     }
-  }, [toast, isRealTimeConnected, setDecisions, onImmediateUpdate]);
+  }, [toast, setDecisions]);
 
   const updateDecision = useCallback(async (decision: Decision) => {
     try {
