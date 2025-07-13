@@ -51,6 +51,13 @@ export const MobilePipeline = ({
   } = useOptimisticDecisions(decisions);
 
   const getDecisionsByStage = (stage: DecisionStage) => {
+    // Temporary fix: handle both 'decided' and 'executed' for backward compatibility
+    if (stage === 'executed') {
+      return optimisticDecisions.filter(decision => 
+        (decision.stage === stage || (decision.stage as any) === 'decided') && 
+        (showArchived ? decision.archived : !decision.archived)
+      );
+    }
     return optimisticDecisions.filter(decision => 
       decision.stage === stage && 
       (showArchived ? decision.archived : !decision.archived)
