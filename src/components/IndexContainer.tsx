@@ -1,6 +1,7 @@
 
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useDecisions } from '@/hooks/useDecisions';
 import { secureDecisionService } from '@/services/secureDecisionService';
 import { Decision } from '@/types/Decision';
 import { IndexHeader } from './IndexHeader';
@@ -21,6 +22,14 @@ import { useVisitTracking } from '@/hooks/useVisitTracking';
 export const IndexContainer = () => {
   const { user, profile, isLoading: authLoading } = useAuth();
   const isMobile = useIsMobile();
+  
+  // Use the optimized decisions hook for real-time updates and optimistic UI
+  const { 
+    decisions, 
+    loading, 
+    error, 
+    refreshDecisions 
+  } = useDecisions();
   
   // Track page visit
   useVisitTracking('dashboard');
@@ -46,9 +55,7 @@ export const IndexContainer = () => {
     handleStageQuickAdd,
     triggerFirstLoginJournal
   } = useIndexState();
-  const [localDecisions, setLocalDecisions] = useState<Decision[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  
   const [reflectionsDue, setReflectionsDue] = useState<{
     overdue: Decision[];
     dueToday: Decision[];
@@ -68,9 +75,9 @@ export const IndexContainer = () => {
     profile,
     loading,
     error,
-    decisions: localDecisions,
-    localDecisions,
-    setLocalDecisions,
+    decisions: decisions,
+    localDecisions: decisions,
+    setLocalDecisions: () => {}, // No longer needed as we use useDecisions hook
     triggerFirstLoginJournal
   });
 
@@ -78,36 +85,23 @@ export const IndexContainer = () => {
     user,
     hasMigrated,
     setHasMigrated,
-    setLocalDecisions
+    setLocalDecisions: () => {} // No longer needed as we use useDecisions hook
   });
 
-  // Optimized data loading - batch requests but remove caching that causes sync issues
+  // Load reflections due separately (this doesn't need optimistic updates)
   useEffect(() => {
     if (!user) return;
 
-    const loadDecisions = async () => {
-      setLoading(true);
-      setRetryCount(prev => prev + 1);
+    const loadReflections = async () => {
       try {
-        // Batch both requests for better performance
-        const [decisions, reflections] = await Promise.all([
-          secureDecisionService.getDecisions(),
-          secureDecisionService.getReflectionsDue()
-        ]);
-        
-        setLocalDecisions(decisions);
+        const reflections = await secureDecisionService.getReflectionsDue();
         setReflectionsDue(reflections);
-        setError(null);
-        setRetryCount(0);
       } catch (err: any) {
-        console.error('Index: Error fetching data:', err);
-        setError(err.message || 'Failed to load data.');
-      } finally {
-        setLoading(false);
+        console.error('Index: Error fetching reflections:', err);
       }
     };
 
-    loadDecisions();
+    loadReflections();
   }, [user?.id]);
 
   if (authLoading) {
@@ -124,7 +118,7 @@ export const IndexContainer = () => {
       {isMobile ? (
         <MobileHeader
           profileName={profile?.name}
-          decisions={localDecisions}
+          decisions={decisions}
           showArchived={showArchived}
           error={error}
           onDecisionClick={handleDecisionClick}
@@ -136,7 +130,7 @@ export const IndexContainer = () => {
       ) : (
         <IndexHeader
           profileName={profile?.name}
-          decisions={localDecisions}
+          decisions={decisions}
           showArchived={showArchived}
           error={error}
           onDecisionClick={handleDecisionClick}
@@ -151,11 +145,11 @@ export const IndexContainer = () => {
       <MissionBar />
 
       {/* Status Bar */}
-      <StatusBar decisions={localDecisions} />
+      <StatusBar decisions={decisions} />
 
       {/* Main Content */}
       <IndexMainContent
-        decisions={localDecisions}
+        decisions={decisions}
         showArchived={showArchived}
         onDecisionUpdate={handleDecisionUpdate}
         onDecisionClick={handleDecisionClick}
