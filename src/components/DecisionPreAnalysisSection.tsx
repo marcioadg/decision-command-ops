@@ -40,8 +40,8 @@ export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: Dec
     },
     {
       key: 'downside' as keyof PreAnalysis,
-      label: "What's the downside of this decision?",
-      placeholder: "Think about risks, costs, and potential negative consequences...",
+      label: "What's the downside of this decision? What can you do to minimize the risks?",
+      placeholder: "Think about risks, costs, potential negative consequences, and mitigation strategies...",
       value: currentPreAnalysis.downside || ''
     },
     {
