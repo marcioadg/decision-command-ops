@@ -61,7 +61,7 @@ export const StageColumn = ({
       case 'backlog': return 'border-t-info';
       case 'considering': return 'border-t-impact-medium';
       case 'committed': return 'border-t-tactical-accent';
-      case 'decided': return 'border-t-impact-high';
+      case 'decided': return 'border-t-destructive';
       default: return 'border-t-tactical-border';
     }
   };
