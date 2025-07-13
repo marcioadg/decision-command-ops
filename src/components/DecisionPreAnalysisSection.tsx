@@ -10,7 +10,7 @@ interface DecisionPreAnalysisSectionProps {
 
 export const DecisionPreAnalysisSection = ({ decision, editMode, onUpdate }: DecisionPreAnalysisSectionProps) => {
   // Only show for active stages (not decided)
-  const shouldShow = decision.stage !== 'decided';
+  const shouldShow = decision.stage !== 'executed';
   
   if (!shouldShow) {
     return null;

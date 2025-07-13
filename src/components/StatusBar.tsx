@@ -13,10 +13,10 @@ export const StatusBar = ({
     backlog: activeDecisions.filter(d => d.stage === 'backlog').length,
     considering: activeDecisions.filter(d => d.stage === 'considering').length,
     committed: activeDecisions.filter(d => d.stage === 'committed').length,
-    decided: activeDecisions.filter(d => d.stage === 'decided').length
+    executed: activeDecisions.filter(d => d.stage === 'executed').length
   };
 
-  // Active count excludes decided stage (no lessons column anymore)
+  // Active count excludes executed stage (no lessons column anymore)
   const activeWorkCount = stageStats.backlog + stageStats.considering + stageStats.committed;
   const highPriorityDecisions = activeDecisions.filter(d => d.priority === 'high').length;
   const avgConfidence = activeDecisions.length > 0 ? Math.round(activeDecisions.reduce((sum, d) => sum + d.confidence, 0) / activeDecisions.length) : 0;

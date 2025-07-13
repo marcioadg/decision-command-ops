@@ -27,9 +27,9 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
   };
 
   const hasAnyReflection = decision.reflection?.thirtyDay || decision.reflection?.questions?.length;
-  const shouldShowReflectionPrompt = decision.stage === 'decided' && !hasAnyReflection;
-  // Only show reflections for decided stage, or if there's saved content (for backwards compatibility)
-  const canShowReflection = decision.stage === 'decided' || hasReflectionContent();
+  const shouldShowReflectionPrompt = decision.stage === 'executed' && !hasAnyReflection;
+  // Only show reflections for executed stage, or if there's saved content (for backwards compatibility)
+  const canShowReflection = decision.stage === 'executed' || hasReflectionContent();
 
   if (!canShowReflection) {
     return null;
@@ -67,7 +67,7 @@ export const DecisionReflectionSection = ({ decision, editMode, onUpdate }: Deci
 
   return (
     <div className="border-t border-tactical-border pt-6">
-      {/* Reflection Prompt for Decided Stage */}
+      {/* Reflection Prompt for Executed Stage */}
       <ReflectionPrompt shouldShow={shouldShowReflectionPrompt} />
 
       <button

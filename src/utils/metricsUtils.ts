@@ -9,9 +9,9 @@ export const calculateDecisionMetrics = (decisions: Decision[]) => {
     ? Math.round(activeDecisions.reduce((sum, d) => sum + d.confidence, 0) / activeDecisions.length)
     : 0;
 
-  const decidedCount = activeDecisions.filter(d => d.stage === 'decided').length;
+  const executedCount = activeDecisions.filter(d => d.stage === 'executed').length;
   const clarityScore = activeDecisions.length > 0 
-    ? Math.round((decidedCount / activeDecisions.length) * 100)
+    ? Math.round((executedCount / activeDecisions.length) * 100)
     : 0;
 
   return {

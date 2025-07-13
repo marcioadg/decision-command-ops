@@ -60,7 +60,7 @@ export const IndexHeader = ({
                 </div>
               </TooltipTrigger>
               <TooltipContent>
-                <p>Percentage of active decisions that have been decided</p>
+                <p>Percentage of active decisions that have been executed</p>
               </TooltipContent>
             </Tooltip>
             

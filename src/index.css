@@ -141,7 +141,7 @@ All colors MUST be HSL.
     color: hsl(var(--tactical-accent)) !important;
   }
   
-  .stage-header-decided {
+  .stage-header-executed {
     color: hsl(var(--impact-high)) !important;
   }
   

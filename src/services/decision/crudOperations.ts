@@ -44,7 +44,7 @@ export const crudOperations = {
       const now = new Date();
       const newDecision = { ...decision, id: '', createdAt: now };
       
-      // Auto-set reflection dates if moving to 'decided' stage
+      // Auto-set reflection dates if moving to 'executed' stage
       const reflection = setupReflectionIntervals(newDecision, now);
       if (reflection) {
         newDecision.reflection = reflection;
@@ -83,7 +83,7 @@ export const crudOperations = {
     try {
       console.log('Updating decision:', decision.id);
       
-      // Auto-set reflection dates if moving to 'decided' stage for the first time
+      // Auto-set reflection dates if moving to 'executed' stage for the first time
       const reflection = setupReflectionIntervals(decision);
       if (reflection) {
         decision.reflection = reflection;

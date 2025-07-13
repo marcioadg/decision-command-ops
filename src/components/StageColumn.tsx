@@ -61,7 +61,7 @@ export const StageColumn = ({
       case 'backlog': return 'border-t-info';
       case 'considering': return 'border-t-impact-medium';
       case 'committed': return 'border-t-tactical-accent';
-      case 'decided': return 'border-t-destructive';
+      case 'executed': return 'border-t-destructive';
       default: return 'border-t-tactical-border';
     }
   };
@@ -71,7 +71,7 @@ export const StageColumn = ({
       case 'backlog': return 'stage-header-backlog';
       case 'considering': return 'stage-header-considering';
       case 'committed': return 'stage-header-committed';
-      case 'decided': return 'stage-header-decided';
+      case 'executed': return 'stage-header-executed';
       default: return 'stage-header';
     }
   };

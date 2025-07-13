@@ -24,7 +24,7 @@ const stages: { key: DecisionStage; label: string; description: string }[] = [
   { key: 'backlog', label: 'BACKLOG', description: 'Identified decisions awaiting evaluation' },
   { key: 'considering', label: 'CONSIDERING', description: 'Active analysis and stakeholder input' },
   { key: 'committed', label: 'COMMITTED', description: 'Decision made, execution pending' },
-  { key: 'decided', label: 'DECIDED', description: 'Executed decisions with outcomes' }
+  { key: 'executed', label: 'EXECUTED', description: 'Executed decisions with outcomes' }
 ];
 
 export const MobilePipeline = ({
@@ -87,7 +87,7 @@ export const MobilePipeline = ({
       await onDecisionUpdate(updatedDecision);
       
       // Play celebration sound for "decided" stage
-      if (newStage === 'decided') {
+      if (newStage === 'executed') {
         soundSystem.playMilitaryCelebration();
       } else {
         soundSystem.playStageTransition();

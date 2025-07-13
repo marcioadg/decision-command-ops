@@ -1,7 +1,7 @@
 
 import { Decision } from '@/types/Decision';
 
-// Auto-calculate reflection date when decision moves to 'decided' stage
+// Auto-calculate reflection date when decision moves to 'executed' stage
 export const calculateReflectionDate = (createdAt: Date) => {
   const thirtyDayDate = new Date(createdAt);
   thirtyDayDate.setDate(thirtyDayDate.getDate() + 30);
@@ -9,7 +9,7 @@ export const calculateReflectionDate = (createdAt: Date) => {
 };
 
 export const setupReflectionIntervals = (decision: Decision, createdAt: Date = new Date()) => {
-  if (decision.stage === 'decided' && !decision.reflection?.thirtyDay) {
+  if (decision.stage === 'executed' && !decision.reflection?.thirtyDay) {
     const thirtyDayDate = calculateReflectionDate(createdAt);
     return {
       ...decision.reflection,

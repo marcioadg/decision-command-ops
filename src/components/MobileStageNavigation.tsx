@@ -28,7 +28,7 @@ export const MobileStageNavigation = ({
       case 'backlog': return 'border-tactical-text/50';
       case 'considering': return 'border-urgency-medium';
       case 'committed': return 'border-tactical-accent';
-      case 'decided': return 'border-impact-high';
+      case 'executed': return 'border-impact-high';
       default: return 'border-tactical-border';
     }
   };

@@ -34,8 +34,8 @@ const stages: {
   label: 'COMMITTED',
   description: 'Decision made, execution pending'
 }, {
-  key: 'decided',
-  label: 'DECIDED',
+  key: 'executed',
+  label: 'EXECUTED',
   description: 'Executed decisions with outcomes'
 }];
 export const DecisionPipeline = ({
@@ -96,7 +96,7 @@ export const DecisionPipeline = ({
       console.log('DecisionPipeline: Database update successful for decision:', decisionId);
 
       // Play celebration sound for "decided" stage
-      if (stage === 'decided') {
+      if (stage === 'executed') {
         soundSystem.playMilitaryCelebration();
       } else {
         soundSystem.playStageTransition();

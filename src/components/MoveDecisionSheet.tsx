@@ -35,7 +35,7 @@ export const MoveDecisionSheet = ({
       case 'backlog': return 'border-tactical-text/50 hover:bg-tactical-text/10';
       case 'considering': return 'border-urgency-medium hover:bg-urgency-medium/10';
       case 'committed': return 'border-tactical-accent hover:bg-tactical-accent/10';
-      case 'decided': return 'border-impact-high hover:bg-impact-high/10';
+      case 'executed': return 'border-impact-high hover:bg-impact-high/10';
       default: return 'border-tactical-border hover:bg-tactical-surface/50';
     }
   };
