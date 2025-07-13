@@ -123,13 +123,19 @@ export const useDecisionCRUD = ({
         onImmediateUpdate(sanitizedDecision);
       }
       
-      // Pause real-time updates for this decision to prevent conflicts
+      // Pause real-time updates for this decision to prevent conflicts - extended timeout
       if (pauseRealtimeForDecision) {
-        pauseRealtimeForDecision(sanitizedDecision.id, 3000);
+        console.log('Pausing real-time updates for decision:', sanitizedDecision.id);
+        pauseRealtimeForDecision(sanitizedDecision.id, 8000); // Increased from 3 to 8 seconds
       }
       
+      console.log('Sending decision update to database:', sanitizedDecision.id, 'stage:', sanitizedDecision.stage);
       const updatedDecision = await secureDecisionService.updateDecision(sanitizedDecision);
-      console.log('Decision updated successfully, DB returned:', updatedDecision.preAnalysis);
+      console.log('Decision updated successfully in database:', {
+        id: updatedDecision.id,
+        stage: updatedDecision.stage,
+        preAnalysis: updatedDecision.preAnalysis
+      });
       
       if (!isRealTimeConnected) {
         setDecisions(prev => 

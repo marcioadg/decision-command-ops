@@ -42,7 +42,7 @@ export const useOptimisticDecisions = (decisions: Decision[]) => {
 
         // Keep update if server hasn't caught up yet, but with timeout
         const updateAge = Date.now() - update.timestamp;
-        if (updateAge > 10000) { // 10 seconds timeout
+        if (updateAge > 15000) { // 15 seconds timeout - increased to handle slower updates
           console.log('useOptimisticDecisions: Timing out old optimistic update:', update.id);
           return false;
         }
@@ -66,7 +66,7 @@ export const useOptimisticDecisions = (decisions: Decision[]) => {
       setOptimisticUpdates(prevUpdates => {
         const now = Date.now();
         const remaining = prevUpdates.filter(update => {
-          const isOld = now - update.timestamp > 12000; // 12 seconds timeout
+          const isOld = now - update.timestamp > 18000; // 18 seconds timeout - extended
           if (isOld) {
             console.log('useOptimisticDecisions: Timing out old optimistic update:', update.id);
           }
