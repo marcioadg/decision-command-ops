@@ -59,9 +59,12 @@ export const useDecisionCRUD = ({
       };
 
       // Apply immediate optimistic update using the callback
-      console.log('Applying optimistic update for new decision via onImmediateUpdate');
+      console.log('Applying optimistic update for new decision via onImmediateUpdate:', optimisticDecision.id);
       if (onImmediateUpdate) {
         onImmediateUpdate(optimisticDecision);
+        console.log('Optimistic update callback called successfully');
+      } else {
+        console.log('WARNING: onImmediateUpdate callback is not available');
       }
       
       // Call the API to create the real decision
@@ -69,9 +72,12 @@ export const useDecisionCRUD = ({
       console.log('Decision created successfully, replacing optimistic with real:', newDecision.id);
       
       // Replace optimistic decision with real one using the callback
-      console.log('Replacing optimistic decision with real decision via onImmediateUpdate');
+      console.log('Replacing optimistic decision with real decision via onImmediateUpdate:', newDecision.id);
       if (onImmediateUpdate) {
         onImmediateUpdate(newDecision);
+        console.log('Real decision replacement callback called successfully');
+      } else {
+        console.log('WARNING: onImmediateUpdate callback is not available for replacement');
       }
       
       return newDecision;
