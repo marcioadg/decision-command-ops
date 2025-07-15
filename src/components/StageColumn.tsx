@@ -16,7 +16,7 @@ interface StageColumnProps {
   isDragActive: boolean;
   showArchived?: boolean;
   updatingDecisions?: Set<string>;
-  hasOptimisticUpdate?: (decisionId: string) => boolean;
+  
 }
 
 export const StageColumn = ({ 
@@ -30,8 +30,7 @@ export const StageColumn = ({
   onQuickAdd,
   isDragActive,
   showArchived = false,
-  updatingDecisions = new Set(),
-  hasOptimisticUpdate = () => false
+  updatingDecisions = new Set()
 }: StageColumnProps) => {
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -108,7 +107,6 @@ export const StageColumn = ({
         ) : (
           decisions.map(decision => {
             const isUpdating = updatingDecisions.has(decision.id);
-            const isOptimistic = hasOptimisticUpdate(decision.id);
             
             return (
               <div key={decision.id} className="relative">
@@ -119,7 +117,6 @@ export const StageColumn = ({
                   onClick={onDecisionClick}
                   onArchive={onArchive}
                   className={`
-                    ${isOptimistic ? 'ring-2 ring-tactical-accent/50 bg-tactical-accent/5' : ''}
                     ${isUpdating ? 'opacity-75' : ''}
                     transition-all duration-200
                   `}

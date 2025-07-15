@@ -5,7 +5,6 @@ import { StageColumn } from './StageColumn';
 import { ConnectionStatus } from './ConnectionStatus';
 import { ConnectionStatusMonitor } from './ConnectionStatusMonitor';
 import { soundSystem } from '@/utils/soundSystem';
-import { useOptimisticDecisions } from '@/hooks/useOptimisticDecisions';
 import { useToast } from '@/hooks/use-toast';
 interface DecisionPipelineProps {
   decisions: Decision[];
@@ -50,15 +49,7 @@ export const DecisionPipeline = ({
 }: DecisionPipelineProps) => {
   const [draggedDecision, setDraggedDecision] = useState<Decision | null>(null);
   const [updatingDecisions, setUpdatingDecisions] = useState<Set<string>>(new Set());
-  const {
-    toast
-  } = useToast();
-  const {
-    optimisticDecisions,
-    applyOptimisticUpdate,
-    rollbackOptimisticUpdate,
-    hasOptimisticUpdate
-  } = useOptimisticDecisions(decisions);
+  const { toast } = useToast();
   const handleDragStart = (decision: Decision) => {
     setDraggedDecision(decision);
   };
@@ -76,8 +67,6 @@ export const DecisionPipeline = ({
       isRealTimeConnected
     });
 
-    // Apply optimistic update immediately
-    applyOptimisticUpdate(decisionId, stage);
     setUpdatingDecisions(prev => new Set(prev).add(decisionId));
 
     // Play immediate sound feedback
@@ -104,8 +93,6 @@ export const DecisionPipeline = ({
     } catch (error) {
       console.error('DecisionPipeline: Failed to update decision:', error);
 
-      // Rollback optimistic update on failure
-      rollbackOptimisticUpdate(decisionId);
       toast({
         title: "Update Failed",
         description: `Failed to move "${draggedDecision.title}" to ${stage}. Please try again.`,
@@ -122,19 +109,19 @@ export const DecisionPipeline = ({
   const getDecisionsByStage = (stage: DecisionStage) => {
     // Temporary fix: handle both 'decided' and 'executed' for backward compatibility
     if (stage === 'executed') {
-      return optimisticDecisions.filter(decision => 
+      return decisions.filter(decision => 
         (decision.stage === stage || (decision.stage as any) === 'decided') && 
         (showArchived ? decision.archived : !decision.archived)
       );
     }
-    return optimisticDecisions.filter(decision => decision.stage === stage && (showArchived ? decision.archived : !decision.archived));
+    return decisions.filter(decision => decision.stage === stage && (showArchived ? decision.archived : !decision.archived));
   };
   return <div className="w-full max-w-7xl mx-auto px-4">
       {/* Real-time connection status indicator with improved monitoring */}
       
 
       <div className="flex gap-3 h-full">
-        {stages.map(stage => <StageColumn key={stage.key} stage={stage} decisions={getDecisionsByStage(stage.key)} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} onDecisionClick={onDecisionClick} onArchive={onArchive} onQuickAdd={onQuickAdd} isDragActive={draggedDecision !== null} showArchived={showArchived} updatingDecisions={updatingDecisions} hasOptimisticUpdate={hasOptimisticUpdate} />)}
+        {stages.map(stage => <StageColumn key={stage.key} stage={stage} decisions={getDecisionsByStage(stage.key)} onDragStart={handleDragStart} onDragEnd={handleDragEnd} onDrop={handleDrop} onDecisionClick={onDecisionClick} onArchive={onArchive} onQuickAdd={onQuickAdd} isDragActive={draggedDecision !== null} showArchived={showArchived} updatingDecisions={updatingDecisions} />)}
       </div>
     </div>;
 };
