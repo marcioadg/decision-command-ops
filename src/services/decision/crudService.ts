@@ -110,7 +110,9 @@ export const crudService = {
       
       // Auto-set reflection dates if moving to 'executed' stage for the first time
       const updatedDecision = { ...decision };
-      updatedDecision.reflection = setupReflectionIntervals(decision, decision.createdAt);
+      // Ensure createdAt is a Date object for reflection setup
+      const createdAtDate = decision.createdAt instanceof Date ? decision.createdAt : new Date(decision.createdAt);
+      updatedDecision.reflection = setupReflectionIntervals(decision, createdAtDate);
       
       const dbDecision = convertToDbDecision(updatedDecision);
 
