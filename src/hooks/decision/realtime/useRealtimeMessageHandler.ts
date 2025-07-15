@@ -47,9 +47,19 @@ export const useRealtimeMessageHandler = ({ setDecisions }: UseRealtimeMessageHa
           if (newRecord && typeof newRecord === 'object' && 'id' in newRecord) {
             const newDecision = convertDatabaseRecordToDecision(newRecord);
             const exists = prev.some(d => d.id === newDecision.id);
+            const hasOptimistic = prev.some(d => d.id.startsWith('temp-'));
+            
             if (!exists) {
-              console.log('Adding new decision from real-time:', newDecision.id);
-              return [newDecision, ...prev];
+              console.log('Adding new decision from real-time:', newDecision.id, 'hasOptimistic:', hasOptimistic);
+              
+              if (hasOptimistic) {
+                // Replace the optimistic decision with the real one
+                console.log('Real-time: Replacing optimistic decision with real one');
+                return prev.map(d => d.id.startsWith('temp-') ? newDecision : d);
+              } else {
+                // Add new decision normally
+                return [newDecision, ...prev];
+              }
             }
           }
           return prev;
