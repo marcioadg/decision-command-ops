@@ -120,8 +120,12 @@ export const useDecisionCRUD = ({
       
       // Apply immediate update for optimistic UI
       if (onImmediateUpdate) {
-        console.log('Applying immediate optimistic update for decision update');
+        console.log('useDecisionCRUD: Applying immediate optimistic update for decision update');
+        console.log('useDecisionCRUD: Decision details:', { id: sanitizedDecision.id, stage: sanitizedDecision.stage, title: sanitizedDecision.title });
         onImmediateUpdate(sanitizedDecision);
+        console.log('useDecisionCRUD: Optimistic update applied successfully');
+      } else {
+        console.log('useDecisionCRUD: WARNING - onImmediateUpdate callback not available for optimistic update');
       }
       
       // Pause real-time updates for this decision to prevent conflicts - extended timeout

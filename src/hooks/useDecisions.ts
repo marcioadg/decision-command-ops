@@ -25,13 +25,19 @@ export const useDecisions = () => {
 
   // Callback for immediate UI updates
   const handleImmediateUpdate = useCallback((decision: Decision) => {
-    console.log('useDecisions: Handling immediate update for decision:', decision.id, 'isOptimistic:', decision.id.startsWith('temp-'));
+    console.log('useDecisions: Handling immediate update for decision:', decision.id, 'stage:', decision.stage, 'isOptimistic:', decision.id.startsWith('temp-'));
     setDecisions(prev => {
       const exists = prev.find(d => d.id === decision.id);
       const isOptimistic = decision.id.startsWith('temp-');
       const hasOptimistic = prev.find(d => d.id.startsWith('temp-'));
       
       console.log('useDecisions: Current state - exists:', !!exists, 'isOptimistic:', isOptimistic, 'hasOptimistic:', !!hasOptimistic, 'currentCount:', prev.length);
+      console.log('useDecisions: Decision update details:', {
+        id: decision.id,
+        stage: decision.stage,
+        title: decision.title,
+        existingStage: exists?.stage
+      });
       
       if (!isOptimistic && hasOptimistic) {
         // Replace the optimistic decision with the real one
@@ -41,8 +47,10 @@ export const useDecisions = () => {
         return newDecisions;
       } else if (exists) {
         // Update existing decision
-        console.log('useDecisions: Updating existing decision');
-        return prev.map(d => d.id === decision.id ? decision : d);
+        console.log('useDecisions: Updating existing decision with new stage:', decision.stage);
+        const newDecisions = prev.map(d => d.id === decision.id ? decision : d);
+        console.log('useDecisions: Updated decision stage successfully');
+        return newDecisions;
       } else {
         // Add new decision
         console.log('useDecisions: Adding new decision to state');
