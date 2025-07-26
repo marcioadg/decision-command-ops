@@ -132,6 +132,10 @@ export const useOptimisticDecisions = (decisions: Decision[]) => {
     return decision;
   });
 
+  console.log('useOptimisticDecisions: Decisions input count:', decisions.length);
+  console.log('useOptimisticDecisions: Optimistic updates count:', optimisticUpdates.length);
+  console.log('useOptimisticDecisions: Final optimistic decisions count:', optimisticDecisions.length);
+
   return {
     optimisticDecisions,
     applyOptimisticUpdate,
