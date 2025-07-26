@@ -167,15 +167,7 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
         }
-        Relationships: [
-          {
-            foreignKeyName: "decisions_company_id_fkey"
-            columns: ["company_id"]
-            isOneToOne: false
-            referencedRelation: "companies"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       profiles: {
         Row: {
