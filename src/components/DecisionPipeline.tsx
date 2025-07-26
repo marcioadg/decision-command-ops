@@ -4,6 +4,7 @@ import { DecisionCard } from './DecisionCard';
 import { StageColumn } from './StageColumn';
 import { ConnectionStatus } from './ConnectionStatus';
 import { ConnectionStatusMonitor } from './ConnectionStatusMonitor';
+import { useOptimisticDecisions } from '@/hooks/useOptimisticDecisions';
 import { soundSystem } from '@/utils/soundSystem';
 import { useToast } from '@/hooks/use-toast';
 interface DecisionPipelineProps {
@@ -50,6 +51,13 @@ export const DecisionPipeline = ({
   const [draggedDecision, setDraggedDecision] = useState<Decision | null>(null);
   const [updatingDecisions, setUpdatingDecisions] = useState<Set<string>>(new Set());
   const { toast } = useToast();
+
+  // Use optimistic decisions for immediate visual feedback
+  const {
+    optimisticDecisions,
+    applyOptimisticUpdate,
+    rollbackOptimisticUpdate
+  } = useOptimisticDecisions(decisions);
   const handleDragStart = (decision: Decision) => {
     setDraggedDecision(decision);
   };
@@ -70,6 +78,9 @@ export const DecisionPipeline = ({
 
     setUpdatingDecisions(prev => new Set(prev).add(decisionId));
 
+    // Apply optimistic update immediately for visual feedback
+    applyOptimisticUpdate(decisionId, stage);
+    
     // Play immediate sound feedback
     soundSystem.playCardDrop();
     try {
@@ -93,6 +104,9 @@ export const DecisionPipeline = ({
       }
     } catch (error) {
       console.error('DecisionPipeline: Failed to update decision:', error);
+      
+      // Rollback optimistic update on error
+      rollbackOptimisticUpdate(decisionId);
 
       toast({
         title: "Update Failed",
@@ -108,17 +122,18 @@ export const DecisionPipeline = ({
     }
   };
   const getDecisionsByStage = (stage: DecisionStage) => {
+    // Use optimistic decisions for immediate visual feedback
     // Temporary fix: handle both 'decided' and 'executed' for backward compatibility
     if (stage === 'executed') {
-      const filtered = decisions.filter(decision => 
+      const filtered = optimisticDecisions.filter(decision => 
         (decision.stage === stage || (decision.stage as any) === 'decided') && 
         (showArchived ? decision.archived : !decision.archived)
       );
-      console.log(`DecisionPipeline: Stage ${stage} has ${filtered.length} decisions:`, filtered.map(d => ({ id: d.id, title: d.title, stage: d.stage })));
+      console.log(`DecisionPipeline: Stage ${stage} has ${filtered.length} optimistic decisions:`, filtered.map(d => ({ id: d.id, title: d.title, stage: d.stage })));
       return filtered;
     }
-    const filtered = decisions.filter(decision => decision.stage === stage && (showArchived ? decision.archived : !decision.archived));
-    console.log(`DecisionPipeline: Stage ${stage} has ${filtered.length} decisions:`, filtered.map(d => ({ id: d.id, title: d.title, stage: d.stage })));
+    const filtered = optimisticDecisions.filter(decision => decision.stage === stage && (showArchived ? decision.archived : !decision.archived));
+    console.log(`DecisionPipeline: Stage ${stage} has ${filtered.length} optimistic decisions:`, filtered.map(d => ({ id: d.id, title: d.title, stage: d.stage })));
     return filtered;
   };
   return <div className="w-full max-w-7xl mx-auto px-4">
