@@ -58,6 +58,12 @@ export const useDecisionCRUD = ({
         archived: false // Ensure new decisions are not archived
       };
 
+      // Pause real-time updates for this optimistic decision to prevent race condition
+      if (pauseRealtimeForDecision) {
+        console.log('Pausing real-time updates for optimistic CREATE operation:', optimisticDecision.id);
+        pauseRealtimeForDecision(optimisticDecision.id, 3000); // 3 seconds for CREATE operations
+      }
+
       // Apply immediate optimistic update using the callback
       console.log('Applying optimistic update for new decision via onImmediateUpdate:', optimisticDecision.id);
       if (onImmediateUpdate) {
@@ -99,7 +105,7 @@ export const useDecisionCRUD = ({
       });
       throw err;
     }
-  }, [toast, setDecisions, onImmediateUpdate]);
+  }, [toast, setDecisions, onImmediateUpdate, pauseRealtimeForDecision]);
 
   const updateDecision = useCallback(async (decision: Decision) => {
     try {

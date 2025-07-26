@@ -40,6 +40,15 @@ export const useRealtimeMessageHandler = ({ setDecisions }: UseRealtimeMessageHa
       console.log(`Ignoring real-time update for paused decision ${recordId}`);
       return;
     }
+
+    // For INSERT events, also check if we have a paused optimistic decision
+    if (eventType === 'INSERT') {
+      const hasOptimisticPaused = Array.from(pausedDecisionIds).some(id => id.startsWith('temp-'));
+      if (hasOptimisticPaused) {
+        console.log(`Ignoring real-time INSERT due to paused optimistic CREATE operation`);
+        return;
+      }
+    }
     
     setDecisions(prev => {
       switch (eventType) {
