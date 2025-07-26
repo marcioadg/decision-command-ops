@@ -64,7 +64,8 @@ export const DecisionPipeline = ({
       decisionId,
       originalStage,
       newStage: stage,
-      isRealTimeConnected
+      isRealTimeConnected,
+      draggedDecision: draggedDecision.title
     });
 
     setUpdatingDecisions(prev => new Set(prev).add(decisionId));
