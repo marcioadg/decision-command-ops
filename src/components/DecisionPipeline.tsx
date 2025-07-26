@@ -110,12 +110,16 @@ export const DecisionPipeline = ({
   const getDecisionsByStage = (stage: DecisionStage) => {
     // Temporary fix: handle both 'decided' and 'executed' for backward compatibility
     if (stage === 'executed') {
-      return decisions.filter(decision => 
+      const filtered = decisions.filter(decision => 
         (decision.stage === stage || (decision.stage as any) === 'decided') && 
         (showArchived ? decision.archived : !decision.archived)
       );
+      console.log(`DecisionPipeline: Stage ${stage} has ${filtered.length} decisions:`, filtered.map(d => ({ id: d.id, title: d.title, stage: d.stage })));
+      return filtered;
     }
-    return decisions.filter(decision => decision.stage === stage && (showArchived ? decision.archived : !decision.archived));
+    const filtered = decisions.filter(decision => decision.stage === stage && (showArchived ? decision.archived : !decision.archived));
+    console.log(`DecisionPipeline: Stage ${stage} has ${filtered.length} decisions:`, filtered.map(d => ({ id: d.id, title: d.title, stage: d.stage })));
+    return filtered;
   };
   return <div className="w-full max-w-7xl mx-auto px-4">
       {/* Real-time connection status indicator with improved monitoring */}
