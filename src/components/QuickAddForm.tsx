@@ -26,8 +26,18 @@ export const QuickAddForm = ({ onAdd, onCancel, preFilledData }: QuickAddFormPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('QuickAddForm: handleSubmit called - ENTRY POINT');
     console.log('QuickAddForm: Form submitted with data:', formData);
+    console.log('QuickAddForm: Validation check:', {
+      title: formData.title.trim(),
+      category: formData.category,
+      priority: formData.priority,
+      confidence: formData.confidence,
+      isSubmitting
+    });
+    
     if (formData.title.trim() && formData.category && formData.priority && formData.confidence !== '' && !isSubmitting) {
+      console.log('QuickAddForm: Validation PASSED - proceeding with submission');
       setIsSubmitting(true);
       try {
         const newDecision: Omit<Decision, 'id' | 'createdAt'> = {
@@ -50,10 +60,21 @@ export const QuickAddForm = ({ onAdd, onCancel, preFilledData }: QuickAddFormPro
         });
         onCancel();
       } catch (error) {
+        console.error('QuickAddForm: Error in form submission:', error);
         // Error is handled by the parent component
       } finally {
+        console.log('QuickAddForm: Submission complete, resetting isSubmitting');
         setIsSubmitting(false);
       }
+    } else {
+      console.log('QuickAddForm: Validation FAILED - form not submitted');
+      console.log('QuickAddForm: Validation details:', {
+        titleValid: !!formData.title.trim(),
+        categoryValid: !!formData.category,
+        priorityValid: !!formData.priority,
+        confidenceValid: formData.confidence !== '',
+        notSubmitting: !isSubmitting
+      });
     }
   };
 
@@ -67,6 +88,12 @@ export const QuickAddForm = ({ onAdd, onCancel, preFilledData }: QuickAddFormPro
     formData.priority && 
     formData.confidence !== ''
   );
+
+  console.log('QuickAddForm: Render - Form validation state:', {
+    isValid,
+    formData,
+    isSubmitting
+  });
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">

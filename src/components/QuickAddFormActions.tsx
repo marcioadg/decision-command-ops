@@ -19,6 +19,7 @@ export const QuickAddFormActions = ({ onCancel, isValid, isSubmitting }: QuickAd
       <button
         type="submit"
         disabled={!isValid || isSubmitting}
+        onClick={() => console.log('QuickAddFormActions: Submit button clicked', { isValid, isSubmitting })}
         className="flex-1 bg-tactical-accent text-tactical-bg py-2 rounded font-mono text-sm font-semibold hover:bg-tactical-accent/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {isSubmitting ? 'ADDING...' : 'ADD DECISION'}
