@@ -53,6 +53,9 @@ export const DecisionPipeline = ({
   const { toast } = useToast();
 
   // Use optimistic decisions for immediate visual feedback
+  console.log('DecisionPipeline: Received decisions count:', decisions.length);
+  console.log('DecisionPipeline: Received decisions with temp IDs:', decisions.filter(d => d.id.startsWith('temp-')).map(d => ({ id: d.id, title: d.title, stage: d.stage })));
+  
   const {
     optimisticDecisions,
     applyOptimisticUpdate,
