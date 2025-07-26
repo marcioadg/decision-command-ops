@@ -26,8 +26,11 @@ export const useIndexActions = () => {
 
   const handleQuickAdd = useCallback(async (decision: Omit<Decision, 'id' | 'createdAt'>) => {
     console.log('useIndexActions: handleQuickAdd called with:', decision);
+    console.log('useIndexActions: About to call createDecision');
     try {
+      console.log('useIndexActions: Calling createDecision with decision data');
       await createDecision(decision);
+      console.log('useIndexActions: createDecision completed successfully');
       soundSystem.playCardDrop();
     } catch (error) {
       console.error('useIndexActions: Error in handleQuickAdd:', error);

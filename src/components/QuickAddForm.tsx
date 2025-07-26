@@ -26,6 +26,7 @@ export const QuickAddForm = ({ onAdd, onCancel, preFilledData }: QuickAddFormPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('QuickAddForm: Form submitted with data:', formData);
     if (formData.title.trim() && formData.category && formData.priority && formData.confidence !== '' && !isSubmitting) {
       setIsSubmitting(true);
       try {
@@ -38,6 +39,7 @@ export const QuickAddForm = ({ onAdd, onCancel, preFilledData }: QuickAddFormPro
           stage: preFilledData?.stage || 'backlog',
           owner: 'System' // Default fallback for backward compatibility
         };
+        console.log('QuickAddForm: Calling onAdd with decision:', newDecision);
         await onAdd(newDecision);
         setFormData({
           title: '',
