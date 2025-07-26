@@ -58,21 +58,31 @@ export const useDecisionCRUD = ({
         archived: false // Ensure new decisions are not archived
       };
 
-      // Add to decisions state immediately for optimistic update
-      console.log('Adding optimistic decision to state:', optimisticDecision.id);
-      setDecisions(prev => [...prev, optimisticDecision]);
-      console.log('Optimistic decision added to state successfully');
+      // Apply immediate optimistic update using the callback
+      console.log('Applying optimistic update for new decision via onImmediateUpdate:', optimisticDecision.id);
+      if (onImmediateUpdate) {
+        onImmediateUpdate(optimisticDecision);
+        console.log('Optimistic update callback called successfully');
+      } else {
+        console.log('WARNING: onImmediateUpdate callback is not available, using direct setState');
+        setDecisions(prev => [...prev, optimisticDecision]);
+      }
       
       // Call the API to create the real decision
       const newDecision = await secureDecisionService.createDecision(sanitizedDecision);
       console.log('Decision created successfully, replacing optimistic with real:', newDecision.id);
       
-      // Replace optimistic decision with real one
-      console.log('Replacing optimistic decision with real decision:', newDecision.id);
-      setDecisions(prev => prev.map(d => 
-        d.id === optimisticDecision.id ? newDecision : d
-      ));
-      console.log('Real decision replacement completed successfully');
+      // Replace optimistic decision with real one using the callback
+      console.log('Replacing optimistic decision with real decision via onImmediateUpdate:', newDecision.id);
+      if (onImmediateUpdate) {
+        onImmediateUpdate(newDecision);
+        console.log('Real decision replacement callback called successfully');
+      } else {
+        console.log('WARNING: onImmediateUpdate callback is not available for replacement, using direct setState');
+        setDecisions(prev => prev.map(d => 
+          d.id === optimisticDecision.id ? newDecision : d
+        ));
+      }
       
       return newDecision;
     } catch (err) {
