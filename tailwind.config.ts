@@ -69,13 +69,13 @@ export default {
 					surface: '#1a1f2e',
 					border: '#2a3441',
 					text: '#e2e8f0',
-					accent: '#00ff88',
+					accent: '#3B82F6',
 					warning: '#ff8c00',
 					danger: '#ff4444',
 					info: '#00aaff'
 				},
 				impact: {
-					high: '#00ff88',
+					high: '#3B82F6',
 					medium: '#ff8c00', 
 					low: '#6b7280'
 				},
@@ -113,10 +113,10 @@ export default {
 				},
 				'pulse-glow': {
 					'0%, 100%': {
-						boxShadow: '0 0 5px rgba(0, 255, 136, 0.3)'
+						boxShadow: '0 0 5px rgba(59, 130, 246, 0.3)'
 					},
 					'50%': {
-						boxShadow: '0 0 20px rgba(0, 255, 136, 0.6)'
+						boxShadow: '0 0 20px rgba(59, 130, 246, 0.6)'
 					}
 				},
 				'slide-in': {

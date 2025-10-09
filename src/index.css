@@ -19,7 +19,7 @@ All colors MUST be HSL.
     --popover: 220 30% 8%;
     --popover-foreground: 210 40% 95%;
 
-    --primary: 151 100% 50%;
+    --primary: 217 91% 60%;
     --primary-foreground: 220 30% 6%;
 
     --secondary: 220 30% 12%;
@@ -36,35 +36,35 @@ All colors MUST be HSL.
 
     --border: 220 30% 18%;
     --input: 220 30% 18%;
-    --ring: 151 100% 50%;
+    --ring: 217 91% 60%;
 
     --radius: 0.5rem;
 
     --sidebar-background: 220 30% 6%;
     --sidebar-foreground: 210 40% 95%;
-    --sidebar-primary: 151 100% 50%;
+    --sidebar-primary: 217 91% 60%;
     --sidebar-primary-foreground: 220 30% 6%;
     --sidebar-accent: 220 30% 12%;
     --sidebar-accent-foreground: 210 40% 95%;
     --sidebar-border: 220 30% 18%;
-    --sidebar-ring: 151 100% 50%;
+    --sidebar-ring: 217 91% 60%;
 
     /* Tactical Colors */
     --tactical-bg: 220 30% 6%;
     --tactical-text: 210 40% 95%;
     --tactical-surface: 220 30% 8%;
     --tactical-border: 220 30% 18%;
-    --tactical-accent: 151 100% 50%;
+    --tactical-accent: 217 91% 60%;
     
     /* Impact Colors */
     --impact-high: 0 100% 67%;
     --impact-medium: 39 100% 67%;
-    --impact-low: 151 100% 50%;
+    --impact-low: 217 91% 60%;
     
     /* Urgency Colors */
     --urgency-high: 0 100% 67%;
     --urgency-medium: 39 100% 67%;
-    --urgency-low: 151 100% 50%;
+    --urgency-low: 217 91% 60%;
     
     /* Info Color */
     --info: 200 100% 67%;
@@ -80,7 +80,7 @@ All colors MUST be HSL.
     @apply bg-tactical-bg text-tactical-text;
     font-family: 'Rajdhani', sans-serif;
     background-image: 
-      radial-gradient(circle at 25% 25%, rgba(0, 255, 136, 0.1) 0%, transparent 50%),
+      radial-gradient(circle at 25% 25%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
       radial-gradient(circle at 75% 75%, rgba(0, 170, 255, 0.05) 0%, transparent 50%);
   }
 
@@ -120,7 +120,7 @@ All colors MUST be HSL.
   
   .tactical-card:hover {
     border-color: hsl(var(--tactical-accent) / 0.5);
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 255, 136, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(59, 130, 246, 0.1);
   }
   
   .stage-header {
