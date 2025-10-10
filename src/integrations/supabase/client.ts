@@ -2,8 +2,25 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://fezmgnixfujyfdxcwyol.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlem1nbml4ZnVqeWZkeGN3eW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjA5ODgsImV4cCI6MjA2NjY5Njk4OH0.ncyTzxooOjBuhQknMxNn1Cf2mFx5CoUUJBHEmWVFZgc";
+// Environment detection
+const isStaging = window.location.hostname.includes('staging') || 
+                  window.location.hostname.includes('lovableproject') ||
+                  import.meta.env.VITE_ENVIRONMENT === 'staging';
+
+// Production database credentials
+const PROD_SUPABASE_URL = "https://fezmgnixfujyfdxcwyol.supabase.co";
+const PROD_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlem1nbml4ZnVqeWZkeGN3eW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjA5ODgsImV4cCI6MjA2NjY5Njk4OH0.ncyTzxooOjBuhQknMxNn1Cf2mFx5CoUUJBHEmWVFZgc";
+
+// Staging database credentials
+const STAGING_SUPABASE_URL = "https://sxrriypizmquuucjomya.supabase.co";
+const STAGING_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4cnJpeXBpem1xdXV1Y2pvbXlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NDczODksImV4cCI6MjA3NTUyMzM4OX0.oDzANxuis4o_qROIqAz_1x3lxI_18ZCtXITXkkQciqE";
+
+// Select the appropriate credentials based on environment
+const SUPABASE_URL = isStaging ? STAGING_SUPABASE_URL : PROD_SUPABASE_URL;
+const SUPABASE_PUBLISHABLE_KEY = isStaging ? STAGING_SUPABASE_KEY : PROD_SUPABASE_KEY;
+
+console.log('Supabase Environment:', isStaging ? 'STAGING' : 'PRODUCTION');
+console.log('Supabase URL:', SUPABASE_URL);
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
