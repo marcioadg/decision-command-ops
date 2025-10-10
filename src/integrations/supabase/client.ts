@@ -12,8 +12,8 @@ const PROD_SUPABASE_URL = "https://fezmgnixfujyfdxcwyol.supabase.co";
 const PROD_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlem1nbml4ZnVqeWZkeGN3eW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjA5ODgsImV4cCI6MjA2NjY5Njk4OH0.ncyTzxooOjBuhQknMxNn1Cf2mFx5CoUUJBHEmWVFZgc";
 
 // Staging database credentials
-const STAGING_SUPABASE_URL = "https://sxrriypizmquuucjomya.supabase.co";
-const STAGING_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN4cnJpeXBpem1xdXV1Y2pvbXlhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTk5NDczODksImV4cCI6MjA3NTUyMzM4OX0.oDzANxuis4o_qROIqAz_1x3lxI_18ZCtXITXkkQciqE";
+const STAGING_SUPABASE_URL = "https://wknqareowdeekifsdybp.supabase.co";
+const STAGING_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndrbnFhcmVvd2RlZWtpZnNkeWJwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAxMTMxNzksImV4cCI6MjA3NTY4OTE3OX0.-RWU0jN_4yJOXOKZMSxplxogwOHEEFjJMBzAd-wzhKE";
 
 // Select the appropriate credentials based on environment
 const SUPABASE_URL = isStaging ? STAGING_SUPABASE_URL : PROD_SUPABASE_URL;
