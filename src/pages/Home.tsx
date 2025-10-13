@@ -135,7 +135,12 @@ const Home = () => {
 
           <div className="text-tactical-text/70 text-sm mb-8">
             <div className="mb-2">
-              <strong className="text-tactical-accent">Start Free</strong> • No Credit Card Required
+              <button 
+                onClick={handleSignUp}
+                className="text-tactical-accent font-bold hover:text-tactical-accent/80 underline cursor-pointer"
+              >
+                Start Free
+              </button> • No Credit Card Required
             </div>
             {!user && (
               <div>
