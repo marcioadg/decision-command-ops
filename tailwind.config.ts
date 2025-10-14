@@ -65,24 +65,24 @@ export default {
 				},
 				// Tactical HUD Colors
 				tactical: {
-					bg: '#0a0f1a',
-					surface: '#1a1f2e',
-					border: '#2a3441',
-					text: '#e2e8f0',
-					accent: '#10b981',
-					warning: '#ff8c00',
-					danger: '#ff4444',
-					info: '#00aaff'
+					bg: 'hsl(220 40% 8%)',
+					surface: 'hsl(220 30% 15%)',
+					border: 'hsl(220 20% 22%)',
+					text: 'hsl(214 32% 91%)',
+					accent: 'hsl(0 85% 45%)',
+					warning: 'hsl(30 100% 50%)',
+					danger: 'hsl(0 100% 63%)',
+					info: 'hsl(197 100% 50%)'
 				},
 				impact: {
-					high: '#10b981',
-					medium: '#ff8c00', 
-					low: '#6b7280'
+					high: 'hsl(0 85% 45%)',
+					medium: 'hsl(30 100% 50%)', 
+					low: 'hsl(220 15% 45%)'
 				},
 				urgency: {
-					high: '#ff4444',
-					medium: '#ff8c00',
-					low: '#00aaff'
+					high: 'hsl(0 100% 63%)',
+					medium: 'hsl(30 100% 50%)',
+					low: 'hsl(197 100% 50%)'
 				}
 			},
 			borderRadius: {
