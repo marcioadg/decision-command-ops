@@ -78,14 +78,15 @@ export const UserForm = ({ editingUser, companies, onSubmit, onCancel }: UserFor
         <div>
           <Input
             type="password"
-            placeholder="Password"
+            placeholder="Password (min 8 characters)"
             value={formData.password}
             onChange={(e) => setFormData({...formData, password: e.target.value})}
             className="bg-tactical-bg border-tactical-border text-tactical-text"
-            disabled
+            required
+            minLength={8}
           />
           <p className="text-xs text-tactical-text/60 mt-1">
-            User creation through admin panel coming soon. Users must register normally.
+            Enter a secure password for the new user account.
           </p>
         </div>
       )}
@@ -101,7 +102,6 @@ export const UserForm = ({ editingUser, companies, onSubmit, onCancel }: UserFor
         <Button 
           type="submit"
           className="bg-tactical-accent hover:bg-tactical-accent/90 text-tactical-bg"
-          disabled={!editingUser}
         >
           {editingUser ? 'Update' : 'Create'}
         </Button>

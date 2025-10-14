@@ -6,6 +6,7 @@ import { Plus } from 'lucide-react';
 import { supabaseUserService } from '@/services/admin/supabaseUserService';
 import { companyService } from '@/services/admin/companyService';
 import { AdminUser, CreateAdminUserData } from '@/types/admin/AdminUser';
+import { createAdminUser } from '@/services/admin/createAdminUserService';
 import { useToast } from '@/hooks/use-toast';
 import { UserStats } from './UserStats';
 import { UserFilters } from './UserFilters';
@@ -56,14 +57,31 @@ export const UserManager = () => {
         const updated = await supabaseUserService.update(editingUser.id, updateData);
         if (updated) {
           await loadUsers();
+          toast({
+            title: "User Updated",
+            description: `${updated.name} has been updated successfully.`,
+          });
         }
       } else {
-        toast({
-          title: "User Creation",
-          description: "Users must sign up through the normal registration process. Admin user creation coming soon.",
-          variant: "destructive",
+        // Create new user using edge function
+        const { data, error } = await createAdminUser({
+          email: formData.email,
+          password: formData.password,
+          name: formData.name,
+          companyId: formData.companyId,
+          role: formData.role
         });
-        return;
+
+        if (error) {
+          throw error;
+        }
+
+        toast({
+          title: "User Created",
+          description: `${formData.name} has been created successfully.`,
+        });
+        
+        await loadUsers();
       }
       
       setIsDialogOpen(false);
@@ -72,7 +90,7 @@ export const UserManager = () => {
       console.error('Error saving user:', err);
       toast({
         title: "Error",
-        description: "Failed to save user. Please try again.",
+        description: err instanceof Error ? err.message : "Failed to save user. Please try again.",
         variant: "destructive",
       });
     }
