@@ -135,7 +135,12 @@ const Home = () => {
 
           <div className="text-tactical-text/70 text-sm mb-8">
             <div className="mb-2">
-              <strong className="text-tactical-accent">Start Free</strong> • No Credit Card Required
+              <button 
+                onClick={handleSignUp}
+                className="text-tactical-accent font-bold hover:text-tactical-accent/80 underline cursor-pointer"
+              >
+                Start Free
+              </button> • No Credit Card Required
             </div>
             {!user && (
               <div>
@@ -183,7 +188,7 @@ const Home = () => {
         <div className="max-w-6xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold text-tactical-text mb-6">
-              The Hidden Cost of <span className="text-red-400">Bad Decisions</span>
+              The Hidden Cost of <span className="text-yellow-400">Bad Decisions</span>
             </h2>
             <p className="text-xl text-tactical-text/80 max-w-3xl mx-auto">
               Every day, critical decisions get stuck in endless loops of analysis, missed deadlines, and second-guessing.
@@ -192,19 +197,19 @@ const Home = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div className="text-center">
-              <div className="text-6xl font-bold text-red-400 mb-4">73%</div>
+              <div className="text-6xl font-bold text-yellow-400 mb-4">73%</div>
               <h3 className="text-xl font-bold text-tactical-text mb-2">Analysis Paralysis</h3>
               <p className="text-tactical-text/70">of decisions get delayed due to overthinking</p>
             </div>
             
             <div className="text-center">
-              <div className="text-6xl font-bold text-red-400 mb-4">2.5x</div>
+              <div className="text-6xl font-bold text-yellow-400 mb-4">2.5x</div>
               <h3 className="text-xl font-bold text-tactical-text mb-2">Longer Process</h3>
               <p className="text-tactical-text/70">time spent on decisions without clear framework</p>
             </div>
             
             <div className="text-center">
-              <div className="text-6xl font-bold text-red-400 mb-4">$2M</div>
+              <div className="text-6xl font-bold text-yellow-400 mb-4">$2M</div>
               <h3 className="text-xl font-bold text-tactical-text mb-2">Average Cost</h3>
               <p className="text-tactical-text/70">of poor decisions per company annually</p>
             </div>
