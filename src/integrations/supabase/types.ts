@@ -10,7 +10,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "13.0.5"
   }
   public: {
     Tables: {
@@ -122,7 +122,7 @@ export type Database = {
           stage: string
           title: string
           updated_at: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           archived?: boolean
@@ -145,7 +145,7 @@ export type Database = {
           stage: string
           title: string
           updated_at?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           archived?: boolean
@@ -168,9 +168,17 @@ export type Database = {
           stage?: string
           title?: string
           updated_at?: string | null
-          user_id?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "decisions_company_id_fkey"
+            columns: ["company_id"]
+            isOneToOne: false
+            referencedRelation: "companies"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -191,7 +199,7 @@ export type Database = {
           company_id?: string | null
           created_at?: string
           email?: string | null
-          id: string
+          id?: string
           last_login_at?: string | null
           last_visit_at?: string | null
           login_count?: number | null
@@ -225,24 +233,6 @@ export type Database = {
           },
         ]
       }
-      staging_connection_test: {
-        Row: {
-          created_at: string | null
-          id: string
-          test_message: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          test_message: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          test_message?: string
-        }
-        Relationships: []
-      }
       teste: {
         Row: {
           created_at: string
@@ -250,11 +240,11 @@ export type Database = {
         }
         Insert: {
           created_at?: string
-          id?: number
+          id?: never
         }
         Update: {
           created_at?: string
-          id?: number
+          id?: never
         }
         Relationships: []
       }
@@ -268,7 +258,7 @@ export type Database = {
           session_start: string
           updated_at: string
           user_agent: string | null
-          user_id: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -279,7 +269,7 @@ export type Database = {
           session_start?: string
           updated_at?: string
           user_agent?: string | null
-          user_id: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -290,7 +280,7 @@ export type Database = {
           session_start?: string
           updated_at?: string
           user_agent?: string | null
-          user_id?: string
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -299,18 +289,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      get_current_user_role: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      get_user_company_id: {
-        Args: Record<PropertyKey, never>
-        Returns: string
-      }
-      is_company_admin: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
+      [_ in never]: never
     }
     Enums: {
       [_ in never]: never
