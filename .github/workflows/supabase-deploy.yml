@@ -1,0 +1,25 @@
+name: Supabase Deploy
+on:
+  push:
+    branches: [staging, main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Supabase CLI
+        run: npm install -g supabase
+      - name: Login
+        run: supabase login ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+      - name: Deploy by branch
+        run: |
+          if [ "${GITHUB_REF##*/}" = "main" ]; then
+            echo "PROD"
+            supabase link --project-ref fezmgnixfujyfdxcwyol
+            supabase db push --config supabase/config.prod.toml
+          else
+            echo "STAGING"
+            supabase link --project-ref zanlercqmdxgydtaqzni
+            supabase db push --config supabase/config.staging.toml
+          fi
