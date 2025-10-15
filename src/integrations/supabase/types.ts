@@ -225,6 +225,24 @@ export type Database = {
           },
         ]
       }
+      staging_connection_test: {
+        Row: {
+          created_at: string | null
+          id: string
+          test_message: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          test_message: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          test_message?: string
+        }
+        Relationships: []
+      }
       teste: {
         Row: {
           created_at: string
