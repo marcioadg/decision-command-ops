@@ -2,27 +2,16 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-// Environment detection
-const isStaging = window.location.hostname.includes('staging') || 
-                  window.location.hostname.includes('lovableproject') ||
-                  import.meta.env.VITE_ENVIRONMENT === 'staging';
-
-// Production database credentials
-const PROD_SUPABASE_URL = "https://fezmgnixfujyfdxcwyol.supabase.co";
-const PROD_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlem1nbml4ZnVqeWZkeGN3eW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjA5ODgsImV4cCI6MjA2NjY5Njk4OH0.ncyTzxooOjBuhQknMxNn1Cf2mFx5CoUUJBHEmWVFZgc";
-
-// Staging database credentials
-const STAGING_SUPABASE_URL = "https://zvddbklbuepalxmvqjcu.supabase.co";
-const STAGING_SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inp2ZGRia2xidWVwYWx4bXZxamN1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjA0NDk0OTgsImV4cCI6MjA3NjAyNTQ5OH0.Qoqn4BRQFtn-sro2_dxj_xLiuU6G_NRMHVn1-1vOHqo";
-
-// Select the appropriate credentials based on environment
-const SUPABASE_URL = isStaging ? STAGING_SUPABASE_URL : PROD_SUPABASE_URL;
-const SUPABASE_PUBLISHABLE_KEY = isStaging ? STAGING_SUPABASE_KEY : PROD_SUPABASE_KEY;
-
-console.log('Supabase Environment:', isStaging ? 'STAGING' : 'PRODUCTION');
-console.log('Supabase URL:', SUPABASE_URL);
+const SUPABASE_URL = "https://fezmgnixfujyfdxcwyol.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZlem1nbml4ZnVqeWZkeGN3eW9sIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExMjA5ODgsImV4cCI6MjA2NjY5Njk4OH0.ncyTzxooOjBuhQknMxNn1Cf2mFx5CoUUJBHEmWVFZgc";
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
 
-export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY);
+export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: {
+    storage: localStorage,
+    persistSession: true,
+    autoRefreshToken: true,
+  }
+});
