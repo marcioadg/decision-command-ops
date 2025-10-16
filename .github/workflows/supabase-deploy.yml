@@ -9,7 +9,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install Supabase CLI
-        run: npm install -g supabase
+        run: |
+          curl -fsSL https://github.com/supabase/cli/releases/download/v1.200.3/supabase_linux_amd64.tar.gz | tar -xz
+          sudo mv supabase /usr/local/bin/
       - name: Deploy by branch
         run: |
           if [ "${GITHUB_REF##*/}" = "main" ]; then
