@@ -10,6 +10,7 @@ jobs:
       - uses: actions/checkout@v3
       - name: Install Supabase CLI
         run: |
+          rm -f supabase
           curl -fsSL https://github.com/supabase/cli/releases/download/v1.200.3/supabase_linux_amd64.tar.gz | tar -xz
           sudo mv supabase /usr/local/bin/
       - name: Deploy by branch
