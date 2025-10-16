@@ -7,8 +7,12 @@
     "dev": "vite",
     "build": "vite build",
     "build:dev": "vite build --mode development",
+    "build:staging": "vite build --mode staging",
+    "build:production": "vite build --mode production",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "deploy:staging": "git push origin staging",
+    "deploy:production": "./scripts/deploy-to-production.sh"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
