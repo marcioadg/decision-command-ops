@@ -16,10 +16,12 @@ jobs:
         run: |
           if [ "${GITHUB_REF##*/}" = "main" ]; then
             echo "Deploying to PRODUCTION"
+            export SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
             supabase link --project-ref fezmgnixfujyfdxcwyol
             supabase db push
           else
             echo "Deploying to STAGING"
+            export SUPABASE_SERVICE_ROLE_KEY=${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
             supabase link --project-ref zanlercqmdxgydtaqzni
             supabase db push
           fi
