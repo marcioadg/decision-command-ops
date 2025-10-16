@@ -15,11 +15,11 @@ jobs:
       - name: Deploy by branch
         run: |
           if [ "${GITHUB_REF##*/}" = "main" ]; then
-            echo "PROD"
+            echo "Deploying to PRODUCTION"
             supabase link --project-ref fezmgnixfujyfdxcwyol
-            supabase db push --config supabase/config.prod.toml
+            supabase db push
           else
-            echo "STAGING"
+            echo "Deploying to STAGING"
             supabase link --project-ref zanlercqmdxgydtaqzni
-            supabase db push --config supabase/config.staging.toml
+            supabase db push
           fi
