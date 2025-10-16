@@ -83,15 +83,6 @@ CREATE TABLE IF NOT EXISTS public.user_sessions (
   updated_at timestamp with time zone NOT NULL DEFAULT now()
 );
 
--- Create teste table
-CREATE TABLE IF NOT EXISTS public.teste (
-  id bigint PRIMARY KEY GENERATED ALWAYS AS IDENTITY,
-  created_at timestamp with time zone NOT NULL DEFAULT now()
-);
+-- Test table removed - not needed in production
 
--- Create staging_connection_test table
-CREATE TABLE IF NOT EXISTS public.staging_connection_test (
-  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-  message text DEFAULT 'Connected to STAGING!'::text,
-  created_at timestamp with time zone DEFAULT now()
-);
+-- Staging connection test table removed - not needed in production
